@@ -274,9 +274,10 @@ def PID(inp):
     errorPID = inp;                                # determine error
     rateError = (errorPID - lastError) / T_Program  # compute derivative
 
-    out_pid = kp * errorPID + ki * cumError + kd * rateError;          #PID output
+    
     
     if(anti_windup==True):
+        out_pid = kp * errorPID + ki * cumError + kd * rateError;          #PID output
         if(out_pid < (TVC_max*TVC_reduction) and out_pid > (-TVC_max*TVC_reduction)):  #Anti windup by clamping
             cumError = ((((lastError) + ((errorPID - lastError) / 2))) * T_Program)+cumError         # compute integral (trapezoidal) only if the TVC is not staurated
             out_pid = kp * errorPID + ki * cumError + kd * rateError #recalculate the output
@@ -287,6 +288,7 @@ def PID(inp):
             out_pid=-TVC_max*TVC_reduction
     else:
         cumError = ((((lastError) + ((errorPID - lastError) / 2))) * T_Program)+cumError
+        out_pid = kp * errorPID + ki * cumError + kd * rateError
     
     lastError = errorPID;                                #remember current error
 
