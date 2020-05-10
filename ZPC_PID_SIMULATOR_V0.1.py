@@ -27,11 +27,11 @@ import random
 
 ########################################################################################################################## SET YOUR ROCKET
 
-Thrust=10; #THRUST in N (use peak thrust first, check with minimum after)
+Thrust=28.8; #THRUST in N (use peak thrust first, check with minimum after)
 
-m=0.627  #  MASS in kg
+m=0.451  #  MASS in kg
 
-Iy=0.075; #MOMENT OF INERTIA, use the smaller one (motor burnout)
+Iy=0.0662; #MOMENT OF INERTIA, use the smaller one (motor burnout)
 
 g=9.8  # gravity in m/s^2
 
@@ -42,28 +42,28 @@ rho=1.225 # air density
 
 q=0.5*rho*V**2 #dynamic pressure                                       
                                        
-d=0.1  # DIAMETER of the rocket and cross sectional area (IN METERS)
+d=0.05  # DIAMETER of the rocket and cross sectional area (IN METERS)
 
 S=((d**2*3.14159)/4) #cross sectional area
 
 #xa=0.1033*alpha**3-0.2949*alpha**2+0.2862*alpha+0.4061 if you want it to move
 
-xa=0.4  #DISTANCE from the nose to the center of pressure, cg and tail (either the motor mount for tvc or the mac of the control fin), IN METERS
-xcg=0.615 #DISTANCE from the nose to the cg IN METERS
-xt=1  #DISTANCE from the nose to the tail (either the motor mount for tvc or the 25%mac of the control fin), IN METERS
+xa=0.17  #DISTANCE from the nose to the center of pressure, cg and tail (either the motor mount for tvc or the mac of the control fin), IN METERS
+xcg=0.55 #DISTANCE from the nose to the cg IN METERS
+xt=0.85  #DISTANCE from the nose to the tail (either the motor mount for tvc or the 25%mac of the control fin), IN METERS
 
 lt=(xt-xcg)  #lenght to the tail
 
-L=1; #LENGHT of the rocket
+L=0.85; #LENGHT of the rocket
 
-CD=0.357 #DRAG COEFFICIENT at alpha=0
+CD=0.43 #DRAG COEFFICIENT at alpha=0
 
 
-alpha=1
+alpha=1.571
 
-k1=-7.2295 #CNalpha coeficients
-k2=16.034
-k3=2.6634
+k1=-13.119 #CNalpha coeficients
+k2=30.193
+k3=0.3948
 CNalpha=(k1*alpha**3+k2*alpha**2+k3*alpha)/alpha #Third order aproximation deg, also in 1/radians
 
 CZalpha=-CNalpha
@@ -89,7 +89,7 @@ TVC_reduction=5 #TVC_reduction of 5 means that 5 degrees in the servo equal 1 de
 
 
 wind=-2; #Wind speed in m/s (positive right to left)
-wind_distribution=0.5*0 # wind*wind_distribution = max gust speed 
+wind_distribution=0.5 # wind*wind_distribution = max gust speed 
 
 ########################################################################################################################## IGNORE UP TO PID GAINS
 
@@ -247,7 +247,7 @@ def control_tita(setpoint):
     u_controler=PID(error)
     u_controler=u_controler-out[1,0]*k_damping
     
-    #u_controler=u_controler+0.5*u_prev #discrete filter, touch the 0.5 until it suits your needs
+    #u_controler=u_controler+0.1*u_prev #discrete filter, touch the 0.5 until it suits your needs
     
     if(u_controler>TVC_max*TVC_reduction):  #prevents the TVC from deflecting more that it can
         u_controler=TVC_max*TVC_reduction
@@ -257,7 +257,7 @@ def control_tita(setpoint):
         
    
     
-    u_delta=abs(u_controler-u_prev)
+    u_delta=u_controler-u_prev
     
     return u_controler
 
@@ -290,7 +290,8 @@ def update_servo(u_controler,u_delta):
     
     if(u_delta<=10/57.3):
         u_delta=10/57.3
-
+    elif(u_delta>=45/57.3):
+        u_delta=45/57.3
     
     
     dens=-0.000609663-0.0358604*T+0.0273794*u_delta*T-0.812193*T**2+u_delta*T**2
@@ -497,7 +498,7 @@ def set_setpoint(inp):
     if(inp==1):
         setpoint=10/57.3
     elif(inp==2):
-        setpoint=(5/57.3)*t
+        setpoint=(5/57.3)*(t-0.5)
     else:
         setpoint=0
     
@@ -519,12 +520,11 @@ def simulation():
     if(t>timer_run_servo+Ts*0.9999):
         timer_run_servo=t
         u=u_controler
+        u=round(u*57.3,0)/57.3 #definition of the servo, standard 1º
     
     
     xdots=(np.dot(As,xs)+np.dot(Bs,(u)))
     outs=(np.dot(Cs,xs)+np.dot(Ds,u))
-    
-    outs[0,0]=round(outs[0,0]*57.3,0)/57.3 #definitio of the servo, standard 1º
     
     outs[0,0]=(outs[0,0]/TVC_reduction) #reduction of the TVC
     
@@ -556,11 +556,11 @@ def timer():
 
 
 ########################################################################################################################## PID GAINS
-kp=5/5*3.5; 
-ki=5;
-kd=0.0;
-k_all=1;
-k_damping=0.5/0.5*0.4;
+kp=1  #1
+ki=0 #0
+kd=0.0 #0
+k_all=1.2 #1.2
+k_damping=0.15 #0.15
 
 inp=1 #selects the input
       #1-> Step, hard test on stability
@@ -597,7 +597,7 @@ while t<=2:
     
     setpoint_plot.append(setpoint*57.3)
     theta_plot.append(out[0,0]*57.3)
-    servo_plot.append((out[2,0]+alpha*0)*57.3)
+    servo_plot.append((outs[0,0])*57.3)
     
     #Plot selectors
     #out[0,0]->Pitch Angle, out[1,0]-> Pitch Rate, out[2,0]->Rection Angle of attack
