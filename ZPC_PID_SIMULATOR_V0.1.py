@@ -393,8 +393,7 @@ def update_parameters():
     CZalpha=-CNalpha
     CMalpha=CNalpha*(xcg-xa)/d
     
-    xa=0.4
-    
+  
     q=0.5*rho*V**2
     Cw=-(m*g)/(S*q)    
     CMde=(Thrust*lt)/(S*q*d)
