@@ -11,7 +11,7 @@ import numpy as np
 import random
 
 ###########################################
-#known bugs-> Servo does weird things when u is too big or after hard saturations
+#known bugs-> 
 
 
 
@@ -31,7 +31,7 @@ Thrust=28.8; #THRUST in N (use peak thrust first, check with minimum after)
 
 m=0.451  #  MASS in kg
 
-Iy=0.0662; #MOMENT OF INERTIA, use the smaller one (motor burnout)
+Iy=0.0662 #MOMENT OF INERTIA, use the smaller one (motor burnout)
 
 g=9.8  # gravity in m/s^2
 
@@ -45,8 +45,6 @@ q=0.5*rho*V**2 #dynamic pressure
 d=0.05  # DIAMETER of the rocket and cross sectional area (IN METERS)
 
 S=((d**2*3.14159)/4) #cross sectional area
-
-#xa=0.1033*alpha**3-0.2949*alpha**2+0.2862*alpha+0.4061 if you want it to move
 
 xa=0.17  #DISTANCE from the nose to the center of pressure, cg and tail (either the motor mount for tvc or the mac of the control fin), IN METERS
 xcg=0.55 #DISTANCE from the nose to the cg IN METERS
@@ -242,12 +240,10 @@ def control_tita(setpoint):
     
     u_prev=u_controler
     
-    error=setpoint-out[0,0]
+    error=setpoint-out[0,0] #On your flight computer, replace out[0,0] for you calculated angle
     error=error*k_all
     u_controler=PID(error)
-    u_controler=u_controler-out[1,0]*k_damping
-    
-    #u_controler=u_controler+0.1*u_prev #discrete filter, touch the 0.5 until it suits your needs
+    u_controler=u_controler-out[1,0]*k_damping #On your flight computer, replace out[1,0] for the gyroscope data (angular speed)
     
     if(u_controler>TVC_max*TVC_reduction):  #prevents the TVC from deflecting more that it can
         u_controler=TVC_max*TVC_reduction
@@ -257,7 +253,7 @@ def control_tita(setpoint):
         
    
     
-    u_delta=abs(u_controler-u_prev)
+    u_delta=abs(u_controler-u_prev) #only for the simualtion, does nothing in the real flight computer
     
     return u_controler
 
@@ -288,7 +284,9 @@ def PID(inp):
             out_pid=-TVC_max*TVC_reduction
     else:
         cumError = ((((lastError) + ((errorPID - lastError) / 2))) * T_Program)+cumError
-        out_pid = kp * errorPID + ki * cumError + kd * rateError
+        out_pid = kp * errorPID + ki * cumError + kd * rateError;          #PID output
+        
+        
     
     lastError = errorPID;                                #remember current error
 
@@ -374,7 +372,6 @@ def update_parameters():
     global i
     global alpha_calc,alpha_control
     global wind
-    #V=U=40
     
     
     U=(Thrust-m*g-S*q*CD)*T+U
@@ -565,11 +562,11 @@ def timer():
 
 
 ########################################################################################################################## PID GAINS
-kp=1  #1
-ki=1 #0
-kd=0.0 #0
-k_all=10 #1.2
-k_damping=1.2*0.7 #0.15
+kp=1  
+ki=1 
+kd=0.0 
+k_all=10 
+k_damping=1.2*0.7/0.7
 
 anti_windup=True #Prevents the integrator for integreting when the TVC is saturated
                  #it also limits the output of the PID so k_damping is more efective
@@ -583,10 +580,11 @@ inp=1 #selects the input
 T=0.001   #T=Sample time of the simulation 
 Ts=0.02   #Ts=sample time of the servo (0.02 for a SG90)
 T_Program=0.01 #T_Program: Sample time of your PID code
+Sim_duration=5. #How long will it simulate
 ########################################################################################################################## HERE THE PROGRAM STARTS
 
 
-while t<=5:
+while t<=Sim_duration:
 
     if(t>(timer_run_sim+T*0.9999)):
         timer_run_sim=t
