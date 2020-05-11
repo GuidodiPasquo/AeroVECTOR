@@ -11,7 +11,7 @@ import numpy as np
 import random
 
 ###########################################
-#known bugs-> Wind can have weird effects
+#known bugs-> positive winds or with magnitude greater than 2 might have weird effects.
 
 
 
