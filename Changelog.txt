@@ -1,0 +1,6 @@
+V0.1 - Initial version.
+
+V0.2 - New and improved anti windup, can be turned off.
+
+V0.3 - Improved wind effect calculations, can be turned off and replaced by more robust disturbance methods.
+	New TVC mount offset to simulate mounting imperfections
