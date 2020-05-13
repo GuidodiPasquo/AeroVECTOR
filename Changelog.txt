@@ -4,8 +4,13 @@ V0.2 - New and improved anti windup, can be turned off.
 
 V0.3 - Improved wind effect calculations, can be turned off and replaced by random noise in the actuator (+- 1 deg).
 	New TVC mount initial state to simulate mounting imperfections.
-	Limited maximum velocity.
+	Limited rocket's maximum velocity.
 	Actuators have been slowed down to compensate for TVC mount inertia.
-	Now simulation stops after burnout or detected instability.
+	Actuator dynamics extended to simulate up to 90º instead of the previous 45º.
+	Simulation now stops after burnout or detected instability.
 	New default input is a straight-up flight.
 	Parameters list has been reorganized.
+
+Future:
+V0.4 - Include a Generic thrust curve.
+	Add options for a Torque Based Controller.
