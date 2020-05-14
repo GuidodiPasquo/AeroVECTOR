@@ -94,7 +94,7 @@ alpha=1.517
 CZalpha=-CNalpha
 Cw=-(m*g)/(S*q);
 CMalpha=(CNalpha*(xcg-xa))/(d);
-CMde=(Thrust*lt)/(S*q*d); #Replace (Thrust*lt) by (q*fin_area*CLde*lt) if you use control fins
+CMde=(Thrust*lt)/(S*q*d); #Replace (Thrust*lt) by (q*fin_area*CLde*lt) if you use control fins, here and down
 fin_area=0.003  #if you use FINS FOR CONTROL, CLde is the lift slope of the fin, be carefull that the bi-dimensional is not accurate
 CLde=2;  #fins
 CZde=(d/(lt))*CMde;
@@ -119,7 +119,8 @@ u_prev=0.
 u_delta=0.
 u_controler=0.
 
-TVC_weight_compensation=1.3 #After watching joe's video on servos they are a tad slower that the ones I measured, this simulates that
+
+TVC_weight_compensation=1.75 #After watching joe's video on servos they are a tad slower that the ones I measured, this simulates that
 
 
 a11, a12, a13, a21, a22, a23, a31, a32, a33 = (0.0,)*9
@@ -263,10 +264,12 @@ def control_tita(setpoint):
         u_controler=-TVC_max*TVC_reduction
         
     #u_controler=u_controler-u_prev*0.05;  #filter, increasing the number makes it stronger and slower
-   
+    
     u_delta=TVC_weight_compensation*abs(u_controler-outs[0,0]*TVC_reduction) #only for the simualtion, does nothing in the real flight computer
                                             #The tvc compensation slows down the servo to simulate the TVC weight, since the characterization was done without resistance 
                                             #outs[0,0]*TVC_reduction follows the current servo angle instead of the TVC angle
+    
+    
     return u_controler
 
 
@@ -385,8 +388,7 @@ def update_parameters():
     global alpha_calc,alpha_control
     global wind
     
-    
-    U=(Thrust-m*g-S*q*CD)*T+U
+    U=((Thrust-m*g-S*q*CD)/m)*T+U
     if(U>max_speed):
         U=max_speed
 
@@ -585,7 +587,7 @@ def timer():
 kp=2 #1  #Gains might be quite high to compensate for aerodynamic forces
 ki=1  #1
 kd=0.2 #0
-k_all=1 #10
+k_all=2 #10
 k_damping=0 #1.2 #when possible use gyro feedback instead of derivative so as to not amplify noise
 
 anti_windup=True #Prevents the integrator for integreting when the TVC is saturated
