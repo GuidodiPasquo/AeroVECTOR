@@ -14,3 +14,4 @@ V0.3 - Improved wind effect calculations, can be turned off and replaced by rand
 Future:
 V0.4 - Include a Generic thrust curve.
 	Add options for a Torque Based Controller.
+	Changes in the way TVC reduction is handled. TVC reduction will multiply the output of the PID only, so the controller 		works with TVC angles and not with servo angles.
