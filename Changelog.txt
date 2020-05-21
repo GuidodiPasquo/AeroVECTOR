@@ -11,7 +11,8 @@ V0.3 - Improved wind effect calculations, can be turned off and replaced by rand
 	New default input is a straight-up flight.
 	Parameters list has been reorganized.
 
-Future:
-V0.4 - Include a Generic thrust curve.
+V0.3.2 - Include a Generic thrust curve.
 	Add options for a Torque Based Controller.
-	Changes in the way TVC reduction is handled. TVC reduction will multiply the output of the PID only, so the controller 		works with TVC angles and not with servo angles.
+	Changes in the way TVC reduction is handled. TVC reduction will multiply the output of the controller only, so the 
+	it works with TVC angles and not with servo angles.
+	The discretization of the State Space Model is now done in the program.
