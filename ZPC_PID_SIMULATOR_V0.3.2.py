@@ -11,7 +11,9 @@ import numpy as np
 import random
 
 ###########################################
-#known bugs-> #Carefull with any optional function, they work but haven't been thoroughly tested
+#known bugs-> #Careful with any optional function, they work but haven't been thoroughly tested
+
+#Mathematical model assumes small angles, so, don't make the wind slower than 1m/s without increasing the initial U (line 100)
 
 #Wind forces and torques are calculated from the xa (center of pressure)
 #this is not realistic since the xa at high angles of attack shifts backwards (eg: 90 deg produced by side wind when the rocket is at low speeds)
