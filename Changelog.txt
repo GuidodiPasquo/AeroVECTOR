@@ -16,3 +16,7 @@ V0.3.2 - Include a Generic thrust curve.
 	Changes in the way TVC reduction is handled. TVC reduction will multiply the output of the controller only, so the 
 	it works with TVC angles and not with servo angles.
 	The discretization of the State Space Model is now done in the program.
+	
+V0.4.2 - 3D representation
+	Movable CP
+	Completely reworked physics
