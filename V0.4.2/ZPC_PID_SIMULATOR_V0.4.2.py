@@ -625,9 +625,9 @@ def simulation():
     global u,timer_run_servo,u_servos
     
     global V_loc , V_loc_tot , V_glob
-    global U_dot_1 , U_dot , U , X
-    global W_dot_1 , W_dot , W , Z
-    global Q_dot_1 , Q_dot , Q , Q_1
+    global U_dot , U , X
+    global W_dot , W , Z
+    global Q_dot , Q , Q_1
     global theta_1 , theta, AoA, g , g_loc
     global F_loc , F_glob
     global Nalpha , Thrust
