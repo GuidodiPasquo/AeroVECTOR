@@ -5,6 +5,5 @@ The textures must be in the same folder as the main file.
 
 
 How to:
-Basic setup -> https://www.youtube.com/watch?v=_OdIuvm1WhM
-3D features -> https://youtu.be/HLg6-RxRRZ0
+Basic setup -> https://www.youtube.com/watch?v=_OdIuvm1WhM                                                                                                              3D features -> https://youtu.be/HLg6-RxRRZ0
 
