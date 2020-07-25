@@ -614,7 +614,7 @@ def Nalpha_calculator(AoA):
 
 def CA_calculator(AoA,CA0):
     
-    CA = CA0 * 1.4 * np.sin(1.4*AoA+55*deg2rad)**2
+    CA = CA0 * 1.4 * np.sin(1.4*abs(AoA)+55*deg2rad)**2
     
     return CA
 
