@@ -684,12 +684,12 @@ def simulation():
     
     v_d=0 # 0 uses Local and Global Velocities, 1 uses vector derivatives.
     
-    CA=CA_calculator(AoA, CA0)
-    # Since CD is constant, I use the dynamic pressure in the X axis
+    #Aproximated Axial force function
+    CA=CA_calculator(AoA, CA0)   
     if np.sign(V_loc[0]) > 0:
         Drag = q*S*CA     
     else:
-        Drag = -5*q*S*CA  # Increased drag due to the rocket flying backwards
+        Drag = -5*q*S*CA  # Increased drag due to the rocket flying backwards, minus because CA is always positive
     
     Accx = ( Thrust*np.cos(outs[0,0]+u_initial_offset) + m*g_loc[0] - Drag) / m - W*Q*v_d                # Longitudinal Acceleration (local)
     Accz = ( Thrust*np.sin(outs[0,0]+u_initial_offset) + m*g_loc[1] + q*S*Nalpha) / m + U*Q*v_d          # Transversal Acceleration (local)
