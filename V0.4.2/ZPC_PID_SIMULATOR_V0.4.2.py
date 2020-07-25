@@ -1066,7 +1066,7 @@ if toggle_3D==True:
         #Labels       
         Setpoint_label.text = "Setpoint = %.0f" % round(setpoint_3D[i]*rad2deg,1) + u'\xb0'
         theta_label.text = "Pitch Angle = " + str(round(theta_3D[i]*rad2deg,2)) + u'\xb0'
-        V.text = "Local Velocity = " + str(V_loc_3D[i]) + " m/s"
+        V.text = "Local Velocity => " + " X = "+ str(round(V_loc_3D[i][0],2)) + " m/s , Z = " + str(round(V_loc_3D[i][1],2)) + " m/s"
         AoA_plot.text = "AoA = " + str(round(AoA_3D[i]*rad2deg,2)) + u'\xb0'
         Altitude.text = "Altitude = " + str(round(Position_3D[i][0],2)) + "m"
         
