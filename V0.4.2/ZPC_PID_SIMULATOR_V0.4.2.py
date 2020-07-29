@@ -12,71 +12,6 @@ import numpy as np
 import random
 
 
-
-class Integrable_Variable:
-    f_dot_dot=0.
-    f_dot=0.
-    f=0.
-    
-    f_dot_dot_1=0. #previous samples
-    f_dot_1=0.
-    f_1=0.
-    
-    f_dot_dot_2=0.
-    f_dot_2=0.
-    f_2=0.
-    
-    f_dot_dot_3=0.
-    f_dot_3=0.
-    f_3=0.
-    
-    def new_f_dot_dot(self,a):
-        self.f_dot_dot_3=self.f_dot_dot_2
-        self.f_dot_dot_2=self.f_dot_dot_1
-        self.f_dot_dot_1=self.f_dot_dot
-        self.f_dot_dot=a
-        
-    def new_f_dot(self,a):
-        self.f_dot_3=self.f_dot_2
-        self.f_dot_2=self.f_dot_1
-        self.f_dot_1=self.f_dot
-        self.f_dot=a
-        
-    def new_f(self,a):
-        self.f_3=self.f_2
-        self.f_2=self.f_1
-        self.f_1=self.f
-        self.f=a
-    
-    def integrate_f_dot_dot(self):
-        self.f_dot_3 = self.f_dot_2
-        self.f_dot_2 = self.f_dot_1
-        self.f_dot_1 = self.f_dot
-        
-        #self.delta_f_dot = T * self.f_dot_dot # Euler
-        
-        self.delta_f_dot = 0.5 * T * (self.f_dot_dot_1 + self.f_dot_dot) # Trapezoidal
-        
-        #Because the accelerations rotates I'm not a fan of using previous measurements to integrate, so I went for the safer trapezoidal
-        #self.delta_f_dot= (T/6) * (self.f_dot_dot_2 + 4 * (self.f_dot_dot_1) + self.f_dot_dot) # Simpson's (Runs each timestep -> (b-a)=h=T)        
-        #self.delta_f_dot= (T/8) * (self.f_dot_dot_3 + 3 * (self.f_dot_dot_2) + 3 * self.f_dot_dot_1 + self.f_dot_dot) # Simpson's 3/8       
-    
-        self.f_dot += self.delta_f_dot   
-         
-        return self.f_dot
-        
-        
-    def integrate_f_dot(self):
-        self.f_3 = self.f_2
-        self.f_2 = self.f_1
-        self.f_1 = self.f   
-        
-        self.delta_f = 0.5 * T * (self.f_dot_1 + self.f_dot) # Trapezoidal        
-        
-        self.f += self.delta_f        
-         
-        return self.f
-    
 ###########################################
 #known bugs-> Arrows are hit or miss, sometimes they aim in the right direction, sometimes they don't
 
@@ -178,6 +113,71 @@ wind_rand=0
 i_turns=0
 
 ############# NEW SIMULATION PARAMETERS
+class Integrable_Variable:
+    f_dot_dot=0.
+    f_dot=0.
+    f=0.
+    
+    f_dot_dot_1=0. #previous samples
+    f_dot_1=0.
+    f_1=0.
+    
+    f_dot_dot_2=0.
+    f_dot_2=0.
+    f_2=0.
+    
+    f_dot_dot_3=0.
+    f_dot_3=0.
+    f_3=0.
+    
+    def new_f_dot_dot(self,a):
+        self.f_dot_dot_3=self.f_dot_dot_2
+        self.f_dot_dot_2=self.f_dot_dot_1
+        self.f_dot_dot_1=self.f_dot_dot
+        self.f_dot_dot=a
+        
+    def new_f_dot(self,a):
+        self.f_dot_3=self.f_dot_2
+        self.f_dot_2=self.f_dot_1
+        self.f_dot_1=self.f_dot
+        self.f_dot=a
+        
+    def new_f(self,a):
+        self.f_3=self.f_2
+        self.f_2=self.f_1
+        self.f_1=self.f
+        self.f=a
+    
+    def integrate_f_dot_dot(self):
+        self.f_dot_3 = self.f_dot_2
+        self.f_dot_2 = self.f_dot_1
+        self.f_dot_1 = self.f_dot
+        
+        #self.delta_f_dot = T * self.f_dot_dot # Euler
+        
+        self.delta_f_dot = 0.5 * T * (self.f_dot_dot_1 + self.f_dot_dot) # Trapezoidal
+        
+        #Because the accelerations rotates I'm not a fan of using previous measurements to integrate, so I went for the safer trapezoidal
+        #self.delta_f_dot= (T/6) * (self.f_dot_dot_2 + 4 * (self.f_dot_dot_1) + self.f_dot_dot) # Simpson's (Runs each timestep -> (b-a)=h=T)        
+        #self.delta_f_dot= (T/8) * (self.f_dot_dot_3 + 3 * (self.f_dot_dot_2) + 3 * self.f_dot_dot_1 + self.f_dot_dot) # Simpson's 3/8       
+    
+        self.f_dot += self.delta_f_dot   
+         
+        return self.f_dot
+        
+        
+    def integrate_f_dot(self):
+        self.f_3 = self.f_2
+        self.f_2 = self.f_1
+        self.f_1 = self.f   
+        
+        self.delta_f = 0.5 * T * (self.f_dot_1 + self.f_dot) # Trapezoidal        
+        
+        self.f += self.delta_f        
+         
+        return self.f
+    
+
 theta = 0
 CA = 0
 AoA = 0
