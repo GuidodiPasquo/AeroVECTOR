@@ -1,6 +1,7 @@
 # How to set up the simulation in your Arduino.
 
 Download and include the library.
+
 _#include <SinL.h>_
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_1.png)
@@ -8,6 +9,7 @@ _#include <SinL.h>_
 
 
 Create the instance with the name you want.
+
 _SinL Sim;_
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_2.png)
@@ -15,11 +17,11 @@ _SinL Sim;_
 
 
 At the end of void setup, start the simulation.
+
 _Sim.StartSinL();_
 
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_3.png)
-
 
 
 Replace your sensor readings with _Sim.getSimData()_ and the name of your variables. 
@@ -34,17 +36,15 @@ Replace your sensor readings with _Sim.getSimData()_ and the name of your variab
 ![Axes of the Rocket](/Software%20in%20the%20Loop/images/Screenshot_6.png)
 
 
-
 Replace your servo.write() for:
-
 
 ![Sim.sendCommand(servo, parachute);](/Software%20in%20the%20Loop/images/Screenshot_5.png)
 
 Replace _servo_ for your servo variable (in º)
+
 The parachute variable is an int, it's normally 0 and you have to make it 1 when the parachute would be deployed.
 
 
-
-**_REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1!_**
+**_REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1_**
 
 # How to set up the serial communication in Python.
