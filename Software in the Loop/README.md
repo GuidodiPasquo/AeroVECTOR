@@ -45,6 +45,9 @@ Replace _servo_ for your servo variable (in º)
 The parachute variable is an int, it's normally 0 and you have to make it 1 when the parachute would be deployed.
 
 
+-
+
+
 **_REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1_**
 
 # How to set up the serial communication in Python.
