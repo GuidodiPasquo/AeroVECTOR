@@ -1,31 +1,33 @@
 # How to set up the simulation in your Arduino.
 
 Download and include the library.
+_#include <SinL.h>_
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_1.png)
 
 
 
 Create the instance with the name you want.
-
+_SinL Sim;_
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_2.png)
 
 
 
 At the end of void setup, start the simulation.
+_Sim.StartSinL();_
 
 
-![Sim.StartSinL();](/Software%20in%20the%20Loop/images/Screenshot_3.png)
+![](/Software%20in%20the%20Loop/images/Screenshot_3.png)
 
 
 
-Replace your sensor readings with Sim.getSimData() and the name of your variables. 
+Replace your sensor readings with _Sim.getSimData()_ and the name of your variables. 
 
 
 ![](/Software%20in%20the%20Loop/images/Screenshot_4.png)
 
-Sim.getSimData(GyroY, AccX, AccZ, Alt);
+
 **All the data is in º/s, g's, and m!**
 **Positive values are positive in the direction of the axes!**
 
