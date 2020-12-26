@@ -1,28 +1,32 @@
-Download and include the library
+Download and include the library.
+
 #include <SinL.h>
 ![](/images/Screenshot_1.png)
 
 Create the instance with the name you want.
+
 SinL Sim; 
 ![](/images/Screenshot_2.png)
 
 At the end of void setup, start the simulation.
+
 Sim.StartSinL();
 ![](/images/Screenshot_3.png)
 
 Replace your sensor readings with .getSimData() and the name of your variables. 
+
 Sim.getSimData(GyroY, AccX, AccZ, Alt);
 ![](/images/Screenshot_4.png)
-
 **All the data is in º/s, g's, and m!**
+**Positive values are positive in the direction of the axes!**
 
-![](/images/Screenshot_5.png)
+![](/images/Screenshot_6.png)
 
 
 Replace your servo.write() for 
 Sim.sendCommand(servo, parachute);
 
-![](/images/Screenshot_6.png)
+![](/images/Screenshot_5.png)
 
 Replace servo for your servo variable (in º)
 The parachute variable is an int, it's normally 0 and you have to make it 1 when the parachute would be deployed.
