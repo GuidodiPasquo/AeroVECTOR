@@ -51,3 +51,7 @@ The parachute variable is an int, it's normally 0 and you have to make it 1 when
 **_REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1_**
 
 # How to set up the serial communication in Python.
+
+You only have to replace the baudrate and the port of your Arduino in the lines 840. A baudrate of 1000000 is recommended.
+
+![PythonSetup](/Software%20in%20the%20Loop/images/Screenshot_7.png)
