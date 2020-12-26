@@ -1,3 +1,8 @@
+# On what boards can I use this software?
+It was only tested in an Arduino Nano clone, so compatibility is not ensured.
+
+
+
 # How to set up the simulation in your Arduino.
 
 Download and include the library.
@@ -55,3 +60,4 @@ The parachute variable is an int, it's normally 0 and you have to make it 1 when
 You only have to replace the baudrate and the port of your Arduino in the lines 840. A baudrate of 1000000 is recommended.
 
 ![PythonSetup](/Software%20in%20the%20Loop/images/Screenshot_7.png)
+
