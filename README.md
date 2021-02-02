@@ -104,23 +104,25 @@ At the end of void setup, start the simulation.
 ![](/Images/Readme/Screenshot_11.png)
 
 
-Replace your sensor readings with *Sim.getSimData()* and the name of your variables. 
+Replace your sensor readings with *Sim.getSimData()* and the name of your variables.   
 ![](/Images/Readme/Screenshot_13.png)
 
 
-- **The Gyroscope data is in º/s**  
-- **The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's 
-- **The Altimeter measures the data in meters   
-**Positive values are positive in the direction of the axes!  
-**(Refer to the Technical Documentation)
+- **The Gyroscope data is in º/s.**  
+- **The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's.**   
+- **The Altimeter measures the data in meters.**     
+**Positive values are positive in the direction of the axes!**    
+**(Refer to the Technical Documentation)**  
 
-![](/Images/Readme/Screenshot_14.png)  
+![](/Images/Readme/Screenshot_14.png)    
 
-Replace your servo.write() for:
-![](/Images/Readme/Screenshot_12.png)  
-Replace *servo_command* for your servo variable (in º)  
-The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would be deployed.  
-**REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1**
+Replace your servo.write() for:    
+![](/Images/Readme/Screenshot_12.png)
+  
+Replace *servo_command* for your servo variable (in º)    
+The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would be deployed. 
+  
+**REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1**  
 
 
 
