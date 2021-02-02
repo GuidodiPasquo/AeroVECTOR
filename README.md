@@ -49,7 +49,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 
 #### Body
 To draw the rocket, one must insert the point as **coordinate from the nosecone tip, diameter in that point**.
-With the *Add Point* button, one adds the point in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
+With the *Add Point* button, one adds the point written in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
 
 #### Fins
 To draw the fins, the procedure is similar. One must fill the entries with their respective points as:  
