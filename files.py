@@ -123,7 +123,7 @@ class savefile:
                            "Fins_s","0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000",
                            "Fins_c","0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000"]
         try:
-            with open(".\\saves\\" + self.name + ".txt","w") as file:
+            with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:
                 self.tofile = ""                
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -134,7 +134,7 @@ class savefile:
     def create_file_as(self,n):
         self.update_name(n)
         try:
-            with open(".\\saves\\" + self.name + ".txt","w") as file:
+            with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:
                 self.tofile = ""                
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -157,7 +157,7 @@ class savefile:
     
     def save_all_configurations(self):
         try:
-            with open(".\\saves\\" + self.name + ".txt","w") as file:        
+            with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:        
                 self.tofile = ""                
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -219,7 +219,7 @@ class savefile:
         self.t_mot = [0]
         self.y_mot = [0]
         try:
-            with open(".\\motors\\" + name,"r") as file:                        
+            with open(".\\motors\\" + name,"r", encoding="utf-8") as file:                        
                 for line in file:                
                     try:
                         a = float(line.split(",")[0])
