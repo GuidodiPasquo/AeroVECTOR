@@ -13,7 +13,8 @@ The program integrates the 3DOF Equations of Motion of the Rocket and integrates
 ### Optional
 3. VPython
 4. pyserial
-<br/>.
+
+
 **Without the optional modules, the 3D graphics and Software in the Loop will not work.**
 
 ## How To
@@ -27,6 +28,7 @@ One can create a new file or open an existing one. Once a file is open, a copy c
 
 ### Second Step
 ![](/Images/Readme/Screenshot_2.png)
+
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy* is the pitching moment of inertia.
 - All distances are measured from the tip of the nosecone.
