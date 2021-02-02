@@ -24,7 +24,7 @@ To run the program, run *main.py*.
 The program will open in *the file tab*.
 ![](/Images/Readme/Screenshot_1.png)
 
-One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save as* button.
+One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save As* button.
 
 ### Setting up the Rocket
 ![](/Images/Readme/Screenshot_2.png)
