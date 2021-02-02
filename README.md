@@ -32,12 +32,13 @@ One can create a new file or open an existing one. Once a file is open, a copy c
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy* is the pitching moment of inertia.
 - All distances are measured from the tip of the nosecone.
+- *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
 - The *Servo Definition* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
 - The *Initial Misalignment* only modifies the initial angle of the TVC mount (in case of using TVC stabilization).
 - The *Servo Velocity Compensation* slows down the servo according  to the load, its value is 1.45 for an SG90 without load, and 2.1 with a TVC mount. The *servo* class found in *servo_lib.py* has a test method to modify this value to fit one's servo.
-- The wind is positive from right to left, and the gusts follow a Gaussian distribution.
+- The wind is positive from right to left, and the gusts follow a Gaussian distribution.  
 **Please do not leave blank entries**
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
@@ -135,6 +136,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 - *K All* scales the error before sending it to the PID.
 - *K Damping* feeds the gyro back at the output of the PID and acts as damping.
   - To disable the controller, one must set *K All and K Damping* to zero.
+  - In case the Control Fins are ahead of the CG, the controller inverts *K All* and *K Damping*
 - *Reference Thrust* is the Reference Thrust of the Torque Controller, more info in the *control.py* file.
 - *Input* is the input to the rocket, be it a Step (deg), or a Ramp (deg/s)
   - If the selected input is *Up*, then this entry is bypassed
