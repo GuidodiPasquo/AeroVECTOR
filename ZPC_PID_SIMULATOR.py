@@ -728,7 +728,7 @@ def plot_plots():
     plt.ylabel('',fontsize=16)    
     legend = plt.legend(loc='upper right', shadow=True, fontsize='x-small') 
     plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
-    plt.draw()
+        
     return
     
 def run_sim_local():
@@ -742,7 +742,7 @@ def run_sim_local():
         if(i_turns>=5):
             print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
             break        
-        if Position_global[0]<-1:
+        if Position_global[0]<-0.1:
             print("CRASH")
             break        
         if t == Sim_duration*0.999:
@@ -806,7 +806,7 @@ def run_sim_SITL():
             if(i_turns>=5):
                 print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
                 break            
-            if Position_global[0]<-1:
+            if Position_global[0]<-0.1:
                 print("CRASH")
                 break            
             if parachute == 1:
@@ -868,9 +868,10 @@ def run_simulation():
 ########################################################################################################################## 3D 3D 3D 3D 3D
 ########################################################################################################################## 3D 3D 3D 3D 3D
 
-def run_3D():        
+def run_3D():
+    if toggle_3D==False:
+        plt.show()        
     if toggle_3D==True:
-        
         
         rocket_dim = gui.draw_rocket_tab.get_points_float(0)
         
@@ -1234,8 +1235,6 @@ def run_3D():
             Altitude.text = "Altitude = " + str(round(Position_3D[i][0],2)) + "m"
             Time_label.text = "Time = " + str(round(t_3D[i],3))
             
-            if Position_3D[i][0]<-0.01:
-                #crash
-                break
+        plt.show()
     return
 
