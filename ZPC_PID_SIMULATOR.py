@@ -870,6 +870,7 @@ def run_simulation():
 
 def run_3D():
     if toggle_3D==False:
+        plt.draw()
         plt.show()        
     if toggle_3D==True:
         
@@ -1235,6 +1236,7 @@ def run_3D():
             Altitude.text = "Altitude = " + str(round(Position_3D[i][0],2)) + "m"
             Time_label.text = "Time = " + str(round(t_3D[i],3))
             
+        plt.draw()
         plt.show()
     return
 
