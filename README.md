@@ -57,7 +57,7 @@ To draw the fins, the procedure is similar. One must fill the entries with their
 The order is the following:  
 ![](/Images/Readme/Screenshot_8.png)
 
-**Only trapezoidal fins are modeled**, so please make sure that the root and tip chords are parallel.
+**Only trapezoidal fins are modeled**, so please ensure that the root and tip chords are parallel.
 
 After the points are written in the entries, one can either update the stabilization or control fin. Clicking the *Load "" Fins* button will fill the entries with the current data of the fin. The button *Reset Fin* sets the fin entries to a zero-area fin.
 
