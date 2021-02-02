@@ -124,7 +124,7 @@ Replace your *servo.write()* for:
 ![](/Images/Readme/Screenshot_12.png)
   
 Replace *servo_command* for your servo variable (in º).    
-The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would be deployed. 
+The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would deploy. 
   
 **REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
 
