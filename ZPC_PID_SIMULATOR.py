@@ -765,7 +765,7 @@ def run_sim_local():
         plot_data()     
 
 def run_sim_SITL():
-    global parameters, conf_3D, conf_controller    
+    global parameters, conf_3D, conf_controller, setpoint    
     global timer_run_sim,timer_run,setpoint, parachute, t_launch, u_servos 
     global send_gyro, send_Accx, send_Accz, send_alt
     global timer_flag_t0, clock_dif, T_glob, parachute
@@ -816,7 +816,9 @@ def run_sim_SITL():
                 print("Simulation Ended")
                 break            
             if t>=timer_run_sim+T_glob*0.999:                    
-                timer_run_sim=t                
+                timer_run_sim=t
+                if(t>=inp_time):
+                    setpoint=set_setpoint(inp)                
             plot_data()
             i+=1         
         ##
