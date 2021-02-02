@@ -7,7 +7,7 @@ Created on Mon Jan 18 21:20:41 2021
 import tkinter as tk
 import files
 import GUI_functions as fun
-import ZPC_PID_SIMULATOR_V05 as sim
+import ZPC_PID_SIMULATOR as sim
 
 deg2rad =  3.14159265/180
 rad2deg = 1/deg2rad

@@ -4,7 +4,7 @@ Created on Fri Jan 29 14:05:35 2021
 
 @author: guido
 """
-import ZPC_PID_SIMULATOR_V05 as sim
+import ZPC_PID_SIMULATOR as sim
 
 class controller_class:
     
