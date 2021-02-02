@@ -10,9 +10,10 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 ### Mandatory
 1. numpy 
 2. matplotlib
+3. pandas
 ### Optional
-3. VPython
-4. pyserial  
+4. VPython
+5. pyserial  
   
 **Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**  
 If someone can make an .exe that works with VPython, please let me know.
