@@ -1,4 +1,4 @@
-# PID-Simulator
+# Model Rocket Simulator - PID Tuner
 This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file control.py, one can modify it or run the real Flight Computer's software through Software in the Loop.
 
 ![](/Images/Readme/GIF-TVC-only.gif)
@@ -69,9 +69,8 @@ The space between the body and the fin must be considerable, if one is unsure ab
 The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
   
 ### Fourth Step
-![](/Images/Readme/Screenshot_4.png)
+![](/Images/Readme/Screenshot_4.png)  
   
-
 One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON INSTALLED**  
 
 - *Camera Shake* moves the camera based on the accelerations of the rocket.
@@ -84,5 +83,10 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 - *Slow Motion* slows the animation -> 1 = Real time, 5 = five times slower.
 - *Force Scale Factor* scales the forces accordingly, 1 = 1 meter/Newton.
 - *Fov* is the field of view of the camera.
-
+  
+### Fifth Step
+![](/Images/Readme/Screenshot_5.png)
+  
+ To use the Software in the Loop function, one has to set the *Port* to the one in which the board is conected, and the *Baudrate* to the one set on the program.
+ 
 
