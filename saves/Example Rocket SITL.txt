@@ -1,12 +1,12 @@
-Motor[N] = AeroTech_G12.csv
-Mass [kg] = 1
+Motor[N] = Estes_D12.csv
+Mass [kg] = 0.451
 Iy [kg*m] = 0.0662
 Xcg [m] = 0.55
 Xt [m] = 0.85
 Servo definition [º] = 1
-Max Actuator Angle [º] = 30
-Actuator Reduction = 1
-Initial Misalignment [º] = 1
+Max Actuator Angle [º] = 10
+Actuator Reduction = 5
+Initial Misalignment [º] = 2
 Servo Compensation = 2.1
 Wind [m/s] = 2
 Wind Gust = 0.1
@@ -14,30 +14,30 @@ Wind Gust = 0.1
 toggle_3D=True
 camera_shake_toggle=False
 hide_forces=False
-variable_fov=True
-Camera_type=Follow Far
+variable_fov=False
+Camera_type=Fixed
 slow_mo=3
 force_scale=0.2
-fov=0.3
+fov=0.75
 ###=#
 Torque Controller = False
 Anti Windup = True
 Input Type = Step [º]
-Kp = 3
-Ki = 0.5
-Kd = 0.3
+Kp = 0.4
+Ki = 0
+Kd = 0.136
 K All = 1
 K Damping = 0
-Reference Thrust [N] = 20
-Input = 60
+Reference Thrust [N] = 30
+Input = 20
 Input time = 0.5
-Launch Time = 0
+Launch Time = 1
 Servo Sample Time [s] = 0.02
 Controller Sample Time [s] = 0.01
-Maximum Sim Duration [s] = 10
+Maximum Sim Duration [s] = 30
 Sim Delta T [s] = 0.001
 ###=#
-Activate_SITL=False
+Activate_SITL=True
 Use Sensor Noise=False
 Port=COM3
 Baudrate=1000000
@@ -48,24 +48,24 @@ Altimeter SD=0
 Frist_plot=Pitch Angle
 Second_plot=Setpoint
 Third_plot=Actuator deflection
-Fourth_plot=Altitude
-Fifth_plot=Total Velocity
+Fourth_plot=Off
+Fifth_plot=Off
 ###=#
 True
+False
 True
-True
-True
+False
 False
 0,0
 0.2,0.066
 1,0.066
 Fins_s
-0.8,0.033
-0.9,0.08
-0.95,0.08
-1,0.033
+0.0000,0.0000
+0.0001,0.0001
+0.0002,0.0001
+0.0002,0.0000
 Fins_c
-0.2,0.033
-0.24,0.07
-0.25,0.07
-0.255,0.033
+0.0000,0.0000
+0.0001,0.0001
+0.0002,0.0001
+0.0002,0.0000

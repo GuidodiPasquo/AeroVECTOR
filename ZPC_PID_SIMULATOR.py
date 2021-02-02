@@ -19,6 +19,7 @@ import rocket_functions as rkt
 import ISA_calculator as atm
 import control
 import servo_lib
+import vpython as vp
 
 Rocket = rkt.rocket_class()
 atmosphere = atm.get_atmosphere()
@@ -858,8 +859,7 @@ def run_simulation():
         run_sim_local()
     else:
         run_sim_SITL()     
-    plot_plots()
-    plt.show()           
+    plot_plots()          
     return
 
 
@@ -870,7 +870,7 @@ def run_simulation():
 
 def run_3D():        
     if toggle_3D==True:
-        import vpython as vp
+        
         
         rocket_dim = gui.draw_rocket_tab.get_points_float(0)
         

@@ -177,7 +177,7 @@ class savefile:
         return res    
     def read_file(self):
         try:
-            with open(".\\saves\\" + self.name + ".txt","r") as file:     
+            with open(".\\saves\\" + self.name + ".txt","r", encoding="utf-8") as file:     
                 content = []
                 split_index=[]                
                 for line in file:
