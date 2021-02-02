@@ -15,7 +15,7 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 4. pyserial  
   
 **Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**  
-If someone is capable of making an .exe that works with VPython, please let me know.
+If someone can make an .exe that works with VPython, please let me know.
 
 ## How To
 The setup of the rocket is fairly simple. However, the program is not meant for designing the rocket. Open Rocket is a more comfortable option.
@@ -137,7 +137,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 - *K All* scales the error before sending it to the PID.
 - *K Damping* feeds the gyro back at the output of the PID and acts as damping.
   - To disable the controller, one must set *K All and K Damping* to zero.
-  - In case the Control Fins are ahead of the CG, the controller inverts *K All* and *K Damping*
+  - In case the Control Fins are ahead of the CG, the controller miltiplies *K All* and *K Damping* by -1.
 - *Reference Thrust* is the Reference Thrust of the Torque Controller, more info in the *control.py* file.
 - *Input* is the input to the rocket, be it a Step (deg), or a Ramp (deg/s)
   - If the selected input is *Up*, then this entry is bypassed
