@@ -19,14 +19,14 @@ The program integrates the 3DOF Equations of Motion of the Rocket and integrates
 
 ## How To
 The setup of the rocket is fairly simple. However, the program is not meant for designing the rocket. Open Rocket is a more comfortable option.
-### First Step
+### Creating and Opening files
 To run the program, run *main.py*.
 The program will open in *the file tab*.
 ![](/Images/Readme/Screenshot_1.png)
 
 One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save as* button.
 
-### Second Step
+### Setting up the Rocket
 ![](/Images/Readme/Screenshot_2.png)
 
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
@@ -42,7 +42,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
 
-### Third Step
+### Setting up the Rocket 2 - The Empire Strikes Back
 ![](/Images/Readme/Screenshot_3.png)
 
 #### Body
@@ -68,7 +68,7 @@ After the points are written in the entries, one can either update the stabiliza
 The space between the body and the fin must be considerable, if one is unsure about a fin being attached or detached, the most conservative option is the right option.  
 The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
   
-### Fourth Step
+### 3D Graphics
 ![](/Images/Readme/Screenshot_4.png)  
   
 One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON INSTALLED**  
@@ -84,7 +84,7 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 - *Force Scale Factor* scales the forces accordingly, 1 = 1 meter/Newton.
 - *Fov* is the field of view of the camera.
   
-### Fifth Step
+### Software in the Loop
 ![](/Images/Readme/Screenshot_5.png)
   
 #### On what boards can I use this software?
@@ -111,12 +111,14 @@ Replace your sensor readings with *Sim.getSimData()* and the name of your variab
 - **The Gyroscope data is in º/s.**  
 - **The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's.**   
 - **The Altimeter measures the data in meters.**     
+  
 **Positive values are positive in the direction of the axes!**    
 **(Refer to the Technical Documentation)**  
 
 ![](/Images/Readme/Screenshot_14.png)    
-
-Replace your servo.write() for:    
+  
+   
+Replace your *servo.write()* for:    
 ![](/Images/Readme/Screenshot_12.png)
   
 Replace *servo_command* for your servo variable (in º).    
@@ -124,8 +126,24 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
   
 **REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
 
-### Sixth Step   
-![](/Images/Readme/Screenshot_6.png)  
+### Tuning the Internal Controller   
+![](/Images/Readme/Screenshot_6.png)
 
+**IF ONE IS USING SOFTWARE IN THE LOOP, THESE GAINS DO NOTHING**  
+
+- *Kp, Ki, and Kd* are self-explanatory.
+- *K All* scales the error before sending it to the PID.
+- *K Damping* feeds the gyro back at the output of the PID and acts as damping.
+  - To disable the controller, one must set *K All and K Damping* to zero.
+- *Reference Thrust* is the Reference Thrust of the Torque Controller, more info in the *control.py* file.
+- *Input* is the input to the rocket, be it a Step (deg), or a Ramp (deg/s)
+  - If the selected input is *Up*, then this entry is bypassed
+- *Input Time* is the instant at which the input is changed from 0 to the selected one.
+- *Launch Time* is the instant at which the motor is ignited.
+- *Servo Sample Time and Program Sample Time* are self-explanatory, note they are in seconds and not Hz.
+- *Maximum Sim Duration* specifies the maximum duration of the simulation. 
+  -The simulation will stop if the Rocket tumbles more than 2 times, hits the ground, or coasts for more than 10 burnout times.
+- *Sim Delta T* is the sample time of the simulation, one can increase it to hasten it.
+  - Since the Software in the Loop simulation runs in real time, this setting does not affect it.
 
 
