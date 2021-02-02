@@ -4,7 +4,7 @@ This is a Model Rocket Simulator oriented towards active stabilization. It integ
 ![](/Images/Readme/GIF-TVC-only.gif)
 
 #### Simulation Procedure
-The program integrates the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamics are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behavior. More information can be found inside *ZPC_PID_SIMULATOR.py* and *rocket_functions.py*
+The program integrates the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamics are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behavior, the program also allows for fins separated from the body. More information can be found inside *ZPC_PID_SIMULATOR.py* and *rocket_functions.py*
 
 ## Dependencies
 ### Mandatory
@@ -40,6 +40,8 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The wind is positive from right to left, and the gusts follow a Gaussian distribution.
 **Please do not leave blank entries**
 
+**THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
+
 ### Third Step
 ![](/Images/Readme/Screenshot_3.png)
 
@@ -57,9 +59,15 @@ The order is the following:
 
 After the points are written in the entries, one can either update the stabilization or control fin. Clicking the *Load "" Fins* button will fill the entries with the current data of the fin. The button *Reset Fin* sets the fin entries to a zero-area fin.
 
-**The use of control fins disables the TVC stabilization**  
+**WARNING: THE USE OF CONTROL FINS DISABLES THE TVC STABILIZATION.**  
 
-Examples of detached fins:
+**Examples of detached fins:**
+![](/Images/Readme/Screenshot_9.png)
+*Sprint - BPS.space, and our own Roll Control System Testbed*  
+  
+The space between the body and the fin must be considerable, if one is unsure about a fin being attached or detached, the most conservative option is the right option.  
+The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
+
 
 
 
