@@ -145,7 +145,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 - *Launch Time* is the instant at which the motor is ignited.
 - *Servo Sample Time and Program Sample Time* are self-explanatory, note they are in seconds and not Hz.
 - *Maximum Sim Duration* specifies the maximum duration of the simulation. 
-  -The simulation will stop if the Rocket tumbles more than 2 times, hits the ground, or coasts for more than 10 burnout times.
+  - The simulation will stop if the Rocket tumbles more than 2 times, hits the ground, or coasts for more than 10 burnout times.
 - *Sim Delta T* is the sample time of the simulation, one can increase it to hasten it.
   - Since the Software in the Loop simulation runs in real time, this setting does not affect it.
   
