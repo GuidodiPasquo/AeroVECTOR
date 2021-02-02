@@ -73,7 +73,7 @@ The Angle of Attack slider allows to change the AoA at which the CP (red point) 
 ### 3D Graphics
 ![](/Images/Readme/Screenshot_4.png)  
   
-One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON INSTALLED**  
+One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON**  
 
 - *Camera Shake* moves the camera based on the accelerations of the rocket.
 - *Hide Forces* hides the force arrows.
