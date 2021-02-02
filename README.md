@@ -1,5 +1,5 @@
 # Model Rocket Simulator - PID Tuner
-This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file control.py, one can modify it or run the real Flight Computer's software through Software in the Loop.
+This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *control.py*, one can modify it or run the real Flight Computer's software through Software in the Loop.
 
 ![](/Images/Readme/GIF-TVC-only.gif)
 
