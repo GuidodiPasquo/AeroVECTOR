@@ -91,6 +91,7 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
   
 #### On what boards can I use this software?
 It was only tested on an Arduino Nano clone, so compatibility is not ensured.  
+Even on the Arduino, the program did not work properly with sample times smaller than 5 milliseconds.
 
 #### How to set up the serial communication in Python.
 To use the Software in the Loop function, one has to set the *Port* to the one in which the board is connected, and the *Baudrate* to the one set in the Arduino program.  
