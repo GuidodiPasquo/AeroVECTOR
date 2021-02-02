@@ -119,10 +119,13 @@ Replace your sensor readings with *Sim.getSimData()* and the name of your variab
 Replace your servo.write() for:    
 ![](/Images/Readme/Screenshot_12.png)
   
-Replace *servo_command* for your servo variable (in º)    
+Replace *servo_command* for your servo variable (in º).    
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would be deployed. 
   
-**REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1**  
+**REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
+
+### Sixth Step   
+![](/Images/Readme/Screenshot_6.png)  
 
 
 
