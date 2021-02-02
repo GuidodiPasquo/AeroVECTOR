@@ -14,7 +14,7 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 3. VPython
 4. pyserial  
   
-**Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**
+**Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**  
 If someone is capable of making an .exe that works with VPython, please let me know.
 
 ## How To
