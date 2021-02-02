@@ -31,8 +31,9 @@ One can create a new file or open an existing one. Once a file is open, a copy c
 
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy* is the pitching moment of inertia.
-- All distances are measured from the tip of the nosecone.
+- *Xcg* is the position of the Center of Gravity.
 - *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
+  - All distances are measured from the tip of the nosecone.
 - The *Servo Definition* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
