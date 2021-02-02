@@ -15,7 +15,7 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 4. pyserial
 
 
-**Without the optional modules, the 3D graphics and Software in the Loop will not work.**
+**Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**
 
 ## How To
 The setup of the rocket is fairly simple. However, the program is not meant for designing the rocket. Open Rocket is a more comfortable option.
