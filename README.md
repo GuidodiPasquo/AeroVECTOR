@@ -38,4 +38,13 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The *Initial Misalignment* only modifies the initial angle of the TVC mount (in case of using TVC stabilization).
 - The *Servo Velocity Compensation* slows down the servo according  to the load, its value is 1.45 for an SG90 without load, and 2.1 with a TVC mount. The *servo* class found in *servo_lib.py* has a test method to modify this value to fit one's servo.
 - The wind is positive from right to left, and the gusts follow a Gaussian distribution.
+**Please do not leave blank entries**
 
+### Third Step
+![](/Images/Readme/Screenshot_3.png)
+
+To draw the rocket, one must insert the point as *coordinate from the nosecone tip,diameter in that point*.
+With the *Add Point* button, one adds the point in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
+  
+To draw the fins, the procedure is similar. One must fill the entries with their respective points as *coordinate from the nosecone tip,**radius** to that point*.   
+The order is the following:  
