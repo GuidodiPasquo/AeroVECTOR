@@ -95,30 +95,32 @@ To use the Software in the Loop function, one has to set the *Port* to the one i
 One can simulate sensor noise by filling the entries with the Noise Standard Deviation of the specified sensor.
   
 #### How to set up the simulation in your Arduino.
-Download and include the library and create the instance with the name you want.
+Download and include the library and create the instance with the name you want.  
+
 ![](/Images/Readme/Screenshot_10.png)  
   
-At the end of void setup, start the simulation.
+At the end of void setup, start the simulation.  
+
 ![](/Images/Readme/Screenshot_11.png)
 
 
 Replace your sensor readings with *Sim.getSimData()* and the name of your variables. 
 ![](/Images/Readme/Screenshot_13.png)
 
-**
-- The Gyroscope data is in º/s  
-- The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's  
-- The Altimeter measures the data in meters **
-**Positive values are positive in the direction of the axes!  
-(Refer to the Technical Documentation)**
 
-![Axes of the Rocket](/Images/Readme/Screenshot_14.png)  
+- **The Gyroscope data is in º/s**  
+- **The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's 
+- **The Altimeter measures the data in meters   
+**Positive values are positive in the direction of the axes!  
+**(Refer to the Technical Documentation)
+
+![](/Images/Readme/Screenshot_14.png)  
 
 Replace your servo.write() for:
-![Sim.sendCommand(servo, parachute);](/Images/Readme/Screenshot_12.png)  
+![](/Images/Readme/Screenshot_12.png)  
 Replace *servo_command* for your servo variable (in º)  
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would be deployed.  
-**_REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1_**
+**REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1**
 
 
 
