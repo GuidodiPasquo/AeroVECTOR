@@ -12,10 +12,10 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 2. matplotlib
 ### Optional
 3. VPython
-4. pyserial
-
-
+4. pyserial  
+  
 **Without the optional dependencies, the 3D graphics and Software in the Loop modules will not work.**
+If someone is capable of making an .exe that works with VPython, please let me know.
 
 ## How To
 The setup of the rocket is fairly simple. However, the program is not meant for designing the rocket. Open Rocket is a more comfortable option.
@@ -90,7 +90,7 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 ![](/Images/Readme/Screenshot_5.png)
   
 #### On what boards can I use this software?
-It was only tested in an Arduino Nano clone, so compatibility is not ensured.  
+It was only tested on an Arduino Nano clone, so compatibility is not ensured.  
 
 #### How to set up the serial communication in Python.
 To use the Software in the Loop function, one has to set the *Port* to the one in which the board is connected, and the *Baudrate* to the one set in the Arduino program.  
