@@ -32,6 +32,7 @@ One can create a new file or open an existing one. Once a file is open, a copy c
 
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy* is the pitching moment of inertia.
+  - Speed is your enemy, therefore is recommended to use the lowest mass and inertia.
 - *Xcg* is the position of the Center of Gravity.
 - *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
   - All distances are measured from the tip of the nosecone.
