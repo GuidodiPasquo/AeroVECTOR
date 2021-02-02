@@ -43,8 +43,23 @@ One must fill the required parameters of the rocket. New motors can be added in 
 ### Third Step
 ![](/Images/Readme/Screenshot_3.png)
 
-To draw the rocket, one must insert the point as *coordinate from the nosecone tip,diameter in that point*.
+#### Body
+To draw the rocket, one must insert the point as **coordinate from the nosecone tip, diameter in that point**.
 With the *Add Point* button, one adds the point in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
-  
-To draw the fins, the procedure is similar. One must fill the entries with their respective points as *coordinate from the nosecone tip,**radius** to that point*.   
+
+#### Fins
+To draw the fins, the procedure is similar. One must fill the entries with their respective points as:  
+**coordinate from the nosecone tip, *radius* to that point**.   
 The order is the following:  
+![](/Images/Readme/Screenshot_8.png)
+
+**Only trapezoidal fins are modeled**, so please make sure that the root and tip chords are parallel.
+
+After the points are written in the entries, one can either update the stabilization or control fin. Clicking the *Load "" Fins* button will fill the entries with the current data of the fin. The button *Reset Fin* sets the fin entries to a zero-area fin.
+
+**The use of control fins disables the TVC stabilization**  
+
+Examples of detached fins:
+
+
+
