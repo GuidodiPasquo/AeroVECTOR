@@ -67,7 +67,22 @@ After the points are written in the entries, one can either update the stabiliza
   
 The space between the body and the fin must be considerable, if one is unsure about a fin being attached or detached, the most conservative option is the right option.  
 The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
+  
+### Fourth Step
+![](/Images/Readme/Screenshot_4.png)
+  
 
+One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON INSTALLED**  
 
+- *Camera Shake* moves the camera based on the accelerations of the rocket.
+- *Hide Forces* hides the force arrows.
+- *Variable fov* decreases the fov variably maintaining the rocket of approximately the same size during the whole flight.
+- *Camera type*
+  - *"Follow"* -> Follows the rocket.
+  - *"Fixed"* -> Looks from the ground.
+  - *"Follow Far"* -> 2D.
+- *Slow Motion* slows the animation -> 1 = Real time, 5 = five times slower.
+- *Force Scale Factor* scales the forces accordingly, 1 = 1 meter/Newton.
+- *Fov* is the field of view of the camera.
 
 
