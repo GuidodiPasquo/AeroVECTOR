@@ -75,6 +75,7 @@ i_turns=0
 Actuator_angle = 0
 CA0 = 0
 CA = 0
+wind_total = 0
 
 ############# NEW SIMULATION PARAMETERS
 class Integrable_Variable:
@@ -292,7 +293,7 @@ def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_d
 def reset_variables():
     ## Ugly ugly piece of code
     ##
-    global Nalpha, w, q, U_prev, U2, wind_rand, i_turns, fin_force
+    global Nalpha, w, q, U_prev, U2, wind_rand, i_turns, fin_force, wind_total
     Nalpha=0
     fin_force = 0    
     w=0    
@@ -301,6 +302,7 @@ def reset_variables():
     U2=0.
     wind_rand=0
     i_turns=0
+    wind_total = 0
     
     ##
     global theta, CA, AoA, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, V_loc, V_loc_tot, V_glob, g_loc, F_loc, F_glob, Position_global, Acc_glob
@@ -411,7 +413,7 @@ def glob2loc(u0,v0,theta):
     return a
 
 def update_parameters():
-    global wind_rand
+    global wind_rand, wind_total
     global q
     global Nalpha, Q_damp, fin_force
     global x
@@ -431,15 +433,15 @@ def update_parameters():
     global Q_d , Q
     global theta, AoA, g , g_loc
     
-    # Times the disturbances so they don't change that often
-    if(t>timer_disturbance+2*T_Program*0.9999):
-        # wind velocity could drift with time
-        wind = random.gauss(wind, wind_distribution) 
+    # Times the disturbances so they don't change that often        
+    if(t>timer_disturbance+10*T_Program*0.9999):        
+        wind_rand = random.gauss(0, wind_distribution)
+        wind_total = wind_rand + wind
         timer_disturbance=t
         
     # NEW SIMULATION 
     # Computes the velocity of the wind in local coordinates 
-    wind_loc = glob2loc(0, wind, theta) 
+    wind_loc = glob2loc(0, wind_total, theta) 
     # Computes the total airspeed in local coordinates 
     V_loc_tot = [ V_loc[0]-wind_loc[0] , V_loc[1]-wind_loc[1] ]    
     AoA = Calculate_AoA(V_loc_tot)
