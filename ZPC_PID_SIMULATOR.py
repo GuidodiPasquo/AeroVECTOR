@@ -434,7 +434,7 @@ def update_parameters():
     global theta, AoA, g , g_loc
     
     # Times the disturbances so they don't change that often        
-    if(t>timer_disturbance+10*T_Program*0.9999):        
+    if(t>timer_disturbance + 0.1):        
         wind_rand = random.gauss(0, wind_distribution)
         wind_total = wind_rand + wind
         timer_disturbance=t
