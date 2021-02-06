@@ -48,7 +48,7 @@ class airfoil:
               0.7545454545454546, 0.44545454545454555, 0.0, -0.418181818181818, -0.6818181818181817, -0.9000000000000004,
               -0.9818181818181819, -0.790909090909091, -0.6727272727272728, -0.8000000000000003, -0.40909090909090917, 0.0]        
         
-        self.AoA_CL_modified = [0.0, 0.15858937500000003, 0.7249800000000002, 0.9137768750000002, 1.0950218750000003, 1.57079,
+        self.AoA_CL_modified = [0.0, 0.13658937500000003, 0.7249800000000002, 0.9137768750000002, 1.0950218750000003, 1.57079,
                                 2.0239025, 2.4166, 2.937679375, 3.103820625]        
         self.CL_list_modified = [0.0, 0.7739130434782606, 1.1043478260869564, 1.026086956521739, 0.8086956521739128, 0.0,
                                  -0.7217391304347824, -0.991304347826087, -0.8086956521739128, -0.008695652173913215]        
@@ -187,8 +187,19 @@ class fin_class:
         if fins_attached == True:
             AR = self.AR
         else:
-            # Fins aren't attached to the body, so the lift distribution is closer to the one of the fin alone
-            AR = 0.5 * self.AR
+            # Fins aren't attached to the body, so the lift distribution is closer to the one of the fin alone.
+            # End plate theory in Airplane Performance, Stability and Control, Perkings and Hage.
+            # Is assumed that the piece of body where the fin is attached acts as an end plate of 0.2 h/b
+            # Rounding down, the aspect ratio is increased by 1-(r/2) being r the correction factor (r = 0.75)
+            # One must remember that this end plate acts not to increase the AR/Lift Slope, but to mitigate 
+            # its reduction. It also affects only the root, leaving the tip unaltered (unlike the ones in the
+            # Perkins).
+            # The formula checks at the extremes: r=1 (no end plate, AR = AR of one fin alone (0.5 calculated 
+            # AR)), r=0 (fin attached to the body, AR doubles (i.e. stays the same as the one calculated prior))
+            # It also compensates in the case that the fin is separated from the body by a servo or rod, 
+            # accounting for the increase in lift the body produces, but not going to the extreme of calculating 
+            # it as if it was attached.
+            AR = 0.625 * self.AR
         # Diederich's semi-empirical method
         F_D = AR / (k1 * self.CN_Alpha_0 * np.cos(self.sb_angle))        
         self.CN_Alpha = (self.CN_Alpha_0 * F_D * np.cos(self.sb_angle)) / (2 + F_D * np.sqrt(1+(4/F_D**2)))        
