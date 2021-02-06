@@ -8,12 +8,13 @@ The program computes the 3DOF Equations of Motion of the Rocket and integrates t
 
 ## Dependencies
 ### Mandatory
-1. numpy 
-2. matplotlib
-3. pandas
-4. VPython
+1. tkinter
+2. numpy 
+3. matplotlib
+4. pandas
+5. vpython
 ### Optional
-5. pyserial  
+6. pyserial  
   
 **Without the optional dependencies, the Software in the Loop module will not work.**  
 If someone can make an .exe that works with VPython, please let me know.
@@ -124,8 +125,7 @@ Replace your sensor readings with *Sim.getSimData()* and the name of your variab
   
    
 Replace your *servo.write()* for:    
-![](/Images/Readme/Screenshot_12.png)
-  
+![](/Images/Readme/Screenshot_12.png)  
 Replace *servo_command* for your servo variable (in º).    
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would deploy. 
   
