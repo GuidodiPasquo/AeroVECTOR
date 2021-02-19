@@ -45,14 +45,15 @@ class servo_class:
         self.outs=np.array([[0.],[0.]])
         self.out_prevs=np.array([[0.],[0.]])
         self.Itwo=np.array([[1, 0],[0, 1]])
-        self.u_delta = 0        
+        self.u_delta = 0
+        self.t_prev = -0.00000001
+        self.T = 0.001
         self.timer_run = 0
         
-    def setup(self, Actuator_weight_compensation, definition,Ts, T):        
+    def setup(self, Actuator_weight_compensation, definition,Ts):        
         self.Actuator_weight_compensation = Actuator_weight_compensation
         self.definition = definition
-        self.Ts = Ts
-        self.T = T        
+        self.Ts = Ts                
         self.__initializate()
     
     def update(self):   
@@ -90,6 +91,8 @@ class servo_class:
         self.Ds = self.Bs
     
     def simulate(self, u_servo, t):
+        self.T = t - self.t_prev
+        self.t_prev = t
         self.update()
         u = self.u
         # +0.001 desynchronizes the servo and the program, thing 
@@ -119,7 +122,7 @@ class servo_class:
         for i in range(1000):                    
             list_plot.append(self.simulate(u,t)/(np.pi/180))
             x_plot.append(t)
-            t += self.T            
+            t += 0.001            
         plt.plot(x_plot,list_plot)
         plt.grid(True,linestyle='--')  
         plt.show()

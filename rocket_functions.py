@@ -62,8 +62,7 @@ class airfoil:
               0.8182796034866748, 0.47852963361347545, 0.262866375366543, 0.13929739838341826, 0.05557613600353495,
               0.011970382007828295, 0.0009187156610269724]
         
-    def _Calculate_CN_CA(self,AoA,Beta):
-        self.Beta = Beta
+    def _Calculate_CN_CA(self,AoA):
         self._sign = self.__sign_correction(AoA)
         # Data goes from 0º-180º, later it is corrected with
         # the self._sign variable in case the AoA is negative
@@ -86,14 +85,14 @@ class airfoil:
         # CA always agains the fin, independent of AoA   
         self.CA = -self.CL * np.sin(self.x) + self.CD * np.cos(self.x)     
         # Compressibility correction
-        self.CN = self.CN/self.Beta        
+        self.CN = self.CN       
         return self.CN
         
-    def _Calculate_CN_Alpha(self, AoA, Beta):
+    def _Calculate_CN_Alpha(self, AoA):
         # Prandtl-Glauert applied in the CN 
         self.CN_Alpha = self.CN/AoA
         if self.use_2pi == True:
-            self.CN_Alpha = 2*np.pi/self.Beta
+            self.CN_Alpha = 2*np.pi
         
     def __sign_correction(self, AoA):    
         # Saves the sign of the AoA to apply it after computing the CN
@@ -103,9 +102,9 @@ class airfoil:
             x = -1
         return x
     
-    def get_Aero_coef(self, AoA, Beta):
-        self._Calculate_CN_CA(AoA, Beta)
-        self._Calculate_CN_Alpha(AoA, Beta)
+    def get_Aero_coef(self, AoA):
+        self._Calculate_CN_CA(AoA)
+        self._Calculate_CN_Alpha(AoA)
         return self.CN, self.CA, self.CN_Alpha
 
 class fin_class:
@@ -113,7 +112,8 @@ class fin_class:
         self.dim = 0
         self.flat_plate = airfoil()
         
-    def update(self,l):
+    def update(self,l,fin_attached = True):
+        self.fin_attached = fin_attached
         self.dim = copy.deepcopy(l)
         self._Calculate_real_dimension()
         self._Calculate_area()
@@ -167,7 +167,26 @@ class fin_class:
             # no wingtip vortices in the root. For this reason 
             # the aspect ratio is that of a wing composed of two
             # fins attached together at the root of each other
-            self.AR = 2 * self.b**2 / self.area            
+            self.AR = 2 * self.b**2 / self.area
+        if self.fin_attached == True:
+            # AR = AR calculated before (2*AR fin alone)
+            pass        
+        else:
+            """
+            Fins aren't attached to the body, so the lift distribution is closer to the one of the fin alone.
+            End plate theory in Airplane Performance, Stability and Control, Perkings and Hage.
+            Is assumed that the piece of body where the fin is attached acts as an end plate of 0.2 h/b
+            Rounding down, the aspect ratio is increased by 1-(r/2) being r the correction factor (r = 0.75)
+            One must remember that this end plate acts not to increase the AR/Lift Slope, but to mitigate 
+            its reduction. It also affects only the root, leaving the tip unaltered (unlike the ones in the
+            Perkins).
+            The formula checks at the extremes: r=1 (no end plate, AR = AR of one fin alone (0.5 calculated 
+            AR)), r=0 (fin attached to the body, AR doubles (i.e. stays the same as the one calculated prior))
+            It also compensates in the case that the fin is separated from the body by a servo or rod, 
+            accounting for the increase in lift the body produces, but not going to the extreme of calculating 
+            it as if it was attached.
+            """
+            self.AR *= 0.625            
     
     def _Calculate_force_application_point(self):
         self.CP_total = self.dim[0][0] + self.Xf
@@ -176,34 +195,31 @@ class fin_class:
         return self.CP_total
         
     def _Calculate_sweepback_angle(self):
+        # 25% of the chord because
         x_tip = self.dim[1][0] + 0.25 * self.c_tip
         x_root = self.dim[0][0] + 0.25 * self.c_root
         self.sb_angle = np.arctan((x_tip - x_root) / self.b)  
         
-    def Calculate_CN_Alpha(self,AoA, Beta, fins_attached):
+    def Calculate_CN_Alpha(self,AoA, Beta, M):
+        self.Beta = Beta
+        self.M = M
         # 2D coefficients
-        self.CN0, self.CA, self.CN_Alpha_0 = self.flat_plate.get_Aero_coef(AoA, Beta)        
-        k1 = 1/(2*np.pi)        
-        if fins_attached == True:
-            AR = self.AR
-        else:
-            # Fins aren't attached to the body, so the lift distribution is closer to the one of the fin alone.
-            # End plate theory in Airplane Performance, Stability and Control, Perkings and Hage.
-            # Is assumed that the piece of body where the fin is attached acts as an end plate of 0.2 h/b
-            # Rounding down, the aspect ratio is increased by 1-(r/2) being r the correction factor (r = 0.75)
-            # One must remember that this end plate acts not to increase the AR/Lift Slope, but to mitigate 
-            # its reduction. It also affects only the root, leaving the tip unaltered (unlike the ones in the
-            # Perkins).
-            # The formula checks at the extremes: r=1 (no end plate, AR = AR of one fin alone (0.5 calculated 
-            # AR)), r=0 (fin attached to the body, AR doubles (i.e. stays the same as the one calculated prior))
-            # It also compensates in the case that the fin is separated from the body by a servo or rod, 
-            # accounting for the increase in lift the body produces, but not going to the extreme of calculating 
-            # it as if it was attached.
-            AR = 0.625 * self.AR
+        self.CN0, self.CA, self.CN_Alpha_0 = self.flat_plate.get_Aero_coef(AoA)        
         # Diederich's semi-empirical method
-        F_D = AR / (k1 * self.CN_Alpha_0 * np.cos(self.sb_angle))        
-        self.CN_Alpha = (self.CN_Alpha_0 * F_D * np.cos(self.sb_angle)) / (2 + F_D * np.sqrt(1+(4/F_D**2)))        
+        self._correct_CNa_Diederich()
         return self.CN_Alpha
+    
+    def _correct_CNa_Diederich(self):
+        eff_factor = self.CN_Alpha_0 / (2*np.pi)
+        COS_SBe = ( (self.Beta) / np.sqrt((1 - self.M**2 * np.cos(self.sb_angle)**2))) * np.cos(self.sb_angle)
+        
+        # F_D = self.AR / (k1 * self.CN_Alpha_0 * np.cos(self.sb_angle))        
+        # self.CN_Alpha = (self.CN_Alpha_0 * F_D * np.cos(self.sb_angle)) / (2 + F_D * np.sqrt(1+(4/F_D**2)))
+        k1 = (1/self.Beta)
+        k2 = (self.AR * self.Beta) / (eff_factor * COS_SBe)
+        k3 = (4 * eff_factor**2 * COS_SBe**2) / (self.AR**2 * self.Beta**2)
+        k4 = np.sqrt(1 + k3)
+        self.CN_Alpha = k1 * ( (k2) / (k2 * k4 + 2) ) * self.CN_Alpha_0 * COS_SBe
         
 fin = [0]*2
 fin[0] = fin_class()
@@ -257,9 +273,9 @@ class rocket_class:
         zero_fin = [[0.00001,0.0000],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0000]]
         fin[1].update(zero_fin)         
         if self.use_fins == True:            
-            fin[0].update(l[6]) 
+            fin[0].update(l[6] , self.fins_attached[0]) 
             if self.use_fins_control == True:
-                fin[1].update(l[7])                        
+                fin[1].update(l[7] , self.fins_attached[1])                        
         self.Calculate_pitch_damping(xcg)
         self.Calculate_R_crit() 
     
@@ -349,8 +365,11 @@ class rocket_class:
                 
     
     ## AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS -    
-    def Calculate_Aero_coef(self,AoA,V0 = 10,rho = 1.225,mu = 1.784e-5, M = 0.0, Actuator_angle = 0):
-        self.M = M
+    def Calculate_Aero_coef(self,AoA,V0 = 10,rho = 1.225,mu = 1.784e-5, M = 0.001, Actuator_angle = 0):
+        if M < 0.001:
+            self.M = 0.001
+        else:
+            self.M = M
         self.Beta = np.sqrt(1-M**2)
         self.Actuator_angle = Actuator_angle
         self.AoA_ctrl_fin = AoA - Actuator_angle
@@ -382,7 +401,7 @@ class rocket_class:
         # interference or separation
         self.CN_Alpha_og= [0]*len(fin) 
         self.CN_Alpha_fin_control = [0]*len(fin) 
-        self.CN_Alpha_og[0] = fin[0].Calculate_CN_Alpha(AoA, self.Beta, self.fins_attached[0])
+        self.CN_Alpha_og[0] = fin[0].Calculate_CN_Alpha(AoA, self.Beta, self.M)
         """
         Because the Cn slope is linearized for Alpha
         Cn(AoA - Actuator_angle) = Cn(AoA) - Cn(Actuator_angle)
@@ -417,7 +436,7 @@ class rocket_class:
         though the TVC mount has an angle.
         
         """                
-        self.CN_Alpha_og[1] = fin[1].Calculate_CN_Alpha(self.AoA_ctrl_fin, self.Beta, self.fins_attached[1])        
+        self.CN_Alpha_og[1] = fin[1].Calculate_CN_Alpha(self.AoA_ctrl_fin, self.Beta, self.M)        
         n_fin = 2
         self.CN_Alpha_fin = [0]*len(fin)
         # adimensionalise the CN for the rocket's area

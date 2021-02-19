@@ -287,7 +287,7 @@ def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_d
     alt_sd = conf_SITL[6]
     
     ## Servo Class
-    servo.setup(Actuator_weight_compensation,servo_definition,Ts, T)
+    servo.setup(Actuator_weight_compensation,servo_definition,Ts)
     
 
 def reset_variables():
@@ -618,7 +618,7 @@ def simulation():
 
 def timer():
     global t
-    t=round(t+T,12) #Trying to avoid error, not sure it works
+    t = round(t + T,12) #Trying to avoid error, not sure it works
     return
 
 def timer_SITL():
