@@ -24,7 +24,7 @@ import vpython as vp
 Rocket = rkt.rocket_class()
 atmosphere = atm.get_atmosphere()
 controller = control.controller_class()
-servo = servo_lib.servo_class()
+servo = servo_lib.Servo()
 
 deg2rad=np.pi/180
 rad2deg=1/deg2rad
