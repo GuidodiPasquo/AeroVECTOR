@@ -6,25 +6,76 @@ Created on Tue Jan 26 16:21:38 2021
 """
 import tkinter as tk
 from tkinter import ttk
-import files
 import copy
-import GUI_setup as GUI_setup
+import GUI_setup
 import numpy as np
 
-def move_tk_object(obj, r=0, c=0, columnspan = 1):
+def move_tk_object(obj, r=0, c=0, columnspan=1):
+    """
+    Moves a tk object to the selected position.
+
+    Parameters
+    ----------
+    obj : tk object
+        Object to move.
+    r : int, optional
+        move to row r. The default is 0.
+    c : int, optional
+        move to column c. The default is 0.
+    columnspan : int, optional
+        columnspan of the object. The default is 1.
+
+    Returns
+    -------
+    None.
+
+    """
     obj.grid(row = r, column = c, columnspan = columnspan)
 
-class active_file_label_class:
-    def __init__(self):       
-        pass    
+class ActiveFileLabel:
+    """Creates a label with the active file name."""
+    def __init__(self):
+        pass
+
     def create_label(self,root,r,c):
+        """
+        Creates the label in the canvas root, in the row = r and column = c
+
+        Parameters
+        ----------
+        root : tk canvas
+            canvas where to create a label.
+        r : int
+            row (position).
+        c : int
+            column (position).
+
+        Returns
+        -------
+        None.
+
+        """
         self.r = r
         self.c = c
         self.canvas = root
         self.text = tk.StringVar()
         self.active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        self.active_file_label.grid(row=r,column=c,sticky="W", columnspan=2)        
+        self.active_file_label.grid(row=r,column=c,sticky="W", columnspan=2)
+
     def update(self, active_file):
+        """
+        Update the label with the new file name
+
+        Parameters
+        ----------
+        active_file : string
+            File name.
+
+        Returns
+        -------
+        None.
+
+        """
         self.text.set("Active File is " + active_file)
         active_file_label = tk.Label(self.canvas, textvariable=self.text)
         active_file_label.grid(row=self.r,column=self.c,sticky="W", columnspan=2)
@@ -36,65 +87,129 @@ combobox
 entry
 """
 
-#################################################################################################################################
-class tab_class:
+##############################################################################
+class Tab:
+    """Basic tab template with checkboxes, combobox and entries."""
     objs = []
     def __init__(self, names_checkbox = [], names_combobox = [], names_entry = []):
         # List with tabs to update the active file label
-        tab_class.objs.append(self)
+        Tab.objs.append(self)
         self.names_checkbox = names_checkbox
         self.checkbox_status = []
-        self.checkbox = []        
+        self.checkbox = []
         self.names_combobox = names_combobox
         self.combobox_options = []
         self.combobox = []
-        self.combobox_label = []        
+        self.combobox_label = []
         self.names_entry = names_entry
         self.entry = []
-        self.entry_label = []        
-        self.active_file_label = active_file_label_class()        
-        self.i = 0        
+        self.entry_label = []
+        self.active_file_label = ActiveFileLabel()
+        self.i = 0
         return
-    
-    def create_tab(self, nb, name):        
+
+    def create_tab(self, nb, name):
+        """
+        Create the new tab in the notebook nb and call it name
+
+        Parameters
+        ----------
+        nb : ttk notebook
+            main notebook.
+        name : string
+            name of the tab.
+
+        Returns
+        -------
+        None.
+
+        """
         self.tab = tk.Frame(nb, width = 500, height = 500,padx=10,pady=10)
         # Adds it to the notebook
-        nb.add(self.tab, text = name)        
-    
-    def create_checkboxes(self,names_checkbox,r,c,s="W", disables_all = False):
+        nb.add(self.tab, text = name)
+
+    def create_checkboxes(self,names_checkbox, r, c, s="W", disables_all=False):
+        """
+        Create the checkboxes starting at the row = r, column = c,
+        using the list names_checkboxes to determine their order and names
+
+        Parameters
+        ----------
+        names_checkbox : list of strings
+            labels for the checkboxes.
+        r : int
+            starting row of the list of checkboxes.
+        c : int
+            starting column of the list of checkboxes.
+        s : tk position ("S", "W", etc), optional
+            where the labels are aligned. The default is "W".
+        disables_all : bool, optional
+            The first item will enable or disable the tab. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         self.names_checkbox = copy.deepcopy(names_checkbox)
         # Creates list with the status of the checkboxes
         self.checkbox_status = ["False"]*len(self.names_checkbox)
-        self.checkbox = [0]*len(self.names_checkbox)        
+        self.checkbox = [0]*len(self.names_checkbox)
         for i in range(len(self.names_checkbox)):
             # If the first checkbox disables the tab:
-            if i == 0:                
-                if disables_all == True:
-                    self.checkbox_status[i] = tk.StringVar()        
-                    self.checkbox[i] = tk.Checkbutton(self.tab, text=self.names_checkbox[i], variable=self.checkbox_status[i], onvalue="True", offvalue="False", command = self.change_state)
+            if i == 0:
+                if disables_all is True:
+                    self.checkbox_status[i] = tk.StringVar()
+                    self.checkbox[i] = (tk.Checkbutton(self.tab,
+                                                       text=self.names_checkbox[i],
+                                                       variable=self.checkbox_status[i],
+                                                       onvalue="True", offvalue="False",
+                                                       command = self.change_state))
                     self.checkbox[i].deselect()
                     self.checkbox[i].grid(row=r+i,column=c,sticky = s)
                 else:
-                    self.checkbox_status[i] = tk.StringVar()        
-                    self.checkbox[i] = tk.Checkbutton(self.tab, text=self.names_checkbox[i], variable=self.checkbox_status[i], onvalue="True", offvalue="False")
+                    self.checkbox_status[i] = tk.StringVar()
+                    self.checkbox[i] = (tk.Checkbutton(self.tab,
+                                                       text=self.names_checkbox[i],
+                                                       variable=self.checkbox_status[i],
+                                                       onvalue="True", offvalue="False"))
                     self.checkbox[i].deselect()
                     self.checkbox[i].grid(row=r+i,column=c,sticky = s)
                 continue
-            self.checkbox_status[i] = tk.StringVar()        
-            self.checkbox[i] = tk.Checkbutton(self.tab, text=self.names_checkbox[i], variable=self.checkbox_status[i], onvalue="True", offvalue="False")
+            self.checkbox_status[i] = tk.StringVar()
+            self.checkbox[i] = (tk.Checkbutton(self.tab,
+                                               text=self.names_checkbox[i],
+                                               variable=self.checkbox_status[i],
+                                               onvalue="True", offvalue="False"))
             self.checkbox[i].deselect()
             self.checkbox[i].grid(row=r+i,column=c,sticky = s)
-            
+
     def activate_all(self):
+        """
+        Activates all widgets in the tab.
+
+        Returns
+        -------
+        None.
+
+        """
         for i in range(len(self.checkbox)-1):
             self.checkbox[i+1].config(state="normal")
         for i in range(len(self.names_combobox)):
             self.combobox[i].config(state="normal")
         for i in range(len(self.entry)):
-            self.entry[i].config(state="normal")            
+            self.entry[i].config(state="normal")
         return
-    
+
     def deactivate_all(self):
+        """
+        Deactivates all widgets in the tab.
+
+        Returns
+        -------
+        None.
+
+        """
         for i in range(len(self.checkbox)-1):
             self.checkbox[i+1].config(state="disable")
         for i in range(len(self.names_combobox)):
@@ -102,30 +217,83 @@ class tab_class:
         for i in range(len(self.entry)):
             self.entry[i].config(state="disable")
         return
-    
+
     def change_state(self):
-        # If the first checkbox disables all        
-        if(self.checkbox_status[0].get()=="True"):
+        """
+        If the tab widgets are enable, it disables them, and vise versa.
+
+        Returns
+        -------
+        None.
+
+        """
+        # If the first checkbox disables all
+        if self.checkbox_status[0].get()=="True":
             self.activate_all()
         else:
-            self.deactivate_all()            
-        return 
-    
+            self.deactivate_all()
+        return
+
     def create_combobox(self , options , names_combobox , r , c , s="E"):
+        """
+        Create the comboboxes starting at the row = r, column = c,
+        using the list names_combobox to determine their order and names
+        and the nested list options as options of each combobox
+
+        Parameters
+        ----------
+        options : nested list of strings
+            options of each combobox.
+        names_combobox : list of strings
+            label of each combobox.
+        r : int
+            starting row of the list of checkboxes.
+        c : int
+            starting column of the list of checkboxes.
+        s : tk position ("S", "W", etc), optional
+            where the labels are aligned. The default is "E".
+
+        Returns
+        -------
+        None.
+
+        """
         self.names_combobox = copy.deepcopy(names_combobox)
         self.combobox_options = copy.deepcopy(options)
         self.combobox = [0]*len(self.names_combobox)
-        self.combobox_label = [0]*len(self.names_combobox)        
+        self.combobox_label = [0]*len(self.names_combobox)
         for i in range(len(self.names_combobox)):
             self.combobox[i] = ttk.Combobox(self.tab,width=20,state='readonly')
             self.combobox[i].grid(row = r+i, column = c+1,sticky = s)
             self.combobox[i]["values"] = options[i]
             self.combobox_label[i] = tk.Label(self.tab, text=self.names_combobox[i])
-            self.combobox_label[i].grid(row=r+i,column=c,sticky=s) 
-            self.combobox[i].set(self.combobox_options[i][0])  
-    
+            self.combobox_label[i].grid(row=r+i,column=c,sticky=s)
+            self.combobox[i].set(self.combobox_options[i][0])
+
     def create_entry(self, names_entry , r , c , s="E", w=20):
-        self.names_entry = copy.deepcopy(names_entry) 
+        """
+        Create the entries starting at the row = r, column = c,
+        using the list names_entry to determine their order and names
+
+        Parameters
+        ----------
+        names_entry : list of strings
+            labels for the entries.
+        r : int
+            starting row of the list of entries.
+        c : int
+            starting column of the list of entries.
+        s : tk position ("S", "W", etc), optional
+            where the labels are aligned. The default is "E".
+        w : int, optional
+            width of the entry. The default is 20.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.names_entry = copy.deepcopy(names_entry)
         self.entry = [0]*len(self.names_entry)
         self.entry_label = [0]*len(self.names_entry)
         for i in range(len(self.entry)):
@@ -135,6 +303,20 @@ class tab_class:
             self.entry[i].grid(row=r+i,column=c+1,sticky = s)
 
     def populate(self, l0):
+        """
+        Populate the tab with the information in l0 (checkboxes status,
+        combobox selected option, entries, in that order).
+
+        Parameters
+        ----------
+        l0 : list of strings
+            information of all the tab's widgets.
+
+        Returns
+        -------
+        None.
+
+        """
         # Fills the widgets with the data of the save file
         l = copy.deepcopy(l0)
         # Can't write to a disable widget
@@ -143,28 +325,45 @@ class tab_class:
         n_check = len(self.checkbox)
         n_comb = len(self.names_combobox)
         n_ent = len(self.entry)
-        for i in range(n_check):            
+        for i in range(n_check):
             if l[i]=="True":
                 self.checkbox[i].select()
             elif l[i]=="False":
-                self.checkbox[i].deselect()                
-        for i in range(n_comb):            
+                self.checkbox[i].deselect()
+        for i in range(n_comb):
             self.combobox[i].set(l[i+n_check])
-        for i in range(n_ent):            
+        for i in range(n_ent):
             self.entry[i].insert(0,l[i+n_check+n_comb])
-    
+
     def depopulate(self):
+        """
+        Clears all the widgets.
+
+        Returns
+        -------
+        None.
+
+        """
         self.activate_all()
         for i in range(len(self.checkbox)):
             self.checkbox[i].deselect
         for i in range(len(self.names_combobox)):
-            self.combobox[i].set(self.combobox_options[i][0]) 
+            self.combobox[i].set(self.combobox_options[i][0])
         for i in range(len(self.entry)):
             self.entry[i].delete(0,15)
-    
+
     def get_configuration(self):
+        """
+        Gets the status and information of all the tab's widgets.
+
+        Returns
+        -------
+        list of strings
+            information in the tab.
+
+        """
         # Creates list with the data from the widgets
-        # Order is checkbox, combobox, entry        
+        # Order is checkbox, combobox, entry
         d = []
         for i in range(len(self.checkbox)):
             d.append(self.checkbox_status[i].get())
@@ -173,47 +372,83 @@ class tab_class:
         for i in range(len(self.entry)):
             d.append(self.entry[i].get())
         return copy.deepcopy(d)
-    
+
     def destring_data(self, data):
+        """
+        Transform a list of strings into variables.
+
+        Parameters
+        ----------
+        data : list of strings
+            Data to convert.
+
+        Returns
+        -------
+        list of variables
+            Destringed data.
+        """
+
         def is_number(s):
             """ Returns True is string is a number. """
             try:
                 float(s)
                 return True
             except ValueError:
-                return False        
+                return False
+
         def string_or_bool(s):
-            "Returns True if string == True"
+            """Returns True if string == True"""
             if s == "True":
                 return True
             elif s == "False":
                 return False
             else:
-                return s        
+                return s
+
         def is_baudrate(f):
+            """If f > 9000 almost certainly it's a baudrate"""
             if f > 9000:
                 return True
             else:
                 return False
-            
         for i in range(len(data)):
             if is_number(data[i]):
                 data[i] = float(data[i])
                 if is_baudrate(data[i]):
                     data[i] = int(data[i])
             else:
-                data[i] = string_or_bool(data[i])     
+                data[i] = string_or_bool(data[i])
         return data
-    
+
     def get_configuration_destringed(self):
+        """
+        Gets the status and information of all the tab's widgets (in variable
+        format).
+
+        Returns
+        -------
+        list of variables
+            information in the tab.
+
+        """
         data = self.get_configuration()
         data = self.destring_data(data)
         return copy.deepcopy(data)
-        
-        
-        
-    
+
     def configure(self,n=10):
+        """
+        Configurates the tab with a minimum row and columns size of n.
+
+        Parameters
+        ----------
+        n : int, optional
+            Minimum size of the row/column. The default is 10.
+
+        Returns
+        -------
+        None.
+
+        """
         # creates the empty rows and columns
         # so as to have empty space between widgets
         col_count, row_count = self.tab.grid_size()
@@ -221,27 +456,58 @@ class tab_class:
             self.tab.grid_columnconfigure(col, minsize=n)
         for row in range(row_count):
             self.tab.grid_rowconfigure(row, minsize=n)
-            
+
     def create_active_file_label(self,r,c):
-       self.active_file_label.create_label(self.tab,r,c)
-    
-    @classmethod 
+        """
+        Create a label with the active file name in the position row = r and
+        column = c.
+
+        Parameters
+        ----------
+        r : int
+            position (row).
+        c : int
+            position (column).
+
+        Returns
+        -------
+        None.
+
+        """
+        self.active_file_label.create_label(self.tab,r,c)
+
+    @classmethod
     def update_active_file_label(cls,name):
-        for obj in cls.objs: 
+        """
+        Update the text in the active file label to match the new active file.
+
+        Parameters
+        ----------
+        cls : Tab
+            Tab.
+        name : string
+            Active file name.
+
+        Returns
+        -------
+        None.
+
+        """
+        for obj in cls.objs:
             obj.active_file_label.update(name)
 
 
-####################################################################################################################    
-class tab_with_canvas_class(tab_class):
+##############################################################################
+class TabWithCanvas(Tab):
     def __init__(self):
         super().__init__()
         import rocket_functions
         # points[0] -> rocket, points[1] -> fin
         """
-        Rocket points go from the tip down to the tail
-         
+        rocket points go from the tip down to the tail
+
         Fin[n][x position (longitudinal), z position (span)]
-        
+
          [0]|\
             | \[1]
             | |
@@ -250,34 +516,34 @@ class tab_with_canvas_class(tab_class):
         self.points = [["0,0","0,0"],
                        ["0.001,0.001","0.001,0.001","0.001,0.001","0.001,0.001"],
                        ["0.001,0.001","0.001,0.001","0.001,0.001","0.001,0.001"]]
-        self.Rocket = rocket_functions.rocket_class()
+        self.rocket = rocket_functions.Rocket()
         self.active_point = 0
         self.active_point_fins = 0
         self.flag_hollow_body = False
         self.AoA = 0.001
         pass
-    
+
     def sort(self, l):
         def l2j_is_greater_than(l2,j):
             if float(l2[j].split(",")[0])>float(l2[j+1].split(",")[0]):
                 return True
             else:
                 return False
-        l2 = copy.deepcopy(l)              
+        l2 = copy.deepcopy(l)
         for i in range(len(l2)):
             for j in range(len(l2)-1):
-                if l2j_is_greater_than(l2,j):                    
+                if l2j_is_greater_than(l2,j):
                     b = l2[j]
                     l2[j] = l2[j+1]
-                    l2[j+1] = b        
+                    l2[j+1] = b
         return copy.deepcopy(l2)
-    
+
     def set_points(self,n,l):
         # Recieves a list and sets the points to it
         # n = 0 = body, 1 = stabilization fin, 2 = control fin
         self.points[n] = copy.deepcopy(l)
-    
-    def add_point(self,n,s):        
+
+    def add_point(self,n,s):
         self.points[n].append(s)
         self.points[n] = self.sort(self.points[n])
         if n == 0:
@@ -289,9 +555,9 @@ class tab_with_canvas_class(tab_class):
                 # else you delete the entries and populates them
                 # with the points, it is not used
                 self.entry[i].delete(0,15)
-                self.entry[i].insert(0,s)                
-        
-    def delete_point(self, n ,s):        
+                self.entry[i].insert(0,s)
+
+    def delete_point(self, n ,s):
         for i in range(len(self.points[n])):
             if n == 0:
                 if self.points[n][i] == s:
@@ -299,24 +565,25 @@ class tab_with_canvas_class(tab_class):
                     self.combobox[n]["values"] = self.points[n]
                     self.combobox[n].set(self.points[n][i-1])
                     break
-    
+
     def get_points(self,n):
         return copy.deepcopy(self.points[n])
-    
+
     def get_points_float(self,n):
         l = copy.deepcopy(self.points[n])
         l2 = []
         for i in range(len(l)):
             a = l[i].split(",")
-            l2.append([float(a[0]),float(a[1])])        
+            l2.append([float(a[0]),float(a[1])])
         return copy.deepcopy(l2)
-        
+
     def create_canvas(self, canvas_width, canvas_height):
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
-        self.canvas = tk.Canvas(self.tab, width = self.canvas_width, height = self.canvas_height,bg="white")
+        self.canvas = (tk.Canvas(self.tab, width = self.canvas_width,
+                                 height = self.canvas_height,bg="white"))
         self.canvas.grid(row=0,column=0, rowspan = 20)
-        
+
     def _re_draw_rocket(self,l2):
         # x in the canvas is y/z in the rocket
         # y in the canvas is x in the rocket
@@ -341,7 +608,7 @@ class tab_with_canvas_class(tab_class):
                     x2_mirror = (-y_ogive_2*self.scaleY+self.canvas_width) / 2
                     self.canvas.create_line(x1,y1,x2,y2)
                     self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
-                    x_ogive_1 += L/10                
+                    x_ogive_1 += L/10
                 point_diameter = 5
                 self.create_point_Cp(point_diameter)
                 self.create_point_xcg(point_diameter)
@@ -354,14 +621,14 @@ class tab_with_canvas_class(tab_class):
                 x1_mirror = (-l2[i][1]*self.scaleY+self.canvas_width)/2
                 x2_mirror = (-l2[i+1][1]*self.scaleY+self.canvas_width)/2
                 self.canvas.create_line(x1,y1,x2,y2)
-                self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)            
-                if i == len(l2)-2:                
+                self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
+                if i == len(l2)-2:
                     self.canvas.create_line(x2_mirror,y2,x2,y2)
                 point_diameter = 5
                 self.create_point_Cp(point_diameter)
-                self.create_point_xcg(point_diameter)            
+                self.create_point_xcg(point_diameter)
             self._draw_base_component(l2)
-            
+
     def _draw_base_component(self,l2):
         # Draws the horizontal line that separates each component
         for i in range(len(l2)):
@@ -369,9 +636,9 @@ class tab_with_canvas_class(tab_class):
             y1 = l2[i][0]*self.scaleY+self.centering
             x2 = (-l2[i][1]*self.scaleY+self.canvas_width)/2
             y2 = l2[i][0]*self.scaleY+self.centering
-            self.canvas.create_line(x1,y1,x2,y2)        
-        
-    def _draw_fins(self, l2, s, attached, separate): 
+            self.canvas.create_line(x1,y1,x2,y2)
+
+    def _draw_fins(self, l2, s, attached, separate):
         # Stabilization fins are attached to a hollow
         # body, therefore they lose a lot of lift but
         # aren't physically separated from the body.
@@ -392,41 +659,45 @@ class tab_with_canvas_class(tab_class):
             x2_mirror = -(l2[i+1][1] + sep) * self.scaleY+self.canvas_width / 2
             self.canvas.create_line(x1,y1,x2,y2,fill=s)
             self.canvas.create_line(x1_mirror,y1,x2_mirror,y2,fill=s)
-        # Draws an horizontal line to "simulate" the cut body            
-        if attached == "False" and separate == "False":            
+        # Draws an horizontal line to "simulate" the cut body
+        if attached == "False" and separate == "False":
             x1 = (l2[0][1]*self.scaleY+self.canvas_width/2)
             y1 = l2[0][0]*self.scaleY+self.centering
             x2 = -l2[0][1]*self.scaleY+self.canvas_width/2
             y2 = l2[0][0]*self.scaleY+self.centering
-            self.canvas.create_line(x1,y1,x2,y2) 
-        # Draws the vertical line that connects the root chord of 
-        # the fin, (usually the body takes care of it, but in 
+            self.canvas.create_line(x1,y1,x2,y2)
+        # Draws the vertical line that connects the root chord of
+        # the fin, (usually the body takes care of it, but in
         # this case, the fin is separated)
         if separate == "True":
             x1 = (l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
             y1 = l2[0][0] * self.scaleY + self.centering
             x2 = (l2[3][1] + sep) * self.scaleY + self.canvas_width / 2
-            y2 = l2[3][0] * self.scaleY + self.centering            
+            y2 = l2[3][0] * self.scaleY + self.centering
             x1_m = -(l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
             y1_m = l2[0][0] * self.scaleY + self.centering
             x2_m =  -(l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
             y2_m = l2[3][0] * self.scaleY + self.centering
             self.canvas.create_line(x1,y1,x2,y2, fill = s)
             self.canvas.create_line(x1_m,y1_m,x2_m,y2_m, fill = s)
-        
+
     def create_point_Cp(self,point_diameter):
         # Creates a point where the CP is located
         # the slider can move it by modifying the AoA
         f = point_diameter/2
-        self.Rocket.Update_Rocket(self.get_configuration_destringed(),self.rocket_length/2)
-        Cn , Cp_point, ca = self.Rocket.Calculate_Aero_coef(self.AoA)
-        self.canvas.create_oval(self.canvas_width/2-f, Cp_point * self.scaleY-f, self.canvas_width/2+f, Cp_point * self.scaleY+f, fill="red", outline = "red")
-    
+        self.rocket.update_rocket(self.get_configuration_destringed(),self.rocket_length/2)
+        Cn , Cp_point, ca = self.rocket.calculate_aero_coef(self.AoA)
+        (self.canvas.create_oval(self.canvas_width/2-f, Cp_point * self.scaleY-f,
+                                 self.canvas_width/2+f, Cp_point * self.scaleY+f,
+                                 fill="red", outline = "red"))
+
     def create_point_xcg(self,point_diameter):
         f = point_diameter/2
         xcg_point = float(GUI_setup.savefile.get_parameters()[3])
-        self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scaleY-f, self.canvas_width/2+f, xcg_point * self.scaleY+f, fill="blue", outline = "blue")
-        
+        (self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scaleY-f,
+                                 self.canvas_width/2+f, xcg_point * self.scaleY+f,
+                                 fill="blue", outline = "blue"))
+
     def draw_rocket(self):
         # x in the canvas is y/z in the rocket
         # y in the canvas is x in the rocket
@@ -458,7 +729,7 @@ class tab_with_canvas_class(tab_class):
                 attached = self.checkbox_status[4].get()
                 separate = "True"
                 self._draw_fins(fin_control_points,"red",attached, separate)
-        
+
     def populate(self,l0):
         # Populates the entries and more importantly, the points[i]
         # the savefile separates the body from the sabilization fins
@@ -469,38 +740,38 @@ class tab_with_canvas_class(tab_class):
         l3 = []
         l4 = []
         flag = "Body"
-        for i in range(len(l1)):            
+        for i in range(len(l1)):
             if l1[i] == "Fins_s" and i > 0:
                 flag = "Fins_s"
                 continue
-                
+
             if l1[i] == "Fins_c":
                 flag = "Fins_c"
                 continue
-            
+
             if flag == "Body":
-                l2.append(l1[i])                
+                l2.append(l1[i])
                 continue
-            
+
             if flag == "Fins_s":
                 l3.append(l1[i])
-            
+
             if flag == "Fins_c":
                 l4.append(l1[i])
-        # Populates the widgets, not the variables        
+        # Populates the widgets, not the variables
         super().populate((l+l3))
         # Updates the points of the components
         self.combobox[0]["values"] = l2
-        self.points[0] = copy.deepcopy(l2)        
+        self.points[0] = copy.deepcopy(l2)
         self.points[1] = copy.deepcopy(l3)
         self.points[2] = copy.deepcopy(l4)
         self.draw_rocket()
-        self.change_state_fins()        
-        
+        self.change_state_fins()
+
     def get_configuration(self):
         # Takes the whole configurations and dumps it
-        # into a list, must include the separators  
-        # between fins        
+        # into a list, must include the separators
+        # between fins
         d = []
         d0 = self.get_points(0)
         d1 = self.get_points(1)
@@ -513,9 +784,9 @@ class tab_with_canvas_class(tab_class):
         d.append("Fins_c")
         d+=d2
         return copy.deepcopy(d)
-    
+
     def get_configuration_destringed(self):
-        # Format [che,ck,box, [body], [fin_s], [fin_c]]        
+        # Format [che,ck,box, [body], [fin_s], [fin_c]]
         d = []
         d0 = self.get_points_float(0)
         d1 = self.get_points_float(1)
@@ -523,37 +794,30 @@ class tab_with_canvas_class(tab_class):
         for i in range(len(self.checkbox)):
             if self.checkbox_status[i].get() == "True":
                 d.append(True)
-            else:            
-                d.append(False)        
+            else:
+                d.append(False)
         d.append(d0)
         d.append(d1)
-        d.append(d2)        
-        return copy.deepcopy(d)    
-    
+        d.append(d2)
+        return copy.deepcopy(d)
+
     def activate_all(self):
         for i in range(len(self.checkbox)-1):
             self.checkbox[i+1].config(state="normal")
         for i in range(len(self.names_combobox)):
             self.combobox[i].config(state="normal")
         for i in range(len(self.entry)):
-            self.entry[i].config(state="normal")            
-        return
-    
+            self.entry[i].config(state="normal")
+
     def deactivate_all(self):
         for i in range(len(self.checkbox)-2):
             self.checkbox[i+1+1].config(state="disable")
         for i in range(len(self.entry)):
             self.entry[i].config(state="disable")
-        return
-    
-    def change_state_fins(self):        
-        if(self.checkbox_status[1].get()=="True"):
+
+    def change_state_fins(self):
+        if self.checkbox_status[1].get()=="True":
             self.activate_all()
         else:
-            self.deactivate_all()            
+            self.deactivate_all()
         self.draw_rocket()
-        return 
-    
-    
-
-   
