@@ -23,7 +23,7 @@ import vpython as vp
 
 rocket = rkt.Rocket()
 atmosphere = atm.get_atmosphere()
-controller = control.controller_class()
+controller = control.Controller()
 servo = servo_lib.Servo()
 
 DEG2RAD = np.pi / 180
@@ -31,24 +31,34 @@ RAD2DEG = 1 / DEG2RAD
 
 """
 ###########################################
-known bugs-> Arrows are hit or miss, sometimes they aim in the right direction, sometimes they don't
+known bugs-> Arrows are hit or miss, sometimes they aim in the right
+direction, sometimes they don't.
 
+########### OVERALL CHARACTERISTICS OF THE PROGRAM THAT SHOULD BE
+TAKEN INTO ACCOUNT IN THE FLIGHT COMPUTER CODE.
 
-
-
-########### OVERALL CHARACTERISTICS OF THE PROGRAM THAT SHOULD BE TAKEN INTO ACCOUNT IN THE FLIGHT COMPUTER CODE
-
-Non-linear model integrates local accelerations into global velocities. An alternate method of vector derivates is still in the program, results are better with the first method
-Angular velocity is not damped, so when tumbling the rocket will turn way more than in real life.
-If your angular velocities are small, the lack of damping doesn't affect too much the flight, if the velocities aren't small, then the damping in real life would make the real model more stable than in the simulation (most times)
+Non-linear model integrates local accelerations into global
+velocities. An alternate method of vector derivates is still in the
+program, results are better with the first method
+Angular velocity is not damped, so when tumbling the rocket will turn
+way more than in real life.
+If your angular velocities are small, the lack of damping doesn't
+affect too much the flight, if the velocities aren't small, then the
+damping in real life would make the real model more stable than in
+the simulation (most times)
 
 Important, all angles are in RADIANS (Standard 1º*np.pi/180 = radian)
 DEG2RAD=np.pi/180
 RAD2DEG=1/DEG2RAD
 
-Code simulates the Actuator_reduction (gear ratio), it multiplies the output of the controller times the Actuator_reduction, and then sends that output to the servo.
-Remember that you have to multiply the output of the controller times the Actuator reduction in you flight computer!
-All in all, the overall structure of the function "control_theta" and "PID" should be copied in your code to ensure that the simulator and flight computer are doing the same thing
+Code simulates the Actuator_reduction (gear ratio), it multiplies the
+output of the controller times the Actuator_reduction, and then sends
+that output to the servo.
+Remember that you have to multiply the output of the controller times
+the Actuator reduction in you flight computer!
+All in all, the overall structure of the function "control_theta" and
+"PID" should be copied in your code to ensure that the simulator and
+flight computer are doing the same thing
 
 Parameters related to the servo have the convenient "s" ending
 Default settings are 2m/s winds
@@ -56,7 +66,7 @@ Default settings are 2m/s winds
 
 # ## WIND PARAMETERS
 
-wind=2; #Wind speed in m/s (positive right to left)
+wind = 2 #Wind speed in m/s (positive right to left)
 wind_distribution=0.1  # wind*wind_distribution = max gust speed
 
 ## OTHER PARAMETERS OR VARIABLES
@@ -78,7 +88,7 @@ CA = 0
 wind_total = 0
 
 ############# NEW SIMULATION PARAMETERS
-class Integrable_Variable:
+class IntegrableVariable:
     def __init__(self):
         self.f_dd=0.
         self.f_d=0.
@@ -117,9 +127,14 @@ class Integrable_Variable:
         self.f_d_1 = self.f_d
         #self.delta_f_d = T * self.f_dd # Euler
         self.delta_f_d = 0.5 * T * (self.f_dd_1 + self.f_dd) # Trapezoidal
-        #Because the accelerations rotates I'm not a fan of using previous measurements to integrate, so I went for the safer trapezoidal
-        #self.delta_f_d= (T/6) * (self.f_dd_2 + 4 * (self.f_dd_1) + self.f_dd) # Simpson's (Runs each timestep -> (b-a)=h=T)
-        #self.delta_f_d= (T/8) * (self.f_dd_3 + 3 * (self.f_dd_2) + 3 * self.f_dd_1 + self.f_dd) # Simpson's 3/8
+        # Because the accelerations rotates I'm not a fan of using previous
+        # measurements to integrate, so I went for the safer trapezoidal
+
+        # self.delta_f_d= (T/6) * (self.f_dd_2 + 4 * (self.f_dd_1) + self.f_dd)
+        # Simpson's (Runs each timestep -> (b-a)=h=T)
+
+        # self.delta_f_d= (T/8) * (self.f_dd_3 + 3 * (self.f_dd_2) + 3 * self.f_dd_1 + self.f_dd)
+        # Simpson's 3/8
         self.f_d += self.delta_f_d
         return self.f_d
 
@@ -139,11 +154,11 @@ W = 0
 Q = 0
 Accx = 0
 Accy = 0
-U_d = Integrable_Variable()
-W_d = Integrable_Variable()
-Q_d = Integrable_Variable()
-X_d = Integrable_Variable()
-Z_d = Integrable_Variable()
+U_d = IntegrableVariable()
+W_d = IntegrableVariable()
+Q_d = IntegrableVariable()
+X_d = IntegrableVariable()
+Z_d = IntegrableVariable()
 V_loc=[0.00001,0.00001]
 V_loc_tot=[0.00001,0.00001]
 V_glob=[0.00001,0.00001]
@@ -153,7 +168,7 @@ F_loc=[0.0000,0.0000]
 F_glob=[0.0000,0.0000]
 Position_global=[0,0]
 
-########################################################################################################################## IGNORE UP TO PID GAINS
+####################################################### IGNORE UP TO PID GAINS
 
 ####PLOTS
 t_plot=[]
@@ -218,7 +233,7 @@ send_Accx = 0
 send_Accz = 0
 send_alt = 0
 
-########################################################################################################################## FUNCTIONS
+################################################################ FUNCTIONS
 
 def get_data_savefile():
     param = gui.param_file_tab.get_configuration_destringed()
@@ -229,20 +244,22 @@ def get_data_savefile():
     return param, conf3D, confController, confSITL, rocketDim
 
 def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_dim):
-    global Thrust, burnout_time, Thrust_curve, max_thrust, average_thrust, m, Iy, d, xcg, xt, L, nosecone_length, CA0
-    global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset, wind, wind_distribution
+    global Thrust, burnout_time, Thrust_curve, max_thrust, average_thrust
+    global m, Iy, d, xcg, xt, L, nosecone_length, CA0
+    global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
+    global wind, wind_distribution
 
-    m=parameters[1]
-    Iy=parameters[2]
-    xcg=parameters[3]
-    xt=parameters[4]
-    servo_definition=parameters[5]
-    Actuator_max=parameters[6]*DEG2RAD
-    Actuator_reduction=parameters[7]
-    u_initial_offset=parameters[8]*DEG2RAD
+    m = parameters[1]
+    Iy = parameters[2]
+    xcg = parameters[3]
+    xt = parameters[4]
+    servo_definition = parameters[5]
+    Actuator_max = parameters[6] * DEG2RAD
+    Actuator_reduction = parameters[7]
+    u_initial_offset = parameters[8] * DEG2RAD
     Actuator_weight_compensation = parameters[9]
-    wind=parameters[10];
-    wind_distribution=parameters[11]
+    wind = parameters[10]
+    wind_distribution = parameters[11]
 
     ##
     global toggle_3D, camera_shake_toggle, slow_mo, force_scale, hide_forces, Camera_type, variable_fov, fov
@@ -312,11 +329,11 @@ def reset_variables():
     U = 0
     W = 0
     Q = 0
-    U_d = Integrable_Variable()
-    W_d = Integrable_Variable()
-    Q_d = Integrable_Variable()
-    X_d = Integrable_Variable()
-    Z_d = Integrable_Variable()
+    U_d = IntegrableVariable()
+    W_d = IntegrableVariable()
+    Q_d = IntegrableVariable()
+    X_d = IntegrableVariable()
+    Z_d = IntegrableVariable()
     V_loc=[0.00001,0.00001]
     V_loc_tot=[0.00001,0.00001]
     V_glob=[0.00001,0.00001]
@@ -434,7 +451,7 @@ def update_parameters():
     global theta, AoA, g , g_loc
 
     # Times the disturbances so they don't change that often
-    if(t>timer_disturbance + 0.1):
+    if t>timer_disturbance + 0.1:
         wind_rand = random.gauss(0, wind_distribution)
         wind_total = wind_rand + wind
         timer_disturbance=t
@@ -451,7 +468,7 @@ def update_parameters():
     V_modulus = np.sqrt( V_loc_tot[0]**2 + V_loc_tot[1]**2 )
     M = V_modulus/spd_sound
     Beta = np.sqrt(1-M**2)
-    if rocket.use_fins_control == True:
+    if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
         Nalpha, xa, CA = rocket.calculate_aero_coef(AoA , V_modulus , rho, mu, M, Actuator_angle)
     else:
@@ -460,7 +477,6 @@ def update_parameters():
     q = 0.5 * rho * V_modulus**2
     # Gravity in local coordinates, theta=0 equals to rocket up
     g_loc = glob2loc(-g,0,theta)
-    return
 
 def Calculate_AoA(V_loc_tot):
     if V_loc_tot[0] != 0:
@@ -516,7 +532,7 @@ def simulation():
         Accz = 0
         AccQ = 0
     else:
-        if rocket.use_fins_control == False:
+        if rocket.use_fins_control is False:
             Accx = ( Thrust*np.cos(Actuator_angle+u_initial_offset) + m*g_loc[0] - Drag) / m - W*Q*v_d                # Longitudinal Acceleration (local)
             Accz = ( Thrust*np.sin(Actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*Nalpha) / m + U*Q*v_d          # Transversal Acceleration (local)
             AccQ = ( Thrust*np.sin(Actuator_angle+u_initial_offset) * (xt-xcg) + q*S*Nalpha * (xa-xcg) - (Q_damp * rho * Q * abs(Q))) / Iy
@@ -583,20 +599,25 @@ def simulation():
     Position_global = [X_d.integrate_f_d() , Z_d.integrate_f_d()]
 
     """
-    Adding -W*Q to U_d and +U*Q to W_d but eliminating the global to local transfer of velocity accounts for the vector rotation
-    Using the vector derivative (U_d = .... - W*Q and W_d = .... + U*Q) is the same as transforming the global vector in local
-    coordinates, adding the local accelerations and transforming it back to global, in theory (didn't work for me, gotta se why)
+    Adding -W*Q to U_d and +U*Q to W_d but eliminating the global to
+    local transfer of velocity accounts for the vector rotation.
+    Using the vector derivative (U_d = .... - W*Q and W_d = .... +
+    U*Q) is the same as transforming the global vector in local
+    coordinates, adding the local accelerations and transforming it
+    back to global, in theory (didn't work for me, gotta se why)
     So:
-        Vector Derivative -> No need to transform the velocity from global to local, you work only with the local
-        No Vector Derivative -> Equations are simpler, but you have to transform the global vector to local and then to global again
-
-        Still have to see how it scales with more DOF
+    Vector Derivative -> No need to transform the velocity from
+        global to local, you work only with the local
+    No Vector Derivative -> Equations are simpler, but you have
+        to transform the global vector to local and then to global
+        again
+    Still have to see how it scales with more DOF
     """
     """
-    Only saves the points used in the animation
+    Only saves the points used in the animation.
     (1000) is the rate of the animation, when you use slow_mo it drops.
     To ensure fluidity at least a rate of 100 ish is recommended, so a
-    rate of 1000 allows for 10 times slower animations
+    rate of 1000 allows for 10 times slower animations.
     """
     if t>=t_timer_3D+((1/1000))*0.999:
         #### 3D
@@ -613,33 +634,30 @@ def simulation():
         AoA_3D.append(AoA)
         setpoint_3D.append(setpoint)
         t_timer_3D=t
-    return
 
 
 def timer():
     global t
     t = round(t + T,12) #Trying to avoid error, not sure it works
-    return
 
 def timer_SITL():
     global t, timer_flag_t0, t0_timer, T
-    if timer_flag_t0 == False:
+    if timer_flag_t0 is False:
         t0_timer = time.perf_counter()/clock_dif
         timer_flag_t0 = True
     t_prev = t
     t = time.perf_counter()/clock_dif - t0_timer
     # Sample time in SITL = Time elapsed between runs
     T = t-t_prev
-    return
 
 def set_setpoint(inp):
     global input_type
-    if(input_type == "Step [º]"):
-        setpoint=inp*DEG2RAD
-    elif(input_type == "Ramp [º/s]"):
-        setpoint=(inp*DEG2RAD)*(t-inp_time)
+    if input_type == "Step [º]":
+        setpoint = inp*DEG2RAD
+    elif input_type == "Ramp [º/s]":
+        setpoint = (inp*DEG2RAD)*(t-inp_time)
     else:
-        setpoint=0
+        setpoint = 0
     return setpoint
 
 def check_which_plot(s):
@@ -648,56 +666,56 @@ def check_which_plot(s):
     global Actuator_angle
     if s == "Setpoint":
         return setpoint*RAD2DEG
-    elif s == "Pitch Angle":
+    if s == "Pitch Angle":
         return theta*RAD2DEG
-    elif s == "Actuator deflection":
+    if s == "Actuator deflection":
         return Actuator_angle*RAD2DEG
-    elif s == "Pitch Rate":
+    if s == "Pitch Rate":
         return Q*RAD2DEG
-    elif s == "Local Velocity X":
+    if s == "Local Velocity X":
         return V_loc[0]
-    elif s == "Local Velocity Z":
+    if s == "Local Velocity Z":
         return V_loc[1]
-    elif s == "Global Velocity X":
+    if s == "Global Velocity X":
         return V_glob[0]
-    elif s == "Global Velocity Z":
+    if s == "Global Velocity Z":
         return V_glob[1]
-    elif s == "Total Velocity":
+    if s == "Total Velocity":
         return np.sqrt(V_loc_tot[0]**2 + V_loc_tot[1]**2)
-    elif s == "Local Acc X":
+    if s == "Local Acc X":
         return Accx
-    elif s == "Local Acc Z":
+    if s == "Local Acc Z":
         return Accz
-    elif s == "Global Acc X":
+    if s == "Global Acc X":
         return Acc_glob[0]
-    elif s == "Global Acc Z":
+    if s == "Global Acc Z":
         return Acc_glob[1]
-    elif s == "Angle of Atack":
+    if s == "Angle of Atack":
         return AoA*RAD2DEG
-    elif s == "Cp Position":
+    if s == "Cp Position":
         return xa
-    elif s == "Altitude":
+    if s == "Altitude":
         return Position_global[0]
-    elif s == "Distance Downrange":
+    if s == "Distance Downrange":
         return Position_global[1]
-    elif s == "Proportional Contribution":
+    if s == "Proportional Contribution":
         return okp*RAD2DEG
-    elif s == "Integral Contribution":
+    if s == "Integral Contribution":
         return oki*RAD2DEG
-    elif s == "Derivative Contribution":
+    if s == "Derivative Contribution":
         return okd*RAD2DEG
-    elif s == "Total Error":
+    if s == "Total Error":
         return totError*RAD2DEG
-    elif s == "Simulated Gyro":
+    if s == "Simulated Gyro":
         return send_gyro
-    elif s == "Simulated Acc X":
+    if s == "Simulated Acc X":
         return send_Accx
-    elif s == "Simulated Acc Z":
+    if s == "Simulated Acc Z":
         return send_Accz
-    elif s == "Simulated Altimeter":
+    if s == "Simulated Altimeter":
         return send_alt
-    elif s == "Off":
-        return
+    if s == "Off":
+        return None
 
 def plot_data():
     s = gui.run_sim_tab.get_configuration_destringed()
@@ -738,16 +756,16 @@ def run_sim_local():
     global timer_run_sim,timer_run,setpoint, t_launch,inp_time, u_servos
     while t<=Sim_duration:
         simulation()
-        if(t>burnout_time*10):
+        if t > burnout_time * 10:
             print("Nice Coast")
             break
-        if(i_turns>=5):
+        if i_turns >= 5:
             print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
             break
-        if Position_global[0]<-0.1:
+        if Position_global[0] < -0.1:
             print("CRASH")
             break
-        if t == Sim_duration*0.999:
+        if t == Sim_duration * 0.999:
             print("Simulation Ended")
             break
         """
@@ -756,13 +774,13 @@ def run_sim_local():
         So, be careful with the sample time, 0.001, 0.0005 and 0.0001 give all similar results, so,
         if it takes to long to run you can increase T:
         """
-        if t>=timer_run_sim+T*0.999:
-            if(t>=timer_run+T_Program*0.999):
-                timer_run=t
-                if(t>=inp_time):
-                    setpoint=set_setpoint(inp)
+        if t >= timer_run_sim+T*0.999:
+            if t >= timer_run+T_Program*0.999:
+                timer_run = t
+                if t >= inp_time:
+                    setpoint = set_setpoint(inp)
                 u_servos, okp, oki, okd, totError = controller.control_theta(setpoint, theta, Q, Thrust, t)
-            timer_run_sim=t
+            timer_run_sim = t
         timer()
         plot_data()
 
@@ -784,31 +802,31 @@ def run_sim_SITL():
     parachute = 0
 
     serialArduino = serial.Serial(port, baudrate, writeTimeout = 0)
-    arduino_ready_flag="not_ready"
+    arduino_ready_flag = "not_ready"
     while arduino_ready_flag!="A":
-         arduino_ready_flag0 = serialArduino.read()
-         arduino_ready_flag = arduino_ready_flag0.decode("ASCII").strip()
-         serialArduino.flushInput()
+        arduino_ready_flag0 = serialArduino.read()
+        arduino_ready_flag = arduino_ready_flag0.decode("ASCII").strip()
+        serialArduino.flushInput()
     t0 = time.perf_counter()/clock_dif
     i = 0
     while t<=Sim_duration:
         if time.perf_counter()/clock_dif > t0+T_glob:
             t0 = time.perf_counter()/clock_dif
-            """
-            Timer runs at the begining, so it calculates the actual
-            T between runs and integrates more accurately
-            """
+
+            # Timer runs at the begining, so it calculates the actual
+            # T between runs and integrates more accurately
+
             simulation()
             timer_SITL()
-            if t >= timer_seconds+1:
+            if t >= timer_seconds + 1:
                 timer_seconds = t
                 print("Time is ",round(t,0)," seconds")
-            if(t>burnout_time*10):
+            if t > burnout_time * 10:
                 break
-            if(i_turns>=5):
+            if i_turns >= 5:
                 print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
                 break
-            if Position_global[0]<-0.1:
+            if Position_global[0] < -0.1:
                 print("CRASH")
                 break
             if parachute == 1:
@@ -817,19 +835,19 @@ def run_sim_SITL():
             if t == Sim_duration*0.999:
                 print("Simulation Ended")
                 break
-            if t>=timer_run_sim+T_glob*0.999:
-                timer_run_sim=t
-                if(t>=inp_time):
-                    setpoint=set_setpoint(inp)
+            if t >= timer_run_sim+T_glob*0.999:
+                timer_run_sim = t
+                if t >= inp_time:
+                    setpoint = set_setpoint(inp)
             plot_data()
-            i+=1
+            i += 1
         ##
-        if t>=0.003:
+        if t >= 0.003:
             if serialArduino.inWaiting()>1:
                 read0 = serialArduino.readline()
                 read = read0.decode("ASCII")
                 read = read.strip()
-                if Use_noise == True:
+                if Use_noise is True:
                     send_gyro = random.gauss(Q*RAD2DEG, gyro_sd)
                     send_Accx = random.gauss((Accx-g_loc[0])/9.81, acc_sd)
                     send_Accz = random.gauss((Accz-g_loc[1])/9.81, acc_sd)
@@ -859,7 +877,7 @@ def run_simulation():
     parameters, conf_3D, conf_controller, conf_SITL, rocket_dim = get_data_savefile()
     update_all_parameters(parameters, conf_3D, conf_controller, conf_SITL, rocket_dim)
     print("Simulation Started")
-    if Activate_SITL == False:
+    if Activate_SITL is False:
         run_sim_local()
     else:
         run_sim_SITL()
@@ -867,16 +885,16 @@ def run_simulation():
     return
 
 
-########################################################################################################################## 3D 3D 3D 3D 3D
-########################################################################################################################## 3D 3D 3D 3D 3D
-########################################################################################################################## 3D 3D 3D 3D 3D
-########################################################################################################################## 3D 3D 3D 3D 3D
+############################################ 3D 3D 3D 3D 3D
+############################################ 3D 3D 3D 3D 3D
+############################################ 3D 3D 3D 3D 3D
+############################################ 3D 3D 3D 3D 3D
 
 def run_3D():
-    if toggle_3D==False:
+    if toggle_3D is False:
         plt.draw()
         plt.show()
-    if toggle_3D==True:
+    if toggle_3D is True:
 
         rocket_dim = gui.draw_rocket_tab.get_points_float(0)
 
@@ -910,7 +928,7 @@ def run_3D():
         rho_radius = (R_ogive**2 + L_ogive**2)/(2 * R_ogive)
         compound_list = []
         for i in range(len(rocket_dim)-1):
-            if i == 0 and rocket.ogive == True:
+            if i == 0 and rocket.ogive is True:
                 # Ogive goes brrrrr
                 l_partial2 = 0
                 l_partial = L_ogive/n_c
@@ -922,7 +940,7 @@ def run_3D():
                     compound_list.append(rod)
                     l_partial2 += l_partial
                 continue
-            if i == 0 and rocket.ogive == False:
+            if i == 0 and rocket.ogive is False:
                 nosecone=vp.cone(pos=vp.vector(dim_x_floor/2,(L-nosecone_length),dim_z_floor/2),axis=vp.vector(0,1,0),radius=d/2,color=vp.color.black,length=nosecone_length)
                 compound_list.append(nosecone)
                 continue
@@ -952,7 +970,7 @@ def run_3D():
         fin_compound_control = [0]*4
         for i in range(4):
             fin_compound_control[i] = throwaway_box
-        if rocket.use_fins == True:
+        if rocket.use_fins is True:
             compound_fins = []
             fins = rkt.fin[0].dim
             if fins[1][0] > 0.001:
@@ -960,7 +978,7 @@ def run_3D():
                     if fins[i][1] == fins[i+1][1]:
                         l = abs(fins[i+1][0] - fins[i][0])+0.001
                         if l==0:
-                                continue
+                            continue
                         b0 = fins[i][1]
                         b1 = fins[i+1][1]
                         x0 = abs(fins[i][0] - rocket_dim[-1][0])
@@ -992,7 +1010,7 @@ def run_3D():
                     fin_compound[i+1] = fin_compound[0].clone(pos=fin_compound[0].pos)
                     fin_compound[i+1].rotate(np.pi/2*(i+1),axis=vp.vector(0,1,0),origin=vp.vector(dim_x_floor/2,0,dim_z_floor/2))
 
-            if rocket.use_fins_control == True:
+            if rocket.use_fins_control is True:
                 fins = rkt.fin[1].dim
                 compound_fins_control = []
                 for i in range(len(fins)-1):
@@ -1050,7 +1068,7 @@ def run_3D():
         motor.trail_color=vp.color.red
         motor.rotate(u_initial_offset,axis=vp.vector(0,0,-1))
 
-        if rocket.use_fins == True:
+        if rocket.use_fins is True:
             sep = rkt.fin[0].dim[1][1] - rocket.rocket_dim[-1][1]/2
         else:
             sep = 0
@@ -1060,7 +1078,7 @@ def run_3D():
         Nforce_pos=vp.arrow(pos=vp.vector(motor.pos.x+(d/2+0.015),motor.pos.y+(L-xa_3D[0]),motor.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.green)
         Nforce_neg=vp.arrow(pos=vp.vector(motor.pos.x-(d/2+0.015),motor.pos.y+(L-xa_3D[0]),motor.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.green)
 
-        if rocket.use_fins_control == True:
+        if rocket.use_fins_control is True:
             T_fin_pos = vp.arrow(pos=vp.vector(control_fins.pos.x-(d/2+rkt.fin[1].b+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
             T_fin_neg = vp.arrow(pos=vp.vector(control_fins.pos.x+(d/2+rkt.fin[1].b+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(-0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
 
@@ -1068,7 +1086,7 @@ def run_3D():
         Nforce_pos.visible=False
         Tmotor_pos.visible=False
         Tmotor_neg.visible=False
-        if rocket.use_fins_control == True:
+        if rocket.use_fins_control is True:
             T_fin_pos.visible=False
             T_fin_neg.visible=False
 
@@ -1098,7 +1116,7 @@ def run_3D():
             # Creates a cg and cp vector with reference to the origin of the 3D rocket (not the math model rocket)
             xcg_radius = loc2glob((L-xcg),0,theta_3D[i])
             xa_radius = loc2glob(xa_3D[i+1]-xa_3D[i],0,theta_3D[i])  #Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
-            if rocket.use_fins_control == True:
+            if rocket.use_fins_control is True:
                 T_control_fin_radius = loc2glob((rkt.fin[1].CP-xcg),0,theta_3D[i])
 
             #CP and CG global vectors
@@ -1112,31 +1130,31 @@ def run_3D():
             motor.pos.y+=delta_pos_X
             motor.pos.x+=delta_pos_Z
             motor.rotate((theta_3D[i+1]-theta_3D[i]),axis=vp.vector(0,0,1),origin=vect_cg)  # Rigid rotation with the rocket
-            if rocket.use_fins_control == False:
+            if rocket.use_fins_control is False:
                 motor.rotate((servo_3D[i+1]-servo_3D[i]),axis=vp.vector(0,0,-1))                # TVC mount rotation
 
-            if rocket.use_fins_control == True:
+            if rocket.use_fins_control is True:
                 control_fins.pos.y+=delta_pos_X
                 control_fins.pos.x+=delta_pos_Z
                 control_fins.rotate((theta_3D[i+1]-theta_3D[i]),axis=vp.vector(0,0,1),origin=vect_cg)
                 control_fins.rotate(servo_3D[i+1]-servo_3D[i],axis=vp.vector(0,0,-1))
 
             # Motor Burnout, stops the red trail of the rocket
-            if(t_3D[i]>burnout_time+t_launch):
+            if t_3D[i] > burnout_time + t_launch:
                 motor.visible=False
                 motor.make_trail=False
                 Tmotor_pos.visible=False
                 Tmotor_neg.visible=False
             else:
                 aux=np.sin(servo_3D[i])*Thrust_3D[i]*force_scale # Arrows are hit or miss, tried this to avoid them going in the wrong direction, didn't work
-                if rocket.use_fins_control == False:
+                if rocket.use_fins_control is False:
                     # Makes visible one arrow or the other, be it left or right
-                    if aux>0:
-                        Tmotor_pos.visible=False
-                        Tmotor_neg.visible=True
+                    if aux > 0:
+                        Tmotor_pos.visible = False
+                        Tmotor_neg.visible = True
                     else:
-                        Tmotor_pos.visible=True
-                        Tmotor_neg.visible=False
+                        Tmotor_pos.visible = True
+                        Tmotor_neg.visible = False
                     # Displacements and rotations of the arrows
                     Tmotor_pos.pos.y+=delta_pos_X
                     Tmotor_pos.pos.x+=delta_pos_Z
@@ -1152,12 +1170,12 @@ def run_3D():
 
             #Normal force arrow
             # Same as before, makes the one active visible
-            if Nalpha_3D[i]<=0:
-                Nforce_pos.visible=False
-                Nforce_neg.visible=True
+            if Nalpha_3D[i] <= 0:
+                Nforce_pos.visible = False
+                Nforce_neg.visible = True
             else:
-                Nforce_pos.visible=True
-                Nforce_neg.visible=False
+                Nforce_pos.visible = True
+                Nforce_neg.visible = False
             # Displacements and rotations
             Nforce_pos.pos.y+=delta_pos_X - xa_radius[0]
             Nforce_pos.pos.x+=delta_pos_Z - xa_radius[1]
@@ -1170,13 +1188,13 @@ def run_3D():
             Nforce_neg.rotate(theta_3D[i],axis=vp.vector(0,0,1), origin=Nforce_neg.pos)
             Nforce_neg.rotate((theta_3D[i+1]-theta_3D[i]),axis=vp.vector(0,0,1),origin=vect_cg)
 
-            if rocket.use_fins_control == True:
+            if rocket.use_fins_control is True:
                 if Fin_force_3D[i] >= 0:
-                    T_fin_pos.visible=False
-                    T_fin_neg.visible=True
+                    T_fin_pos.visible = False
+                    T_fin_neg.visible = True
                 else:
-                    T_fin_pos.visible=True
-                    T_fin_neg.visible=False
+                    T_fin_pos.visible = True
+                    T_fin_neg.visible = False
                 # Displacements and rotations
                 T_fin_pos.pos.y+=delta_pos_X - xa_radius[0]*0
                 T_fin_pos.pos.x+=delta_pos_Z - xa_radius[1]*0
@@ -1189,24 +1207,24 @@ def run_3D():
                 T_fin_neg.rotate(theta_3D[i],axis=vp.vector(0,0,1), origin=T_fin_neg.pos)
                 T_fin_neg.rotate((theta_3D[i+1]-theta_3D[i]),axis=vp.vector(0,0,1),origin=vect_cg)
 
-            if hide_forces==True:
+            if hide_forces is True:
                 Nforce_pos.visible = False
                 Nforce_neg.visible = False
                 Tmotor_pos.visible = False
                 Tmotor_neg.visible = False
-                if rocket.use_fins_control == True:
+                if rocket.use_fins_control is True:
                     T_fin_pos.visible=False
                     T_fin_neg.visible=False
 
             #To avoid the ugly arrows before the rocket starts going
-            if V_glob_3D[i][0]<0.1:
+            if V_glob_3D[i][0] < 0.1:
                 Nforce_neg.visible = False
                 Nforce_pos.visible = False
                 Tmotor_pos.visible = False
                 Tmotor_neg.visible = False
 
             #Camera
-            if camera_shake_toggle==True:
+            if camera_shake_toggle is True:
                 camera_shake=loc2glob(V_glob_3D[i][0],V_glob_3D[i][1],theta_3D[i])
             else:
                 camera_shake=[0,0]
@@ -1242,5 +1260,4 @@ def run_3D():
 
         plt.draw()
         plt.show()
-    return
 

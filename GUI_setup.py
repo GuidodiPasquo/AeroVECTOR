@@ -45,7 +45,7 @@ def update_file_labels(name):
     fun.Tab.update_active_file_label(name)
 
 ######## Tabs
-## CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
+## CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
 def create_file_tab(notebook):
     file_tab.create_tab(notebook, "File")
     combobox_options = [files.get_save_names()]
@@ -142,16 +142,17 @@ def create_file_tab(notebook):
     return
 
 
-## PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB -
+## PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB
 def create_parameters_tab(notebook):
     param_file_tab.create_tab(notebook, "Parameters")
     tk.Label(param_file_tab.tab, text="Parameters",fg="black",bg="#CCFFCC",padx=0).grid(row=0,column=0, sticky="NESW", columnspan = 3)
     combobox_options = [files.get_motor_names()]
     names_combobox = ["Motor[N] = "]
     param_file_tab.create_combobox(combobox_options,names_combobox,1,1)
-    names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg [m] = ","Xt [m] = ", "Servo Definition [º] = ",
-             "Max Actuator Angle [º] = ", "Actuator Reduction = ","Initial Misalignment [º] = ", "Servo Velocity Compensation",
-             "Wind [m/s] = ","Wind Gust = "]
+    names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg [m] = ","Xt [m] = ",
+                   "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
+                   "Actuator Reduction = ","Initial Misalignment [º] = ",
+                   "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
     h = 39
     def button_save_parameters():
@@ -166,7 +167,7 @@ def create_parameters_tab(notebook):
     param_file_tab.configure()
     return
 
-## DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB -
+## DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB
 def create_draw_rocket_tab(notebook):
     """
         Rocket points go from the tip down to the tail
@@ -181,7 +182,8 @@ def create_draw_rocket_tab(notebook):
     draw_rocket_tab.create_tab(notebook, "Set Rocket Body")
     draw_rocket_tab.create_canvas(250,450)
     # Create checboxes
-    checkboxes = ["Ogival Nosecone", "Use fins", "Fins Attached to Body", "Control Fins", "Control Fins Attached"]
+    checkboxes = ["Ogival Nosecone", "Use fins", "Fins Attached to Body",
+                  "Control Fins", "Control Fins Attached"]
     draw_rocket_tab.create_checkboxes(checkboxes,0,1,"W")
     draw_rocket_tab.checkbox[0].grid(columnspan=10)
     draw_rocket_tab.checkbox[0].config(command = draw_rocket_tab.draw_rocket)

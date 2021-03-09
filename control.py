@@ -6,7 +6,11 @@ Created on Fri Jan 29 14:05:35 2021
 """
 import ZPC_PID_SIMULATOR as sim
 
-class controller_class:
+
+class Controller:
+    """
+    Controller class, the default is a PID controller
+    """
 
     def __init__(self):
         self.torque_controller = True
@@ -20,15 +24,31 @@ class controller_class:
         self.reference_thrust = 28
         self.u_controller = 0
         self.t_prev = 0
-        self.lastError = 0
-        self.cumError = 0
-        return
+        self.last_error = 0
+        self.cum_error = 0
 
-    def setup_controller(self, conf_controller, Actuator_reduction, TVC_max):
+    def setup_controller(self, conf_controller, actuator_reduction, tvc_max):
+        """
+        Set up the controller
+
+        Parameters
+        ----------
+        conf_controller : list
+            List with the controller configuration.
+        actuator_reduction : float
+            TVC reduction rate.
+        tvc_max : float
+            Maximum deflection angle (rad).
+
+        Returns
+        -------
+        None.
+
+        """
         self.u_controller = 0
         self.t_prev = 0
-        self.lastError = 0
-        self.cumError = 0
+        self.last_error = 0
+        self.cum_error = 0
         self.torque_controller = conf_controller[0]
         self.anti_windup = conf_controller[1]
         self.input_type = conf_controller[2]
@@ -38,75 +58,104 @@ class controller_class:
         self.k_all = conf_controller[6]
         self.k_damping = conf_controller[7]
         self.reference_thrust = conf_controller[8]
-        self.Actuator_reduction = Actuator_reduction
-        self.TVC_max = TVC_max
-        if sim.rocket.use_fins_control == True and sim.rkt.fin[1].CP < sim.xcg:
-            """
-            Must invert the gains if the fins are ahead of the CG, or else
-            the controller has positive feedback due to the torque being
-            opposite to the one expected.
-            """
+        self.actuator_reduction = actuator_reduction
+        self.tvc_max = tvc_max
+        if sim.rocket.use_fins_control is True and sim.rkt.fin[1].CP < sim.xcg:
+            # Must invert the gains if the fins are ahead of the CG, or else
+            # the controller has positive feedback due to the torque being
+            # opposite to the one expected.
             self.k_all *= -1
             self.k_damping *= -1
 
-    def control_theta(self, setpoint, theta, Q, Thrust, t):
+    def control_theta(self, setpoint, theta, Q, thrust, t):
+        """
+
+
+        Parameters
+        ----------
+        setpoint : float
+            Input to the controller.
+        theta : float
+            Current angle.
+        Q : float
+            Current pitching speed.
+        thrust : Float
+            Current thrust.
+        t : float
+            Current time.
+
+        Returns
+        -------
+        u_servos : float
+            Output of the controller.
+        okp : float
+            Proportional contribution.
+        oki : float
+            Integral contribution.
+        okd : float
+            Derivative contribution.
+        tot_error : float
+            Total error.
+
+        """
         self.u_prev = self.u_controller
         error = setpoint - theta
         error = error * self.k_all
-        self.u_controller = self.PID(error, t)
+        self.u_controller = self._pid(error, t)
         self.u_controller = self.u_controller - Q*self.k_damping
-        #Saturation
-        if(self.u_controller > self.TVC_max):
-            self.u_controller = self.TVC_max
-        elif(self.u_controller < -self.TVC_max):
-            self.u_controller = -self.TVC_max
-        #u_controller=u_controller-u_prev*0.05;  #filter, increasing the number makes it stronger and slower
-        self.u_servos = self.u_controller*self.Actuator_reduction
-        if(self.torque_controller==True):
-            """
-            On the simulation one can access the real Thrust from the thrust curve
-            In your flight computer you will have to calculate it.
-            """
-            thrust_controller = Thrust
+        # Saturation
+        if self.u_controller > self.tvc_max:
+            self.u_controller = self.tvc_max
+        elif self.u_controller < -self.tvc_max:
+            self.u_controller = -self.tvc_max
+        # u_controller=u_controller-u_prev*0.05;  #filter, increasing the
+        # number makes it stronger and slower
+        self.u_servos = self.u_controller*self.actuator_reduction
+        if self.torque_controller is True:
+            # On the simulation one can access the real thrust from the thrust curve
+            # In your flight computer you will have to calculate it.
+            thrust_controller = thrust
             self.u_servos=(self.reference_thrust/thrust_controller) * self.u_servos
             # Prevents the TVC from deflecting more that it can after being corrected
-            # for the Thrust.
-            if(self.u_servos > self.TVC_max * self.Actuator_reduction):
-                self.u_servos = self.TVC_max * self.Actuator_reduction
-            elif(self.u_servos < -self.TVC_max * self.Actuator_reduction):
-                self.u_servos = -self.TVC_max * self.Actuator_reduction
-        return self.u_servos, self.okp, self.oki, self.okd, self.totError
+            # for the thrust.
+            if self.u_servos > self.tvc_max * self.actuator_reduction:
+                self.u_servos = self.tvc_max * self.actuator_reduction
+            elif self.u_servos < -self.tvc_max * self.actuator_reduction:
+                self.u_servos = -self.tvc_max * self.actuator_reduction
+        return self.u_servos, self.okp, self.oki, self.okd, self.tot_error
 
     # PID
-    def PID(self, inp, t):
-        T_Program = t - self.t_prev
+    def _pid(self, inp, t):
+        T_program = t - self.t_prev
         # Determine the error
-        errorPID = inp;
+        error_pid = inp
         # Compute its derivative
-        rateError = (errorPID - self.lastError) / T_Program
-        if(self.anti_windup==True):
+        rate_error = (error_pid - self.last_error) / T_program
+        if self.anti_windup is True:
             # PID output
-            out_pid = self.kp * errorPID + self.ki * self.cumError + self.kd * rateError;
+            out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
             # Anti windup by clamping
-            if out_pid < self.TVC_max and out_pid > -self.TVC_max:
+            if -self.tvc_max < out_pid < self.tvc_max:
                 # Compute integral (trapezoidal) only if the TVC is not staurated
-                self.cumError = ((((self.lastError) + ((errorPID - self.lastError) / 2))) * T_Program) + self.cumError
+                self.cum_error = (((((self.last_error) + ((error_pid - self.last_error) / 2)))
+                                  * T_program) + self.cum_error)
                 # Recalculate the output
-                out_pid = self.kp * errorPID + self.ki * self.cumError + self.kd * rateError
+                out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
             # Saturation, prevents the TVC from deflecting more that it can
-            if(out_pid > self.TVC_max ):
-                out_pid = self.TVC_max
-            elif(out_pid < -self.TVC_max ):
-                out_pid = -self.TVC_max
+            if out_pid > self.tvc_max:
+                out_pid = self.tvc_max
+            elif out_pid < -self.tvc_max:
+                out_pid = -self.tvc_max
         else:
-            self.cumError = ((((self.lastError) + ((errorPID - self.lastError) / 2))) * T_Program)+self.cumError
-            out_pid = self.kp * errorPID + self.ki * self.cumError + self.kd * rateError;
-        self.okp = self.kp * errorPID
-        self.oki = self.ki * self.cumError
-        self.okd = self.kd * rateError
-        self.totError = errorPID
+            self.cum_error = ((((self.last_error + ((error_pid - self.last_error) / 2)))
+                             * T_program) + self.cum_error)
+            out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
+        self.okp = self.kp * error_pid
+        self.oki = self.ki * self.cum_error
+        self.okd = self.kd * rate_error
+        self.tot_error = error_pid
         # Remember current error
-        self.lastError = errorPID
+        self.last_error = error_pid
         self.t_prev = t
         # Have function return the PID output
         return out_pid
