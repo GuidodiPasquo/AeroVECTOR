@@ -243,7 +243,7 @@ def get_data_savefile():
     confController = gui.sim_setup_tab.get_configuration_destringed()
     return param, conf3D, confController, confSITL, rocketDim
 
-def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_dim):
+def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_dim):
     global Thrust, burnout_time, Thrust_curve, max_thrust, average_thrust
     global m, Iy, d, xcg, xt, L, nosecone_length, CA0
     global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
@@ -263,14 +263,14 @@ def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_d
 
     ##
     global toggle_3D, camera_shake_toggle, slow_mo, force_scale, hide_forces, Camera_type, variable_fov, fov
-    toggle_3D=conf_3D[0]
-    camera_shake_toggle=conf_3D[1]
-    hide_forces=conf_3D[2]
-    variable_fov=conf_3D[3]
-    Camera_type=conf_3D[4]
-    slow_mo=conf_3D[5]
-    force_scale=conf_3D[6]
-    fov=conf_3D[7]
+    toggle_3D=conf_3d[0]
+    camera_shake_toggle=conf_3d[1]
+    hide_forces=conf_3d[2]
+    variable_fov=conf_3d[3]
+    Camera_type=conf_3d[4]
+    slow_mo=conf_3d[5]
+    force_scale=conf_3d[6]
+    fov=conf_3d[7]
 
     ## rocket Class
     global S, Q_damp
@@ -295,13 +295,13 @@ def update_all_parameters(parameters,conf_3D,conf_controller,conf_SITL, rocket_d
 
     ## SITL
     global Activate_SITL, Use_noise, port, baudrate, gyro_sd, acc_sd, alt_sd
-    Activate_SITL = conf_SITL[0]
-    Use_noise = conf_SITL[1]
-    port = conf_SITL[2]
-    baudrate = conf_SITL[3]
-    gyro_sd = conf_SITL[4]
-    acc_sd = conf_SITL[5]
-    alt_sd = conf_SITL[6]
+    Activate_SITL = conf_sitl[0]
+    Use_noise = conf_sitl[1]
+    port = conf_sitl[2]
+    baudrate = conf_sitl[3]
+    gyro_sd = conf_sitl[4]
+    acc_sd = conf_sitl[5]
+    alt_sd = conf_sitl[6]
 
     ## Servo Class
     servo.setup(Actuator_weight_compensation,servo_definition,Ts)
@@ -752,7 +752,7 @@ def plot_plots():
     return
 
 def run_sim_local():
-    global parameters, conf_3D, conf_controller
+    global parameters, conf_3d, conf_controller
     global timer_run_sim,timer_run,setpoint, t_launch,inp_time, u_servos
     while t<=Sim_duration:
         simulation()
@@ -785,7 +785,7 @@ def run_sim_local():
         plot_data()
 
 def run_sim_SITL():
-    global parameters, conf_3D, conf_controller, setpoint
+    global parameters, conf_3d, conf_controller, setpoint
     global timer_run_sim,timer_run,setpoint, parachute, t_launch, u_servos
     global send_gyro, send_Accx, send_Accz, send_alt
     global timer_flag_t0, clock_dif, T_glob, parachute
@@ -871,11 +871,11 @@ def run_sim_SITL():
                     parachute = int(read_split[1])
 
 def run_simulation():
-    global parameters, conf_3D, conf_controller
+    global parameters, conf_3d, conf_controller
     global timer_run_sim,timer_run,setpoint
     reset_variables()
-    parameters, conf_3D, conf_controller, conf_SITL, rocket_dim = get_data_savefile()
-    update_all_parameters(parameters, conf_3D, conf_controller, conf_SITL, rocket_dim)
+    parameters, conf_3d, conf_controller, conf_sitl, rocket_dim = get_data_savefile()
+    update_all_parameters(parameters, conf_3d, conf_controller, conf_sitl, rocket_dim)
     print("Simulation Started")
     if Activate_SITL is False:
         run_sim_local()

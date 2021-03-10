@@ -88,10 +88,10 @@ def create_file_tab(notebook):
             draw_rocket_tab.populate(savefile.get_rocket_dim())
             update_file_labels(savefile.name)
             conf_3D_tab.depopulate()
-            conf_3D_tab.populate(savefile.get_conf_3D())
+            conf_3D_tab.populate(savefile.get_conf_3d())
             conf_3D_tab.change_state()
             conf_SITL_tab.depopulate()
-            conf_SITL_tab.populate(savefile.get_conf_SITL())
+            conf_SITL_tab.populate(savefile.get_conf_sitl())
             conf_SITL_tab.change_state()
             sim_setup_tab.depopulate()
             sim_setup_tab.populate(savefile.get_conf_controller())
@@ -116,9 +116,9 @@ def create_file_tab(notebook):
                 d = draw_rocket_tab.get_configuration()
                 savefile.set_rocket_dim(d)
                 d = conf_3D_tab.get_configuration()
-                savefile.set_conf_3D(d)
+                savefile.set_conf_3d(d)
                 d = conf_SITL_tab.get_configuration()
-                savefile.set_conf_SITL(d)
+                savefile.set_conf_sitl(d)
                 d = sim_setup_tab.get_configuration()
                 savefile.set_conf_controller(d)
                 d = run_sim_tab.get_configuration()
@@ -344,7 +344,7 @@ def create_conf_3D_tab(notebook):
     conf_3D_tab.create_entry(names_entry, 2, 1, "W")
     def button_save():
         d = conf_3D_tab.get_configuration()
-        savefile.set_conf_3D(d)
+        savefile.set_conf_3d(d)
         savefile.save_all_configurations()
         return
     save_conf_3D_button = tk.Button(conf_3D_tab.tab, text="Save", command = button_save, width = 20)
@@ -379,7 +379,7 @@ def create_SITL_tab(notebook):
     conf_SITL_tab.change_state()
     def button_save_conf_SITL():
         d = conf_SITL_tab.get_configuration()
-        savefile.set_conf_SITL(d)
+        savefile.set_conf_sitl(d)
         savefile.save_all_configurations()
         return
     save_conf_SITL_button = tk.Button(conf_SITL_tab.tab, text="Save", command = button_save_conf_SITL, width = 20)

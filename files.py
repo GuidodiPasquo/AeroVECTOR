@@ -9,33 +9,77 @@ import os
 import copy
 
 def get_save_names():
+    """
+    Returns a list with the names of the files in the folder .\\saves.
+
+    Returns
+    -------
+    List of strings
+        Save files names.
+
+    """
     filenames = os.listdir(".\\saves")
-    for i in range(len(filenames)):
+    for i, filename in enumerate(filenames):
         # Removes the .txt
-        filenames[i] = filenames[i][:-4]
+        filenames[i] = filename[:-4]
     return copy.deepcopy(filenames)
 
 def get_motor_names():
+    """
+    Returns a list with the names of the motor files in the folder .\\motors.
+
+    Returns
+    -------
+    List of strings
+        Motor names.
+
+    """
     return os.listdir(".\\motors")
 
+
 class SaveFile:
+    """
+    Save file class. Handles the opening, reading and writing of the .txt's
+    used to store the rocket and motor data.
+    """
     def __init__(self):
-        self.parameter_names = ["Motor[N] = ", "Mass [kg] = ","Iy [kg*m] = ", "Xcg [m] = ","Xt [m] = ", "Servo definition [º] = ",\
-             "Max Actuator Angle [º] = ", "Actuator Reduction = ","Initial Misalignment [º] = ","Servo Compensation = ",
-             "Wind [m/s] = ","Wind Gust = "]
-        self.conf_3D_names = ["###=#","toggle_3D=","camera_shake_toggle=","hide_forces=","variable_fov=","Camera_type=","slow_mo=","force_scale=","fov="]
-        self.conf_controller_names = ["###=#","Torque Controller = ","Anti Windup = ","Input Type = ","Kp = ", "Ki = ", "Kd = ", "K All = ",
-                                      "K Damping = ", "Reference Thrust [N] = ", "Input = ","Input time = ","Launch Time = ",
-                                      "Servo Sample Time [s] = ","Controller Sample Time [s] = "
-                                      , "Maximum Sim Duration [s] = ", "Sim Delta T [s] = "]
-        self.conf_SITL_names = ["###=#","Activate_SITL=", "Use Sensor Noise=", "Port=", "Baudrate=",
-                                "Gyroscope SD=", "Accelerometer SD=","Altimeter SD="]
-        self.conf_plot_names = ["###=#","Frist_plot=", "Second_plot=", "Third_plot=", "Fourth_plot=", "Fifth_plot="]
+        self.parameter_names = ["Motor[N] = ", "Mass [kg] = ","Iy [kg*m] = ",
+                                "Xcg [m] = ","Xt [m] = ", "Servo definition [º] = ",
+                                "Max Actuator Angle [º] = ", "Actuator Reduction = ",
+                                "Initial Misalignment [º] = ","Servo Compensation = ",
+                                "Wind [m/s] = ","Wind Gust = "]
+        self.conf_3d_names = ["###=#","toggle_3D=","camera_shake_toggle=",
+                              "hide_forces=","variable_fov=","Camera_type=",
+                              "slow_mo=","force_scale=","fov="]
+        self.conf_controller_names = ["###=#","Torque Controller = ","Anti Windup = ",
+                                      "Input Type = ","Kp = ", "Ki = ", "Kd = ",
+                                      "K All = ", "K Damping = ", "Reference Thrust [N] = ",
+                                      "Input = ","Input time = ","Launch Time = ",
+                                      "Servo Sample Time [s] = ","Controller Sample Time [s] = ",
+                                      "Maximum Sim Duration [s] = ", "Sim Delta T [s] = "]
+        self.conf_sitl_names = ["###=#","Activate_SITL=", "Use Sensor Noise=",
+                                "Port=", "Baudrate=", "Gyroscope SD=",
+                                "Accelerometer SD=","Altimeter SD="]
+        self.conf_plot_names = ["###=#","Frist_plot=", "Second_plot=", "Third_plot=",
+                                "Fourth_plot=", "Fifth_plot="]
         self.rocket_dim_names = ["###=#"]
 
+        self.name = ""
+        self.parameters = []
+        self.conf_3d = []
+        self.conf_controller = []
+        self.conf_sitl = []
+        self.conf_plots = []
+        self.rocket_dim = []
+        self.tofile = ""
+        self.t_mot = []
+        self.thrust_mot = []
         self.overwrite_flag = False
 
     def update_name(self,n):
+        """
+        Update the name of the savefile instance (not the actual file) to n.
+        """
         self.name = n
 
     def _save_parameters(self, tofile):
@@ -43,20 +87,20 @@ class SaveFile:
             tofile+=self.parameter_names[i]+self.parameters[i]+"\n"
         return tofile
 
-    def _save_conf_3D(self, tofile):
-        for i in range(len(self.conf_3D_names)):
+    def _save_conf_3d(self, tofile):
+        for i in range(len(self.conf_3d_names)):
             if i == 0:
                 tofile+="###=#\n"
             else:
-                tofile+=self.conf_3D_names[i]+self.conf_3D[i-1]+"\n"
+                tofile+=self.conf_3d_names[i]+self.conf_3d[i-1]+"\n"
         return tofile
 
-    def _save_conf_SITL(self, tofile):
-        for i in range(len(self.conf_SITL_names)):
+    def _save_conf_sitl(self, tofile):
+        for i in range(len(self.conf_sitl_names)):
             if i == 0:
                 tofile+="###=#\n"
             else:
-                tofile+=self.conf_SITL_names[i]+self.conf_SITL[i-1]+"\n"
+                tofile+=self.conf_sitl_names[i]+self.conf_sitl[i-1]+"\n"
         return tofile
 
     def _save_conf_controller(self, tofile):
@@ -83,19 +127,34 @@ class SaveFile:
 
     def _save_all(self, tofile):
         tofile = self._save_parameters(tofile)
-        tofile = self._save_conf_3D(tofile)
+        tofile = self._save_conf_3d(tofile)
         tofile = self._save_conf_controller(tofile)
-        tofile = self._save_conf_SITL(tofile)
+        tofile = self._save_conf_sitl(tofile)
         tofile = self._save_conf_plots(tofile)
         tofile = self._save_rocket_dim(tofile)
         return tofile
 
     def check_if_file_exists2overwrite(self, n):
+        """
+        Check if the file "n" exists and decide if it will be overwritten
+        or not.
+
+        Parameters
+        ----------
+        n : string
+            File name.
+
+        Returns
+        -------
+        Bool
+            Flag to overwrite the file or not.
+
+        """
         self.overwrite_flag = False
         names = get_save_names()
         flag_found_name = False
-        for i in range(len(names)):
-            if names[i] == n:
+        for name in names:
+            if name == n:
                 x = ""
                 flag_found_name = True
                 while x != "y" or x != "n":
@@ -103,25 +162,45 @@ class SaveFile:
                     if x == "y":
                         self.overwrite_flag = True
                         return self.overwrite_flag
-                    elif x == "n":
+                    if x == "n":
                         self.overwrite_flag = False
                         return self.overwrite_flag
-                    else:
-                        print("Insert valid option")
-        if flag_found_name == False:
+                    print("Insert valid option")
+        if flag_found_name is False:
             self.overwrite_flag = True
             return self.overwrite_flag
+        return None
 
     def create_file(self,n):
+        """
+        Create a file named "n" with default parameters.
+
+        Parameters
+        ----------
+        n : string
+            File name.
+
+        Returns
+        -------
+        None.
+
+        """
         self.update_name(n)
-        self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55',"0.85", '1', '10', '5', '2',"2.1", '2', '0.1']
-        self.conf_3D = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
-        self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0', '0.136', '1', '0', '30','20',"0.5","1", '0.02', '0.01', "30", "0.001"]
-        self.conf_SITL = ["False","False","COM3","115200","0","0","0"]
-        self.conf_plots = ["Pitch Angle", "Setpoint", "Actuator deflection", "Off", "Off"]
-        self.rocket_dim = ["True","False","True","False","False","0,0","0.2,0.066","1,0.066",
-                           "Fins_s","0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000",
-                           "Fins_c","0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000"]
+        self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55',"0.85",
+                           '1', '10', '5', '2',"2.1", '2', '0.1']
+        self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
+        self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
+                                '0.136', '1', '0', '30','20',"0.5","1", '0.02',
+                                '0.01', "30", "0.001"]
+        self.conf_sitl = ["False","False","COM3","115200","0","0","0"]
+        self.conf_plots = ["Pitch Angle", "Setpoint", "Actuator deflection",
+                           "Off", "Off"]
+        self.rocket_dim = ["True","False","True","False","False",
+                           "0,0","0.2,0.066","1,0.066",
+                           "Fins_s",
+                           "0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000",
+                           "Fins_c",
+                           "0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000"]
         try:
             with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:
                 self.tofile = ""
@@ -132,6 +211,19 @@ class SaveFile:
             print("Error")
 
     def create_file_as(self,n):
+        """
+        Create a file named "n" with the data saved in the GUI.
+
+        Parameters
+        ----------
+        n : string
+            File name.
+
+        Returns
+        -------
+        None.
+
+        """
         self.update_name(n)
         try:
             with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:
@@ -142,20 +234,28 @@ class SaveFile:
         except EnvironmentError:
             print("Error")
     # Parameters are set (from the GUI_Setup file) before saving the whole file
-    def set_parameters(self,a):
-        self.parameters = copy.deepcopy(a)
-    def set_conf_3D(self,a):
-        self.conf_3D = copy.deepcopy(a)
-    def set_conf_controller(self,a):
-        self.conf_controller = copy.deepcopy(a)
-    def set_conf_SITL(self,a):
-        self.conf_SITL = copy.deepcopy(a)
-    def set_conf_plots(self,a):
-        self.conf_plots = copy.deepcopy(a)
-    def set_rocket_dim(self,a):
-        self.rocket_dim = copy.deepcopy(a)
+    def set_parameters(self,data):
+        self.parameters = copy.deepcopy(data)
+    def set_conf_3d(self,data):
+        self.conf_3d = copy.deepcopy(data)
+    def set_conf_controller(self,data):
+        self.conf_controller = copy.deepcopy(data)
+    def set_conf_sitl(self,data):
+        self.conf_sitl = copy.deepcopy(data)
+    def set_conf_plots(self,data):
+        self.conf_plots = copy.deepcopy(data)
+    def set_rocket_dim(self,data):
+        self.rocket_dim = copy.deepcopy(data)
 
     def save_all_configurations(self):
+        """
+        Save the configuration in the GUI to the active file.
+
+        Returns
+        -------
+        None.
+
+        """
         try:
             with open(".\\saves\\" + self.name + ".txt","w", encoding="utf-8") as file:
                 self.tofile = ""
@@ -165,7 +265,7 @@ class SaveFile:
         except EnvironmentError:
             print("Error")
 
-    def split_list(self,content,split_index):
+    def _split_list(self,content,split_index):
         # splits the list in the selected indexes
         res = [content[i : j] for i, j in zip([0] + split_index, split_index + [None])]
         # Deletes the # that's left from the ###=# separator
@@ -176,6 +276,14 @@ class SaveFile:
         del res[5][0]
         return res
     def read_file(self):
+        """
+        Set the Savefile instance parameters to the ones on the save file.
+
+        Returns
+        -------
+        None.
+
+        """
         try:
             with open(".\\saves\\" + self.name + ".txt","r", encoding="utf-8") as file:
                 content = []
@@ -186,15 +294,15 @@ class SaveFile:
                     except IndexError:
                         # For the rocket Dimensions
                         content.append(line.split("=")[0].strip())
-                for i in range(len(content)):
-                    if content[i]=="#":
+                for i, element in enumerate(content):
+                    if element == "#":
                         # where to cut the list to send to each tab
                         split_index.append(i)
-                res = self.split_list(content,split_index)
+                res = self._split_list(content,split_index)
                 self.parameters = res[0]
-                self.conf_3D = res[1]
+                self.conf_3d = res[1]
                 self.conf_controller = res[2]
-                self.conf_SITL = res[3]
+                self.conf_sitl = res[3]
                 self.conf_plots = res[4]
                 self.rocket_dim = res[5]
             print("File Opened Successfully")
@@ -203,21 +311,34 @@ class SaveFile:
 
     def get_parameters(self):
         return copy.deepcopy(self.parameters)
-    def get_conf_3D(self):
-        return copy.deepcopy(self.conf_3D)
+    def get_conf_3d(self):
+        return copy.deepcopy(self.conf_3d)
     def get_conf_controller(self):
         return copy.deepcopy(self.conf_controller)
-    def get_conf_SITL(self):
-        return copy.deepcopy(self.conf_SITL)
+    def get_conf_sitl(self):
+        return copy.deepcopy(self.conf_sitl)
     def get_conf_plots(self):
         return copy.deepcopy(self.conf_plots)
     def get_rocket_dim(self):
         return copy.deepcopy(self.rocket_dim)
 
     def read_motor_data(self,name):
+        """
+        Load motor data into the Savefile instance.
+
+        Parameters
+        ----------
+        name : string.
+            Save file name.
+
+        Returns
+        -------
+        None.
+
+        """
         # To make sure it starts form t=0 and Thrust = 0
         self.t_mot = [0]
-        self.y_mot = [0]
+        self.thrust_mot = [0]
         try:
             with open(".\\motors\\" + name,"r", encoding="utf-8") as file:
                 for line in file:
@@ -225,7 +346,7 @@ class SaveFile:
                         a = float(line.split(",")[0])
                         b = float(line.split(",")[1])
                         self.t_mot.append(a)
-                        self.y_mot.append(b)
+                        self.thrust_mot.append(b)
                     except ValueError:
                         pass
             print("Motor Opened Successfully")
@@ -233,7 +354,13 @@ class SaveFile:
             print("Error Reading Motor")
 
     def get_motor_data(self):
-        return [copy.deepcopy(self.t_mot), copy.deepcopy(self.y_mot)]
+        """
+        Get motor data as a list of [time, thrust]
 
+        Returns
+        -------
+        list
+            thrust data.
 
-
+        """
+        return [copy.deepcopy(self.t_mot), copy.deepcopy(self.thrust_mot)]

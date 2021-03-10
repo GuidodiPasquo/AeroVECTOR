@@ -35,8 +35,10 @@ def move_tk_object(obj, r=0, c=0, columnspan=1):
 
 class ActiveFileLabel:
     """Creates a label with the active file name."""
+
     def __init__(self):
-        pass
+        self.r = 0
+        self.c = 0
 
     def create_label(self,root,r,c):
         """
@@ -507,6 +509,8 @@ class TabWithCanvas(Tab):
 
     def __init__(self):
         super().__init__()
+        self.canvas_height = 0
+        self.canvas_width = 0
         # points[0] -> rocket, points[1] -> fin
         # Rocket points go from the tip down to the tail.
         # Fin[n][x position (longitudinal), z position (span)]
@@ -522,6 +526,11 @@ class TabWithCanvas(Tab):
         self.active_point_fins = 0
         self.flag_hollow_body = False
         self.AoA = 0.001
+        self.rocket_length = 0
+        self.max_fin_len = 0
+        self.max_length = 0
+        self.scale_y = 1
+        self.centering = 0
 
     def sort(self, l):
         """
@@ -657,8 +666,8 @@ class TabWithCanvas(Tab):
         """
         l = copy.deepcopy(self.points[n])
         l2 = []
-        for i in range(len(l)):
-            a = l[i].split(",")
+        for element in l:
+            a = element.split(",")
             l2.append([float(a[0]),float(a[1])])
         return copy.deepcopy(l2)
 
@@ -700,12 +709,12 @@ class TabWithCanvas(Tab):
                     x_ogive_2 = x_ogive_1 + L/10
                     y_ogive_1 = np.sqrt(rho_radius**2 - (L-x_ogive_1)**2) + R - rho_radius
                     y_ogive_2 = np.sqrt(rho_radius**2 - (L-x_ogive_2)**2) + R - rho_radius
-                    x1 = ( y_ogive_1 * self.scaleY + self.canvas_width) / 2
-                    y1 = x_ogive_1 * self.scaleY + self.centering
-                    x2 = (y_ogive_2 * self.scaleY + self.canvas_width) / 2
-                    y2 = x_ogive_2*self.scaleY+self.centering
-                    x1_mirror = (-y_ogive_1*self.scaleY+self.canvas_width) / 2
-                    x2_mirror = (-y_ogive_2*self.scaleY+self.canvas_width) / 2
+                    x1 = ( y_ogive_1 * self.scale_y + self.canvas_width) / 2
+                    y1 = x_ogive_1 * self.scale_y + self.centering
+                    x2 = (y_ogive_2 * self.scale_y + self.canvas_width) / 2
+                    y2 = x_ogive_2*self.scale_y+self.centering
+                    x1_mirror = (-y_ogive_1*self.scale_y+self.canvas_width) / 2
+                    x2_mirror = (-y_ogive_2*self.scale_y+self.canvas_width) / 2
                     self.canvas.create_line(x1,y1,x2,y2)
                     self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
                     x_ogive_1 += L/10
@@ -714,12 +723,12 @@ class TabWithCanvas(Tab):
                 self._create_point_xcg(point_diameter)
             else:
                 # Conic nosecone / rest of the body
-                x1 = (l2[i][1]*self.scaleY+self.canvas_width)/2
-                y1 = l2[i][0]*self.scaleY+self.centering
-                x2 = (l2[i+1][1]*self.scaleY+self.canvas_width)/2
-                y2 = l2[i+1][0]*self.scaleY+self.centering
-                x1_mirror = (-l2[i][1]*self.scaleY+self.canvas_width)/2
-                x2_mirror = (-l2[i+1][1]*self.scaleY+self.canvas_width)/2
+                x1 = (l2[i][1]*self.scale_y+self.canvas_width)/2
+                y1 = l2[i][0]*self.scale_y+self.centering
+                x2 = (l2[i+1][1]*self.scale_y+self.canvas_width)/2
+                y2 = l2[i+1][0]*self.scale_y+self.centering
+                x1_mirror = (-l2[i][1]*self.scale_y+self.canvas_width)/2
+                x2_mirror = (-l2[i+1][1]*self.scale_y+self.canvas_width)/2
                 self.canvas.create_line(x1,y1,x2,y2)
                 self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
                 if i == len(l2)-2:
@@ -731,11 +740,11 @@ class TabWithCanvas(Tab):
 
     def _draw_base_component(self,l2):
         # Draws the horizontal line that separates each component
-        for i in range(len(l2)):
-            x1 = (l2[i][1]*self.scaleY+self.canvas_width)/2
-            y1 = l2[i][0]*self.scaleY+self.centering
-            x2 = (-l2[i][1]*self.scaleY+self.canvas_width)/2
-            y2 = l2[i][0]*self.scaleY+self.centering
+        for element in l2:
+            x1 = (element[1]*self.scale_y + self.canvas_width)/2
+            y1 = element[0]*self.scale_y + self.centering
+            x2 = (element[1]*self.scale_y + self.canvas_width)/2
+            y2 = element[0]*self.scale_y + self.centering
             self.canvas.create_line(x1,y1,x2,y2)
 
     def _draw_fins(self, l2, s, attached, separate):
@@ -751,33 +760,33 @@ class TabWithCanvas(Tab):
             sep = 0
         #Draws the fin
         for i in range(len(l2)-1):
-            x1 = (l2[i][1] + sep) * self.scaleY + self.canvas_width / 2
-            y1 = l2[i][0] * self.scaleY + self.centering
-            x2 = (l2[i+1][1]+sep) * self.scaleY + self.canvas_width / 2
-            y2 = l2[i+1][0] * self.scaleY + self.centering
-            x1_mirror = -(l2[i][1] + sep) * self.scaleY + self.canvas_width / 2
-            x2_mirror = -(l2[i+1][1] + sep) * self.scaleY+self.canvas_width / 2
+            x1 = (l2[i][1] + sep) * self.scale_y + self.canvas_width / 2
+            y1 = l2[i][0] * self.scale_y + self.centering
+            x2 = (l2[i+1][1]+sep) * self.scale_y + self.canvas_width / 2
+            y2 = l2[i+1][0] * self.scale_y + self.centering
+            x1_mirror = -(l2[i][1] + sep) * self.scale_y + self.canvas_width / 2
+            x2_mirror = -(l2[i+1][1] + sep) * self.scale_y+self.canvas_width / 2
             self.canvas.create_line(x1,y1,x2,y2,fill=s)
             self.canvas.create_line(x1_mirror,y1,x2_mirror,y2,fill=s)
         # Draws an horizontal line to "simulate" the cut body
         if attached == "False" and separate == "False":
-            x1 = (l2[0][1]*self.scaleY+self.canvas_width/2)
-            y1 = l2[0][0]*self.scaleY+self.centering
-            x2 = -l2[0][1]*self.scaleY+self.canvas_width/2
-            y2 = l2[0][0]*self.scaleY+self.centering
+            x1 = (l2[0][1]*self.scale_y+self.canvas_width/2)
+            y1 = l2[0][0]*self.scale_y+self.centering
+            x2 = -l2[0][1]*self.scale_y+self.canvas_width/2
+            y2 = l2[0][0]*self.scale_y+self.centering
             self.canvas.create_line(x1,y1,x2,y2)
         # Draws the vertical line that connects the root chord of
         # the fin, (usually the body takes care of it, but in
         # this case, the fin is separated)
         if separate == "True":
-            x1 = (l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
-            y1 = l2[0][0] * self.scaleY + self.centering
-            x2 = (l2[3][1] + sep) * self.scaleY + self.canvas_width / 2
-            y2 = l2[3][0] * self.scaleY + self.centering
-            x1_m = -(l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
-            y1_m = l2[0][0] * self.scaleY + self.centering
-            x2_m =  -(l2[0][1] + sep) * self.scaleY + self.canvas_width / 2
-            y2_m = l2[3][0] * self.scaleY + self.centering
+            x1 = (l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
+            y1 = l2[0][0] * self.scale_y + self.centering
+            x2 = (l2[3][1] + sep) * self.scale_y + self.canvas_width / 2
+            y2 = l2[3][0] * self.scale_y + self.centering
+            x1_m = -(l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
+            y1_m = l2[0][0] * self.scale_y + self.centering
+            x2_m =  -(l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
+            y2_m = l2[3][0] * self.scale_y + self.centering
             self.canvas.create_line(x1,y1,x2,y2, fill = s)
             self.canvas.create_line(x1_m,y1_m,x2_m,y2_m, fill = s)
 
@@ -787,15 +796,15 @@ class TabWithCanvas(Tab):
         f = point_diameter/2
         self.rocket.update_rocket(self.get_configuration_destringed(),self.rocket_length/2)
         Cn, Cp_point, ca = self.rocket.calculate_aero_coef(self.AoA)
-        (self.canvas.create_oval(self.canvas_width/2-f, Cp_point * self.scaleY-f,
-                                 self.canvas_width/2+f, Cp_point * self.scaleY+f,
+        (self.canvas.create_oval(self.canvas_width/2-f, Cp_point * self.scale_y-f,
+                                 self.canvas_width/2+f, Cp_point * self.scale_y+f,
                                  fill="red", outline = "red"))
 
     def _create_point_xcg(self,point_diameter):
         f = point_diameter/2
         xcg_point = float(GUI_setup.savefile.get_parameters()[3])
-        (self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scaleY-f,
-                                 self.canvas_width/2+f, xcg_point * self.scaleY+f,
+        (self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scale_y-f,
+                                 self.canvas_width/2+f, xcg_point * self.scale_y+f,
                                  fill="blue", outline = "blue"))
 
     def draw_rocket(self):
@@ -821,11 +830,11 @@ class TabWithCanvas(Tab):
         else:
             self.max_length = self.rocket_length
         if self.rocket_length != 0:
-            self.scaleY = self.canvas_height/self.max_length
+            self.scale_y = self.canvas_height/self.max_length
         else:
-            self.scaleY = 1
+            self.scale_y = 1
         # Centers the rocket in the horizontal
-        self.centering = (self.canvas_height-self.max_length*self.scaleY)/2
+        self.centering = (self.canvas_height-self.max_length*self.scale_y)/2
         self._re_draw_rocket(l2)
         if self.checkbox_status[1].get() == "True":
             fin_stab_points = self.get_points_float(1)
@@ -848,24 +857,20 @@ class TabWithCanvas(Tab):
         l3 = []
         l4 = []
         flag = "Body"
-        for i in range(len(l1)):
-            if l1[i] == "Fins_s" and i > 0:
+        for i, element in enumerate(l1):
+            if element == "Fins_s" and i > 0:
                 flag = "Fins_s"
                 continue
-
-            if l1[i] == "Fins_c":
+            if element == "Fins_c":
                 flag = "Fins_c"
                 continue
-
             if flag == "Body":
-                l2.append(l1[i])
+                l2.append(element)
                 continue
-
             if flag == "Fins_s":
-                l3.append(l1[i])
-
+                l3.append(element)
             if flag == "Fins_c":
-                l4.append(l1[i])
+                l4.append(element)
         # Populates the widgets, not the variables
         super().populate((l+l3))
         # Updates the points of the components
