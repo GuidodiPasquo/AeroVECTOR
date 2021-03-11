@@ -8,7 +8,7 @@ import copy
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
-import GUI_setup
+import gui_setup
 import rocket_functions
 
 def move_tk_object(obj, r=0, c=0, columnspan=1):
@@ -415,7 +415,7 @@ class Tab:
         def is_baudrate(f):
             """If f > 9000 almost certainly it's a baudrate"""
             return bool(f > 9000)
-        for i in range(len(data)):
+        for i, elem in enumerate(data):
             if is_number(data[i]):
                 data[i] = float(data[i])
                 if is_baudrate(data[i]):
@@ -525,7 +525,7 @@ class TabWithCanvas(Tab):
         self.active_point = 0
         self.active_point_fins = 0
         self.flag_hollow_body = False
-        self.AoA = 0.001
+        self.aoa = 0.001
         self.rocket_length = 0
         self.max_fin_len = 0
         self.max_length = 0
@@ -699,16 +699,19 @@ class TabWithCanvas(Tab):
         for i in range(len(l2)-1):
             # checkbox_status[0] is the Ogive
             if i==0 and self.checkbox_status[0].get() == "True":
-                R = l2[1][1]
-                L = l2[1][0]
-                rho_radius = (R**2 + L**2)/(2 * R)
+                radius_nc = l2[1][1]
+                len_nc = l2[1][0]
+                rho_radius = (radius_nc**2 + len_nc**2)/(2 * radius_nc)
                 x_ogive_1 = 0
-                # y = np.sqrt(rho_radius**2 - (L-x_ogive_1)**2)+R-rho_radius
+                # y = np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)+radius_nc-rho_radius
                 # Draws an ogive with 10 points
-                for _ in range(10):
-                    x_ogive_2 = x_ogive_1 + L/10
-                    y_ogive_1 = np.sqrt(rho_radius**2 - (L-x_ogive_1)**2) + R - rho_radius
-                    y_ogive_2 = np.sqrt(rho_radius**2 - (L-x_ogive_2)**2) + R - rho_radius
+                definition = 20
+                for _ in range(definition):
+                    x_ogive_2 = x_ogive_1 + len_nc/definition
+                    y_ogive_1 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)
+                                 + radius_nc - rho_radius)
+                    y_ogive_2 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_2)**2)
+                                 + radius_nc - rho_radius)
                     x1 = ( y_ogive_1 * self.scale_y + self.canvas_width) / 2
                     y1 = x_ogive_1 * self.scale_y + self.centering
                     x2 = (y_ogive_2 * self.scale_y + self.canvas_width) / 2
@@ -717,7 +720,7 @@ class TabWithCanvas(Tab):
                     x2_mirror = (-y_ogive_2*self.scale_y+self.canvas_width) / 2
                     self.canvas.create_line(x1,y1,x2,y2)
                     self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
-                    x_ogive_1 += L/10
+                    x_ogive_1 += len_nc/definition
                 point_diameter = 5
                 self._create_point_cp(point_diameter)
                 self._create_point_xcg(point_diameter)
@@ -792,17 +795,17 @@ class TabWithCanvas(Tab):
 
     def _create_point_cp(self,point_diameter):
         # Creates a point where the CP is located
-        # the slider can move it by modifying the AoA
+        # the slider can move it by modifying the aoa
         f = point_diameter/2
         self.rocket.update_rocket(self.get_configuration_destringed(),self.rocket_length/2)
-        Cn, Cp_point, ca = self.rocket.calculate_aero_coef(self.AoA)
-        (self.canvas.create_oval(self.canvas_width/2-f, Cp_point * self.scale_y-f,
-                                 self.canvas_width/2+f, Cp_point * self.scale_y+f,
+        cn, cp_point, ca = self.rocket.calculate_aero_coef(self.aoa)
+        (self.canvas.create_oval(self.canvas_width/2-f, cp_point * self.scale_y-f,
+                                 self.canvas_width/2+f, cp_point * self.scale_y+f,
                                  fill="red", outline = "red"))
 
     def _create_point_xcg(self,point_diameter):
         f = point_diameter/2
-        xcg_point = float(GUI_setup.savefile.get_parameters()[3])
+        xcg_point = float(gui_setup.savefile.get_parameters()[3])
         (self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scale_y-f,
                                  self.canvas_width/2+f, xcg_point * self.scale_y+f,
                                  fill="blue", outline = "blue"))

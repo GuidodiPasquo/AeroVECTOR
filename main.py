@@ -10,10 +10,8 @@ Thanks to:
 Apologies in advance for any spelling or grammar error, english is not my first language
 
 ###########################################
-known bugs-> Arrows are hit or miss, sometimes they aim in the right direction, sometimes they don't
-
-
-
+known bugs-> Arrows are hit or miss, sometimes they aim in the right direction,
+sometimes they don't.
 
 ########### OVERALL CHARACTERISTICS OF THE PROGRAM
 Non-linear model integrates local accelerations into global velocities.
@@ -43,10 +41,12 @@ All in all, the overall structure of the function "control_theta" and
 "PID" should be copied in your code to
 ensure that the simulator and flight computer are doing the same thing.
 """
-
+import matplotlib
+matplotlib.use('TkAgg')
 import tkinter as tk
 from tkinter import ttk
-import GUI_setup as GUI
+import gui_setup as gui
+
 
 #### Main
 root = tk.Tk()
@@ -54,12 +54,12 @@ root.title("ZPC Actively Stabilized Model Rocket Tuner / Simulator")
 root.geometry("600x600")
 
 notebook = ttk.Notebook(root)
-GUI.create_file_tab(notebook)
-GUI.create_parameters_tab(notebook)
-GUI.create_draw_rocket_tab(notebook)
-GUI.create_conf_3d_tab(notebook)
-GUI.create_sitl_tab(notebook)
-GUI.create_simulation_setup_tab(notebook)
-GUI.create_run_sim_tab(notebook)
-GUI.configure_root(root,notebook)
+gui.create_file_tab(notebook)
+gui.create_parameters_tab(notebook)
+gui.create_draw_rocket_tab(notebook)
+gui.create_conf_3d_tab(notebook)
+gui.create_sitl_tab(notebook)
+gui.create_simulation_setup_tab(notebook)
+gui.create_run_sim_tab(notebook)
+gui.configure_root(root,notebook)
 root.mainloop()

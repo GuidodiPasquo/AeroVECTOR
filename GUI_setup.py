@@ -6,8 +6,8 @@ Created on Mon Jan 18 21:20:41 2021
 """
 import tkinter as tk
 import files
-import GUI_functions as fun
-import ZPC_PID_SIMULATOR as sim
+import gui_functions as fun
+import zpc_pid_simulator as sim
 
 DEG2RAD =  3.14159265 / 180
 RAD2DEG = 1 / DEG2RAD
@@ -356,13 +356,13 @@ def create_draw_rocket_tab(notebook):
                                            fg = "black", bg = "yellow")
     update_fins_control_button.grid(row = 19, column = 1, sticky = "N")
 
-    def slider_AoA(a):
-        # Changes the AoA and re draws the CP
-        draw_rocket_tab.AoA = float(a)*DEG2RAD + 0.01
+    def slider_aoa(a):
+        # Changes the aoa and re draws the CP
+        draw_rocket_tab.aoa = float(a)*DEG2RAD + 0.01
         draw_rocket_tab.draw_rocket()
-    AoA_scale = tk.Scale(draw_rocket_tab.tab, from_=0.01, to=90,
-                         orient=tk.HORIZONTAL, command = slider_AoA)
-    AoA_scale.grid(row = 20, column = 0)
+    aoa_scale = tk.Scale(draw_rocket_tab.tab, from_=0.01, to=90,
+                         orient=tk.HORIZONTAL, command = slider_aoa)
+    aoa_scale.grid(row = 20, column = 0)
     tk.Label(draw_rocket_tab.tab, text="Angle of Attack").grid(row=21,column=0)
 
     draw_rocket_tab.create_active_file_label(24,0)
