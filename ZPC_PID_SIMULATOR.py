@@ -238,8 +238,8 @@ send_alt = 0
 def get_data_savefile():
     param = gui.param_file_tab.get_configuration_destringed()
     rocketDim = gui.draw_rocket_tab.get_configuration_destringed()
-    conf3D = gui.conf_3D_tab.get_configuration_destringed()
-    confSITL = gui.conf_SITL_tab.get_configuration_destringed()
+    conf3D = gui.conf_3d_tab.get_configuration_destringed()
+    confSITL = gui.conf_sitl_tab.get_configuration_destringed()
     confController = gui.sim_setup_tab.get_configuration_destringed()
     return param, conf3D, confController, confSITL, rocketDim
 
@@ -544,10 +544,10 @@ def simulation():
             Positive actuator angle generates positive fin force.
             Fin rotates in the same direction of the TVC.
             """
-            fin_force = q * S * rocket.CN_Alpha_fin[1] * Actuator_angle
+            fin_force = q * S * rocket.cn_alpha_fin[1] * Actuator_angle
             Accx = ( Thrust + m*g_loc[0] - Drag) / m - W*Q*v_d                # Longitudinal Acceleration (local)
             Accz = ( fin_force + m*g_loc[1] + q*S*Nalpha) / m + U*Q*v_d          # Transversal Acceleration (local)
-            AccQ = ( fin_force * (rkt.fin[1].CP-xcg) + q*S*Nalpha * (xa-xcg) - (Q_damp * rho * Q * abs(Q))) / Iy
+            AccQ = ( fin_force * (rkt.fin[1].cp-xcg) + q*S*Nalpha * (xa-xcg) - (Q_damp * rho * Q * abs(Q))) / Iy
 
     # Updates the variables
     U_d.new_f_dd(Accx)
@@ -665,11 +665,11 @@ def check_which_plot(s):
     global send_gyro, send_Accx, send_Accz, send_alt
     global Actuator_angle
     if s == "Setpoint":
-        return setpoint*RAD2DEG
+        return setpoint * RAD2DEG
     if s == "Pitch Angle":
-        return theta*RAD2DEG
+        return theta * RAD2DEG
     if s == "Actuator deflection":
-        return Actuator_angle*RAD2DEG
+        return Actuator_angle * RAD2DEG
     if s == "Pitch Rate":
         return Q*RAD2DEG
     if s == "Local Velocity X":
@@ -691,7 +691,7 @@ def check_which_plot(s):
     if s == "Global Acc Z":
         return Acc_glob[1]
     if s == "Angle of Atack":
-        return AoA*RAD2DEG
+        return AoA * RAD2DEG
     if s == "Cp Position":
         return xa
     if s == "Altitude":
@@ -699,13 +699,13 @@ def check_which_plot(s):
     if s == "Distance Downrange":
         return Position_global[1]
     if s == "Proportional Contribution":
-        return okp*RAD2DEG
+        return okp * RAD2DEG
     if s == "Integral Contribution":
-        return oki*RAD2DEG
+        return oki * RAD2DEG
     if s == "Derivative Contribution":
-        return okd*RAD2DEG
+        return okd * RAD2DEG
     if s == "Total Error":
-        return totError*RAD2DEG
+        return totError * RAD2DEG
     if s == "Simulated Gyro":
         return send_gyro
     if s == "Simulated Acc X":
@@ -754,6 +754,8 @@ def plot_plots():
 def run_sim_local():
     global parameters, conf_3d, conf_controller
     global timer_run_sim,timer_run,setpoint, t_launch,inp_time, u_servos
+    global okp, oki, okd, totError
+
     while t<=Sim_duration:
         simulation()
         if t > burnout_time * 10:
@@ -784,7 +786,7 @@ def run_sim_local():
         timer()
         plot_data()
 
-def run_sim_SITL():
+def run_sim_sitl():
     global parameters, conf_3d, conf_controller, setpoint
     global timer_run_sim,timer_run,setpoint, parachute, t_launch, u_servos
     global send_gyro, send_Accx, send_Accz, send_alt
@@ -880,7 +882,7 @@ def run_simulation():
     if Activate_SITL is False:
         run_sim_local()
     else:
-        run_sim_SITL()
+        run_sim_sitl()
     plot_plots()
     return
 
@@ -890,7 +892,7 @@ def run_simulation():
 ############################################ 3D 3D 3D 3D 3D
 ############################################ 3D 3D 3D 3D 3D
 
-def run_3D():
+def run_3d():
     if toggle_3D is False:
         plt.draw()
         plt.show()
@@ -1079,8 +1081,8 @@ def run_3D():
         Nforce_neg=vp.arrow(pos=vp.vector(motor.pos.x-(d/2+0.015),motor.pos.y+(L-xa_3D[0]),motor.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.green)
 
         if rocket.use_fins_control is True:
-            T_fin_pos = vp.arrow(pos=vp.vector(control_fins.pos.x-(d/2+rkt.fin[1].b+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
-            T_fin_neg = vp.arrow(pos=vp.vector(control_fins.pos.x+(d/2+rkt.fin[1].b+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(-0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
+            T_fin_pos = vp.arrow(pos=vp.vector(control_fins.pos.x-(d/2+rkt.fin[1].wingspan+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
+            T_fin_neg = vp.arrow(pos=vp.vector(control_fins.pos.x+(d/2+rkt.fin[1].wingspan+0.015),control_fins.pos.y,control_fins.pos.z),axis=vp.vector(-0.0001,0,0),shaftwidth=0,color=vp.color.red) #Torque control fin
 
         Nforce_neg.visible=False
         Nforce_pos.visible=False
@@ -1117,7 +1119,7 @@ def run_3D():
             xcg_radius = loc2glob((L-xcg),0,theta_3D[i])
             xa_radius = loc2glob(xa_3D[i+1]-xa_3D[i],0,theta_3D[i])  #Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
             if rocket.use_fins_control is True:
-                T_control_fin_radius = loc2glob((rkt.fin[1].CP-xcg),0,theta_3D[i])
+                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg),0,theta_3D[i])
 
             #CP and CG global vectors
             vect_cg=vp.vector(rocket_3d.pos.x+xcg_radius[0] , rocket_3d.pos.y + xcg_radius[1] , 0)

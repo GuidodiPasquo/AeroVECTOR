@@ -22,10 +22,18 @@ class Controller:
         self.k_all = 1
         self.k_damping = 0
         self.reference_thrust = 28
+        self.actuator_reduction = 0.
+        self.tvc_max = 0.
         self.u_controller = 0
+        self.u_prev = 0
+        self.u_servos = 0
         self.t_prev = 0
         self.last_error = 0
         self.cum_error = 0
+        self.okp = 0
+        self.oki = 0
+        self.okd = 0
+        self.tot_error = 0
 
     def setup_controller(self, conf_controller, actuator_reduction, tvc_max):
         """
@@ -60,7 +68,7 @@ class Controller:
         self.reference_thrust = conf_controller[8]
         self.actuator_reduction = actuator_reduction
         self.tvc_max = tvc_max
-        if sim.rocket.use_fins_control is True and sim.rkt.fin[1].CP < sim.xcg:
+        if sim.rocket.use_fins_control is True and sim.rkt.fin[1].cp < sim.xcg:
             # Must invert the gains if the fins are ahead of the CG, or else
             # the controller has positive feedback due to the torque being
             # opposite to the one expected.
@@ -69,7 +77,8 @@ class Controller:
 
     def control_theta(self, setpoint, theta, Q, thrust, t):
         """
-
+        Input the setpoint and the rest of the parameters to obtain
+        the servo command.
 
         Parameters
         ----------
