@@ -2,14 +2,34 @@
 """
 Created on Tue Jan 26 16:21:38 2021
 
-@author: guido
+@author: Guido di Pasquo
 """
+
+"""
+Functions necessary to make the GUI.
+
+    Functions:
+        move_tk_object -- Move a tk object.
+
+    Classes:
+        ActiveFileLabel -- Active file label on the bottom left.
+        Tab -- Basic tab.
+        TabWithCanvas -- Tab with a canvas.
+"""
+
 import copy
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
 import gui_setup
 import rocket_functions
+
+
+# Order in the savefile:
+# Checkboxes
+# combobox
+# entry
+
 
 def move_tk_object(obj, r=0, c=0, columnspan=1):
     """
@@ -29,18 +49,25 @@ def move_tk_object(obj, r=0, c=0, columnspan=1):
     Returns
     -------
     None.
-
     """
-    obj.grid(row = r, column = c, columnspan = columnspan)
+    obj.grid(row=r, column=c, columnspan=columnspan)
+
 
 class ActiveFileLabel:
-    """Creates a label with the active file name."""
+    """
+    Creates a label with the active file name.
+
+    Methods:
+        create_label -- Creates the label.
+        update -- Updates the label.
+
+    """
 
     def __init__(self):
         self.r = 0
         self.c = 0
 
-    def create_label(self,root,r,c):
+    def create_label(self, root, r, c):
         """
         Creates the label in the canvas root, in the row = r and column = c
 
@@ -56,7 +83,6 @@ class ActiveFileLabel:
         Returns
         -------
         None.
-
         """
         self.r = r
         self.c = c
@@ -77,23 +103,38 @@ class ActiveFileLabel:
         Returns
         -------
         None.
-
         """
         self.text.set("Active File is " + active_file)
         active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        active_file_label.grid(row=self.r,column=self.c,sticky="W", columnspan=2)
+        active_file_label.grid(row=self.r, column=self.c, sticky="W", columnspan=2)
 
 
-# Order in the savefile:
-# Checkboxes
-# combobox
-# entry
-
-
-##############################################################################
 class Tab:
-    """Basic tab template with checkboxes, combobox and entries."""
+    """
+    Basic tab template with checkboxes, combobox and entries.
+
+    Methods:
+        create_tab -- Creates the tab in the notebook.
+        create_checkboxes -- Creates them in the tab.
+        activate_all -- Activates everything in the tab.
+        deactivate_all -- Deactivates everything in the tab.
+        change_state -- Activates/Deactivates everything in the tab.
+        create_combobox -- Creates comboboxes.
+        create_entry -- Creates entries.
+        populate -- fills the tab with the data.
+        depopulate -- Deletes the data from the tab.
+        get_configuration -- Returns the data in the tab (strings).
+        get_configuration_destringed -- Returns the data in the tab.
+        configure -- Sets the minimum size of the grid.
+        create_active_file_label -- Creates the label.
+
+    Class Methods:
+        update_active_file_label -- Updates all labels.
+
+    """
+
     objs = []
+
     def __init__(self, names_checkbox=None, names_combobox=None, names_entry=None):
         # List with tabs to update the active file label
         Tab.objs.append(self)
@@ -133,13 +174,12 @@ class Tab:
         Returns
         -------
         None.
-
         """
-        self.tab = tk.Frame(nb, width = 500, height = 500,padx=10,pady=10)
+        self.tab = tk.Frame(nb, width=500, height=500, padx=10, pady=10)
         # Adds it to the notebook
-        nb.add(self.tab, text = name)
+        nb.add(self.tab, text=name)
 
-    def create_checkboxes(self,names_checkbox, r, c, s="W", disables_all=False):
+    def create_checkboxes(self, names_checkbox, r, c, s="W", disables_all=False):
         """
         Create the checkboxes starting at the row = r, column = c,
         using the list names_checkboxes to determine their order and names
@@ -160,40 +200,39 @@ class Tab:
         Returns
         -------
         None.
-
         """
         self.names_checkbox = copy.deepcopy(names_checkbox)
         # Creates list with the status of the checkboxes
-        self.checkbox_status = ["False"]*len(self.names_checkbox)
+        self.checkbox_status = ["False"] * len(self.names_checkbox)
         self.checkbox = [0]*len(self.names_checkbox)
         for i in range(len(self.names_checkbox)):
             # If the first checkbox disables the tab:
             if i == 0:
                 if disables_all is True:
                     self.checkbox_status[i] = tk.StringVar()
-                    self.checkbox[i] = (tk.Checkbutton(self.tab,
+                    self.checkbox[i] = tk.Checkbutton(self.tab,
                                                        text=self.names_checkbox[i],
                                                        variable=self.checkbox_status[i],
                                                        onvalue="True", offvalue="False",
-                                                       command = self.change_state))
+                                                       command=self.change_state)
                     self.checkbox[i].deselect()
-                    self.checkbox[i].grid(row=r+i,column=c,sticky = s)
+                    self.checkbox[i].grid(row=r+i, column=c, sticky=s)
                 else:
                     self.checkbox_status[i] = tk.StringVar()
-                    self.checkbox[i] = (tk.Checkbutton(self.tab,
+                    self.checkbox[i] = tk.Checkbutton(self.tab,
                                                        text=self.names_checkbox[i],
                                                        variable=self.checkbox_status[i],
-                                                       onvalue="True", offvalue="False"))
+                                                       onvalue="True", offvalue="False")
                     self.checkbox[i].deselect()
-                    self.checkbox[i].grid(row=r+i,column=c,sticky = s)
+                    self.checkbox[i].grid(row=r+i, column=c, sticky=s)
                 continue
             self.checkbox_status[i] = tk.StringVar()
-            self.checkbox[i] = (tk.Checkbutton(self.tab,
+            self.checkbox[i] = tk.Checkbutton(self.tab,
                                                text=self.names_checkbox[i],
                                                variable=self.checkbox_status[i],
-                                               onvalue="True", offvalue="False"))
+                                               onvalue="True", offvalue="False")
             self.checkbox[i].deselect()
-            self.checkbox[i].grid(row=r+i,column=c,sticky = s)
+            self.checkbox[i].grid(row=r+i, column=c, sticky=s)
 
     def activate_all(self):
         """
@@ -202,7 +241,6 @@ class Tab:
         Returns
         -------
         None.
-
         """
         for i in range(len(self.checkbox)-1):
             self.checkbox[i+1].config(state="normal")
@@ -218,7 +256,6 @@ class Tab:
         Returns
         -------
         None.
-
         """
         for i in range(len(self.checkbox)-1):
             self.checkbox[i+1].config(state="disable")
@@ -234,15 +271,14 @@ class Tab:
         Returns
         -------
         None.
-
         """
         # If the first checkbox disables all
-        if self.checkbox_status[0].get()=="True":
+        if self.checkbox_status[0].get() == "True":
             self.activate_all()
         else:
             self.deactivate_all()
 
-    def create_combobox(self , options , names_combobox , r , c , s="E"):
+    def create_combobox(self, options, names_combobox, r, c, s="E"):
         """
         Create the comboboxes starting at the row = r, column = c,
         using the list names_combobox to determine their order and names
@@ -264,21 +300,20 @@ class Tab:
         Returns
         -------
         None.
-
         """
         self.names_combobox = copy.deepcopy(names_combobox)
         self.combobox_options = copy.deepcopy(options)
         self.combobox = [0]*len(self.names_combobox)
         self.combobox_label = [0]*len(self.names_combobox)
         for i in range(len(self.names_combobox)):
-            self.combobox[i] = ttk.Combobox(self.tab,width=20,state='readonly')
-            self.combobox[i].grid(row = r+i, column = c+1,sticky = s)
+            self.combobox[i] = ttk.Combobox(self.tab, width=20, state='readonly')
+            self.combobox[i].grid(row=r+i, column=c+1, sticky=s)
             self.combobox[i]["values"] = options[i]
             self.combobox_label[i] = tk.Label(self.tab, text=self.names_combobox[i])
-            self.combobox_label[i].grid(row=r+i,column=c,sticky=s)
+            self.combobox_label[i].grid(row=r+i, column=c, sticky=s)
             self.combobox[i].set(self.combobox_options[i][0])
 
-    def create_entry(self, names_entry , r , c , s="E", w=20):
+    def create_entry(self, names_entry, r, c, s="E", w=20):
         """
         Create the entries starting at the row = r, column = c,
         using the list names_entry to determine their order and names
@@ -299,16 +334,15 @@ class Tab:
         Returns
         -------
         None.
-
         """
         self.names_entry = copy.deepcopy(names_entry)
         self.entry = [0]*len(self.names_entry)
         self.entry_label = [0]*len(self.names_entry)
         for i in range(len(self.entry)):
             self.entry_label[i] = tk.Label(self.tab, text=self.names_entry[i])
-            self.entry_label[i].grid(row=r+i,column=c,sticky = "E")
-            self.entry[i] = tk.Entry(self.tab, width = w)
-            self.entry[i].grid(row=r+i,column=c+1,sticky = s)
+            self.entry_label[i].grid(row=r+i, column=c, sticky="E")
+            self.entry[i] = tk.Entry(self.tab, width=w)
+            self.entry[i].grid(row=r+i, column=c+1, sticky=s)
 
     def populate(self, l0):
         """
@@ -323,7 +357,6 @@ class Tab:
         Returns
         -------
         None.
-
         """
         # Fills the widgets with the data of the save file
         l = copy.deepcopy(l0)
@@ -334,9 +367,9 @@ class Tab:
         n_comb = len(self.names_combobox)
         n_ent = len(self.entry)
         for i in range(n_check):
-            if l[i]=="True":
+            if l[i] == "True":
                 self.checkbox[i].select()
-            elif l[i]=="False":
+            elif l[i] == "False":
                 self.checkbox[i].deselect()
         for i in range(n_comb):
             self.combobox[i].set(l[i+n_check])
@@ -350,7 +383,6 @@ class Tab:
         Returns
         -------
         None.
-
         """
         self.activate_all()
         for i in range(len(self.checkbox)):
@@ -368,7 +400,6 @@ class Tab:
         -------
         list of strings
             information in the tab.
-
         """
         # Creates list with the data from the widgets
         # Order is checkbox, combobox, entry
@@ -381,7 +412,7 @@ class Tab:
             d.append(self.entry[i].get())
         return copy.deepcopy(d)
 
-    def destring_data(self, data):
+    def _destring_data(self, data):
         """
         Transform a list of strings into variables.
 
@@ -433,13 +464,12 @@ class Tab:
         -------
         list of variables
             information in the tab.
-
         """
         data = self.get_configuration()
-        data = self.destring_data(data)
+        data = self._destring_data(data)
         return copy.deepcopy(data)
 
-    def configure(self,n=10):
+    def configure(self, n=10):
         """
         Configurates the tab with a minimum row and columns size of n.
 
@@ -451,7 +481,6 @@ class Tab:
         Returns
         -------
         None.
-
         """
         # creates the empty rows and columns
         # so as to have empty space between widgets
@@ -461,7 +490,7 @@ class Tab:
         for row in range(row_count):
             self.tab.grid_rowconfigure(row, minsize=n)
 
-    def create_active_file_label(self,r,c):
+    def create_active_file_label(self, r, c):
         """
         Create a label with the active file name in the position row = r and
         column = c.
@@ -476,12 +505,11 @@ class Tab:
         Returns
         -------
         None.
-
         """
-        self.active_file_label.create_label(self.tab,r,c)
+        self.active_file_label.create_label(self.tab, r, c)
 
     @classmethod
-    def update_active_file_label(cls,name):
+    def update_active_file_label(cls, name):
         """
         Update the text in the active file label to match the new active file.
 
@@ -495,16 +523,29 @@ class Tab:
         Returns
         -------
         None.
-
         """
         for obj in cls.objs:
             obj.active_file_label.update(name)
 
 
-##############################################################################
 class TabWithCanvas(Tab):
     """
-    For tabs with canvas
+    For tabs with canvases.
+
+    Methods:
+        set_points -- Sets the rocket component points.
+        add_point -- Adds a point to the rocket component.
+        delete_point -- Delets a point of the rocket components.
+        get_points -- Returns the points of a rocket component (string).
+        get_points_float -- Returns the points of a rocket component.
+        create_canvas -- Creates the canvas.
+        draw_rocket -- Draws the rocket.
+        populate -- Fills the tab.
+        get_configuration -- Returns the rocket's configuration in the tab (string).
+        get_configuration_destringed -- Returns the rocket's configuration in the tab.
+        populate -- fills the tab with the data.
+        depopulate -- Deletes the data from the tab.
+        change_state_fins -- Activate/deactivate fins.
     """
 
     def __init__(self):
@@ -532,7 +573,7 @@ class TabWithCanvas(Tab):
         self.scale_y = 1
         self.centering = 0
 
-    def sort(self, l):
+    def _sort(self, l):
         """
         Sort the data l.
 
@@ -545,22 +586,21 @@ class TabWithCanvas(Tab):
         -------
         list of floats.
             data sorted.
-
         """
-        def l2j_is_greater_than(l2,j):
-            if float(l2[j].split(",")[0])>float(l2[j+1].split(",")[0]):
+        def _l2j_is_greater_than(l2,j):
+            if float(l2[j].split(",")[0]) > float(l2[j+1].split(",")[0]):
                 return True
             return False
         l2 = copy.deepcopy(l)
         for _ in range(len(l2)):
             for j in range(len(l2)-1):
-                if l2j_is_greater_than(l2,j):
+                if _l2j_is_greater_than(l2, j):
                     b = l2[j]
                     l2[j] = l2[j+1]
                     l2[j+1] = b
         return copy.deepcopy(l2)
 
-    def set_points(self,n,l):
+    def set_points(self, n, l):
         """
         Recieves a list and sets the points of the rocket body to it.
 
@@ -574,13 +614,12 @@ class TabWithCanvas(Tab):
         Returns
         -------
         None.
-
         """
 
         #
         self.points[n] = copy.deepcopy(l)
 
-    def add_point(self,n,s):
+    def add_point(self, n, s):
         """
         Adds the point "s" to the rocket part "n".
 
@@ -596,7 +635,7 @@ class TabWithCanvas(Tab):
         None.
         """
         self.points[n].append(s)
-        self.points[n] = self.sort(self.points[n])
+        self.points[n] = self._sort(self.points[n])
         if n == 0:
             # If it is from the body it goes to the combobox
             self.combobox[n]["values"] = self.points[n]
@@ -605,10 +644,10 @@ class TabWithCanvas(Tab):
             for i in range(len(self.entry)):
                 # else you delete the entries and populates them
                 # with the points, it is not used
-                self.entry[i].delete(0,15)
-                self.entry[i].insert(0,s)
+                self.entry[i].delete(0, 15)
+                self.entry[i].insert(0, s)
 
-    def delete_point(self, n ,s):
+    def delete_point(self, n, s):
         """
         Deletes the point "s" form the rocket part "n".
 
@@ -631,7 +670,7 @@ class TabWithCanvas(Tab):
                     self.combobox[n].set(self.points[n][i-1])
                     break
 
-    def get_points(self,n):
+    def get_points(self, n):
         """
         Get the points of the rocket part "n" as strings.
 
@@ -644,12 +683,10 @@ class TabWithCanvas(Tab):
         -------
         Nested list of strings.
             points of the part "n".
-
         """
-
         return copy.deepcopy(self.points[n])
 
-    def get_points_float(self,n):
+    def get_points_float(self, n):
         """
         Get the points of the rocket part "n" as floats.
 
@@ -662,13 +699,12 @@ class TabWithCanvas(Tab):
         -------
         Nested list of floats.
             points of the part "n".
-
         """
         l = copy.deepcopy(self.points[n])
         l2 = []
         for element in l:
             a = element.split(",")
-            l2.append([float(a[0]),float(a[1])])
+            l2.append([float(a[0]), float(a[1])])
         return copy.deepcopy(l2)
 
     def create_canvas(self, canvas_width, canvas_height):
@@ -685,23 +721,22 @@ class TabWithCanvas(Tab):
         Returns
         -------
         None.
-
         """
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
-        self.canvas = (tk.Canvas(self.tab, width = self.canvas_width,
-                                 height = self.canvas_height,bg="white"))
-        self.canvas.grid(row=0,column=0, rowspan = 20)
+        self.canvas = (tk.Canvas(self.tab, width=self.canvas_width,
+                                 heigh=self.canvas_height, bg="white"))
+        self.canvas.grid(row=0, column=0, rowspan = 20)
 
-    def _re_draw_rocket(self,l2):
+    def _re_draw_rocket(self, l2):
         # x in the canvas is y/z in the rocket
         # y in the canvas is x in the rocket
         for i in range(len(l2)-1):
             # checkbox_status[0] is the Ogive
-            if i==0 and self.checkbox_status[0].get() == "True":
+            if i == 0 and self.checkbox_status[0].get() == "True":
                 radius_nc = l2[1][1]
                 len_nc = l2[1][0]
-                rho_radius = (radius_nc**2 + len_nc**2)/(2 * radius_nc)
+                rho_radius = (radius_nc**2 + len_nc**2) / (2*radius_nc)
                 x_ogive_1 = 0
                 # y = np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)+radius_nc-rho_radius
                 # Draws an ogive with 10 points
@@ -712,30 +747,30 @@ class TabWithCanvas(Tab):
                                  + radius_nc - rho_radius)
                     y_ogive_2 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_2)**2)
                                  + radius_nc - rho_radius)
-                    x1 = ( y_ogive_1 * self.scale_y + self.canvas_width) / 2
-                    y1 = x_ogive_1 * self.scale_y + self.centering
-                    x2 = (y_ogive_2 * self.scale_y + self.canvas_width) / 2
-                    y2 = x_ogive_2*self.scale_y+self.centering
-                    x1_mirror = (-y_ogive_1*self.scale_y+self.canvas_width) / 2
-                    x2_mirror = (-y_ogive_2*self.scale_y+self.canvas_width) / 2
-                    self.canvas.create_line(x1,y1,x2,y2)
-                    self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
+                    x1 = (y_ogive_1*self.scale_y + self.canvas_width) / 2
+                    y1 = x_ogive_1*self.scale_y + self.centering
+                    x2 = (y_ogive_2*self.scale_y + self.canvas_width) / 2
+                    y2 = x_ogive_2*self.scale_y + self.centering
+                    x1_mirror = (-y_ogive_1*self.scale_y + self.canvas_width) / 2
+                    x2_mirror = (-y_ogive_2*self.scale_y + self.canvas_width) / 2
+                    self.canvas.create_line(x1, y1, x2, y2)
+                    self.canvas.create_line(x1_mirror, y1, x2_mirror, y2)
                     x_ogive_1 += len_nc/definition
                 point_diameter = 5
                 self._create_point_cp(point_diameter)
                 self._create_point_xcg(point_diameter)
             else:
                 # Conic nosecone / rest of the body
-                x1 = (l2[i][1]*self.scale_y+self.canvas_width)/2
-                y1 = l2[i][0]*self.scale_y+self.centering
-                x2 = (l2[i+1][1]*self.scale_y+self.canvas_width)/2
-                y2 = l2[i+1][0]*self.scale_y+self.centering
-                x1_mirror = (-l2[i][1]*self.scale_y+self.canvas_width)/2
-                x2_mirror = (-l2[i+1][1]*self.scale_y+self.canvas_width)/2
-                self.canvas.create_line(x1,y1,x2,y2)
-                self.canvas.create_line(x1_mirror,y1,x2_mirror,y2)
+                x1 = (l2[i][1]*self.scale_y + self.canvas_width) / 2
+                y1 = l2[i][0]*self.scale_y + self.centering
+                x2 = (l2[i+1][1]*self.scale_y + self.canvas_width) / 2
+                y2 = l2[i+1][0]*self.scale_y + self.centering
+                x1_mirror = (-l2[i][1]*self.scale_y + self.canvas_width) / 2
+                x2_mirror = (-l2[i+1][1]*self.scale_y + self.canvas_width) / 2
+                self.canvas.create_line(x1, y1, x2, y2)
+                self.canvas.create_line(x1_mirror, y1, x2_mirror, y2)
                 if i == len(l2)-2:
-                    self.canvas.create_line(x2_mirror,y2,x2,y2)
+                    self.canvas.create_line(x2_mirror, y2, x2, y2)
                 point_diameter = 5
                 self._create_point_cp(point_diameter)
                 self._create_point_xcg(point_diameter)
@@ -744,11 +779,11 @@ class TabWithCanvas(Tab):
     def _draw_base_component(self,l2):
         # Draws the horizontal line that separates each component
         for element in l2:
-            x1 = (element[1]*self.scale_y + self.canvas_width)/2
+            x1 = (element[1]*self.scale_y + self.canvas_width) / 2
             y1 = element[0]*self.scale_y + self.centering
-            x2 = (element[1]*self.scale_y + self.canvas_width)/2
+            x2 = (element[1]*self.scale_y + self.canvas_width) / 2
             y2 = element[0]*self.scale_y + self.centering
-            self.canvas.create_line(x1,y1,x2,y2)
+            self.canvas.create_line(x1, y1, x2, y2)
 
     def _draw_fins(self, l2, s, attached, separate):
         # Stabilization fins are attached to a hollow
@@ -763,52 +798,52 @@ class TabWithCanvas(Tab):
             sep = 0
         #Draws the fin
         for i in range(len(l2)-1):
-            x1 = (l2[i][1] + sep) * self.scale_y + self.canvas_width / 2
-            y1 = l2[i][0] * self.scale_y + self.centering
-            x2 = (l2[i+1][1]+sep) * self.scale_y + self.canvas_width / 2
-            y2 = l2[i+1][0] * self.scale_y + self.centering
-            x1_mirror = -(l2[i][1] + sep) * self.scale_y + self.canvas_width / 2
-            x2_mirror = -(l2[i+1][1] + sep) * self.scale_y+self.canvas_width / 2
-            self.canvas.create_line(x1,y1,x2,y2,fill=s)
-            self.canvas.create_line(x1_mirror,y1,x2_mirror,y2,fill=s)
+            x1 = (l2[i][1]+sep) * self.scale_y + self.canvas_width/2
+            y1 = l2[i][0]*self.scale_y + self.centering
+            x2 = (l2[i+1][1]+sep) * self.scale_y + self.canvas_width/2
+            y2 = l2[i+1][0]*self.scale_y + self.centering
+            x1_mirror = -(l2[i][1]+sep) * self.scale_y + self.canvas_width/2
+            x2_mirror = -(l2[i+1][1]+sep) * self.scale_y + self.canvas_width/2
+            self.canvas.create_line(x1, y1, x2, y2, fill=s)
+            self.canvas.create_line(x1_mirror, y1, x2_mirror, y2, fill=s)
         # Draws an horizontal line to "simulate" the cut body
         if attached == "False" and separate == "False":
-            x1 = (l2[0][1]*self.scale_y+self.canvas_width/2)
-            y1 = l2[0][0]*self.scale_y+self.centering
-            x2 = -l2[0][1]*self.scale_y+self.canvas_width/2
-            y2 = l2[0][0]*self.scale_y+self.centering
-            self.canvas.create_line(x1,y1,x2,y2)
+            x1 = l2[0][1]*self.scale_y + self.canvas_width/2
+            y1 = l2[0][0]*self.scale_y + self.centering
+            x2 = -l2[0][1]*self.scale_y + self.canvas_width/2
+            y2 = l2[0][0]*self.scale_y + self.centering
+            self.canvas.create_line(x1, y1, x2, y2)
         # Draws the vertical line that connects the root chord of
         # the fin, (usually the body takes care of it, but in
         # this case, the fin is separated)
         if separate == "True":
-            x1 = (l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
-            y1 = l2[0][0] * self.scale_y + self.centering
-            x2 = (l2[3][1] + sep) * self.scale_y + self.canvas_width / 2
-            y2 = l2[3][0] * self.scale_y + self.centering
-            x1_m = -(l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
-            y1_m = l2[0][0] * self.scale_y + self.centering
-            x2_m =  -(l2[0][1] + sep) * self.scale_y + self.canvas_width / 2
-            y2_m = l2[3][0] * self.scale_y + self.centering
-            self.canvas.create_line(x1,y1,x2,y2, fill = s)
-            self.canvas.create_line(x1_m,y1_m,x2_m,y2_m, fill = s)
+            x1 = (l2[0][1]+sep) * self.scale_y + self.canvas_width/2
+            y1 = l2[0][0]*self.scale_y + self.centering
+            x2 = (l2[3][1]+sep) * self.scale_y + self.canvas_width/2
+            y2 = l2[3][0]*self.scale_y + self.centering
+            x1_m = -(l2[0][1]+sep) * self.scale_y + self.canvas_width/2
+            y1_m = l2[0][0]*self.scale_y + self.centering
+            x2_m =  -(l2[0][1]+sep) * self.scale_y + self.canvas_width/2
+            y2_m = l2[3][0]*self.scale_y + self.centering
+            self.canvas.create_line(x1, y1, x2, y2, fill=s)
+            self.canvas.create_line(x1_m, y1_m, x2_m, y2_m, fill=s)
 
-    def _create_point_cp(self,point_diameter):
+    def _create_point_cp(self, point_diameter):
         # Creates a point where the CP is located
         # the slider can move it by modifying the aoa
-        f = point_diameter/2
-        self.rocket.update_rocket(self.get_configuration_destringed(),self.rocket_length/2)
+        f = point_diameter / 2
+        self.rocket.update_rocket(self.get_configuration_destringed(), self.rocket_length/2)
         cn, cp_point, ca = self.rocket.calculate_aero_coef(self.aoa)
-        (self.canvas.create_oval(self.canvas_width/2-f, cp_point * self.scale_y-f,
-                                 self.canvas_width/2+f, cp_point * self.scale_y+f,
-                                 fill="red", outline = "red"))
+        self.canvas.create_oval(self.canvas_width/2-f, cp_point*self.scale_y - f,
+                                self.canvas_width/2+f, cp_point*self.scale_y + f,
+                                fill="red", outline="red")
 
-    def _create_point_xcg(self,point_diameter):
-        f = point_diameter/2
+    def _create_point_xcg(self, point_diameter):
+        f = point_diameter / 2
         xcg_point = float(gui_setup.savefile.get_parameters()[3])
-        (self.canvas.create_oval(self.canvas_width/2-f, xcg_point * self.scale_y-f,
-                                 self.canvas_width/2+f, xcg_point * self.scale_y+f,
-                                 fill="blue", outline = "blue"))
+        self.canvas.create_oval(self.canvas_width/2 - f, xcg_point*self.scale_y - f,
+                                self.canvas_width/2 + f, xcg_point*self.scale_y + f,
+                                fill="blue", outline="blue")
 
     def draw_rocket(self):
         """
@@ -817,7 +852,6 @@ class TabWithCanvas(Tab):
         Returns
         -------
         None.
-
         """
         # x in the canvas is y/z in the rocket
         # y in the canvas is x in the rocket
@@ -833,22 +867,22 @@ class TabWithCanvas(Tab):
         else:
             self.max_length = self.rocket_length
         if self.rocket_length != 0:
-            self.scale_y = self.canvas_height/self.max_length
+            self.scale_y = self.canvas_height / self.max_length
         else:
             self.scale_y = 1
         # Centers the rocket in the horizontal
-        self.centering = (self.canvas_height-self.max_length*self.scale_y)/2
+        self.centering = (self.canvas_height-self.max_length*self.scale_y) / 2
         self._re_draw_rocket(l2)
         if self.checkbox_status[1].get() == "True":
             fin_stab_points = self.get_points_float(1)
             attached = self.checkbox_status[2].get()
             separate = "False"
-            self._draw_fins(fin_stab_points,"black",attached, separate)
+            self._draw_fins(fin_stab_points,"black", attached, separate)
             if self.checkbox_status[3].get() == "True":
                 fin_control_points = self.get_points_float(2)
                 attached = self.checkbox_status[4].get()
                 separate = "True"
-                self._draw_fins(fin_control_points,"red",attached, separate)
+                self._draw_fins(fin_control_points, "red", attached, separate)
 
     def populate(self,l0):
         # Populates the entries and more importantly, the points[i]
@@ -894,11 +928,11 @@ class TabWithCanvas(Tab):
         d2 = self.get_points(2)
         for i in range(len(self.checkbox)):
             d.append(self.checkbox_status[i].get())
-        d+=d0
+        d += d0
         d.append("Fins_s")
-        d+=d1
+        d += d1
         d.append("Fins_c")
-        d+=d2
+        d += d2
         return copy.deepcopy(d)
 
     def get_configuration_destringed(self):
@@ -938,9 +972,8 @@ class TabWithCanvas(Tab):
         Returns
         -------
         None.
-
         """
-        if self.checkbox_status[1].get()=="True":
+        if self.checkbox_status[1].get() == "True":
             self.activate_all()
         else:
             self.deactivate_all()

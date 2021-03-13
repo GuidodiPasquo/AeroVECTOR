@@ -7,11 +7,12 @@ Thanks to:
      LukeDeWaal for the Standard Atmosphere Calculator
      https://github.com/LukeDeWaal/ISA_Calculator
 
-Apologies in advance for any spelling or grammar error, english is not my first language
+Apologies in advance for any spelling or grammar error, english is not
+my first language.
 
 ###########################################
-known bugs-> Arrows are hit or miss, sometimes they aim in the right direction,
-sometimes they don't.
+known bugs-> Arrows are hit or miss, sometimes they aim in the right
+direction, sometimes they don't.
 
 ########### OVERALL CHARACTERISTICS OF THE PROGRAM
 Non-linear model integrates local accelerations into global velocities.
@@ -47,12 +48,10 @@ import tkinter as tk
 from tkinter import ttk
 import gui_setup as gui
 
-
 #### Main
 root = tk.Tk()
 root.title("ZPC Actively Stabilized Model Rocket Tuner / Simulator")
 root.geometry("600x600")
-
 notebook = ttk.Notebook(root)
 gui.create_file_tab(notebook)
 gui.create_parameters_tab(notebook)

@@ -2,14 +2,26 @@
 """
 Created on Fri Jan 29 14:05:35 2021
 
-@author: guido
+@author: Guido di Pasquo
 """
+
+"""
+Handles the controller.
+
+Classes:
+    Controller
+"""
+
 import zpc_pid_simulator as sim
 
 
 class Controller:
     """
     Controller class, the default is a PID controller
+
+    Methods:
+        setup_controller -- Sets the controller configuration.
+        control_theta -- Runs the controller and returns the servo command.
     """
 
     def __init__(self):
@@ -51,7 +63,6 @@ class Controller:
         Returns
         -------
         None.
-
         """
         self.u_controller = 0
         self.t_prev = 0
@@ -105,7 +116,6 @@ class Controller:
             Derivative contribution.
         tot_error : float
             Total error.
-
         """
         self.u_prev = self.u_controller
         error = setpoint - theta
@@ -119,12 +129,12 @@ class Controller:
             self.u_controller = -self.tvc_max
         # u_controller=u_controller-u_prev*0.05;  #filter, increasing the
         # number makes it stronger and slower
-        self.u_servos = self.u_controller*self.actuator_reduction
+        self.u_servos = self.u_controller * self.actuator_reduction
         if self.torque_controller is True:
             # On the simulation one can access the real thrust from the thrust curve
             # In your flight computer you will have to calculate it.
             thrust_controller = thrust
-            self.u_servos=(self.reference_thrust/thrust_controller) * self.u_servos
+            self.u_servos = (self.reference_thrust/thrust_controller) * self.u_servos
             # Prevents the TVC from deflecting more that it can after being corrected
             # for the thrust.
             if self.u_servos > self.tvc_max * self.actuator_reduction:
@@ -133,32 +143,31 @@ class Controller:
                 self.u_servos = -self.tvc_max * self.actuator_reduction
         return self.u_servos, self.okp, self.oki, self.okd, self.tot_error
 
-    # PID
     def _pid(self, inp, t):
         T_program = t - self.t_prev
         # Determine the error
         error_pid = inp
         # Compute its derivative
-        rate_error = (error_pid - self.last_error) / T_program
+        rate_error = (error_pid-self.last_error) / T_program
         if self.anti_windup is True:
             # PID output
-            out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
+            out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
             # Anti windup by clamping
             if -self.tvc_max < out_pid < self.tvc_max:
                 # Compute integral (trapezoidal) only if the TVC is not staurated
-                self.cum_error = (((((self.last_error) + ((error_pid - self.last_error) / 2)))
+                self.cum_error = (((((self.last_error) + ((error_pid-self.last_error)/2)))
                                   * T_program) + self.cum_error)
                 # Recalculate the output
-                out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
+                out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
             # Saturation, prevents the TVC from deflecting more that it can
             if out_pid > self.tvc_max:
                 out_pid = self.tvc_max
             elif out_pid < -self.tvc_max:
                 out_pid = -self.tvc_max
         else:
-            self.cum_error = ((((self.last_error + ((error_pid - self.last_error) / 2)))
+            self.cum_error = ((((self.last_error + ((error_pid-self.last_error)/2)))
                              * T_program) + self.cum_error)
-            out_pid = self.kp * error_pid + self.ki * self.cum_error + self.kd * rate_error
+            out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
         self.okp = self.kp * error_pid
         self.oki = self.ki * self.cum_error
         self.okd = self.kd * rate_error

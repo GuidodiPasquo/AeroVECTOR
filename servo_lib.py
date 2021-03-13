@@ -5,17 +5,24 @@ Created on Fri Jan 29 15:05:28 2021
 @author: Guido di Pasquo
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
+"""
+Handles the actuator dynamics.
 
-DEG2RAD = np.pi / 180
-RAD2DEG = 1 / DEG2RAD
+Classes:
+    Servo - Simulates an SG90.
+"""
 
 """
 The Actuator compensation slows down the servo to simulate the TVC weight,
 since the characterization was done without resistance, with the test
 method you can adjust fairly simply the compensation to match your servo
 """
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+DEG2RAD = np.pi / 180
+RAD2DEG = 1 / DEG2RAD
 
 
 class Servo:
@@ -172,7 +179,6 @@ class Servo:
         -------
         None.
         """
-
         self._actuator_weight_compensation = actuator_weight_compensation
         self._definition = definition
         self._servo_sample_time = servo_s_t
@@ -180,10 +186,10 @@ class Servo:
 
     def _update(self):
         self._u_delta = (self._actuator_weight_compensation
-                        * abs(self._u - self._out_s[0,0]))
-        if self._u_delta <= 10*DEG2RAD:
+                        * abs(self._u-self._out_s[0,0]))
+        if self._u_delta <= 10 * DEG2RAD:
             self._u_delta = 10 * DEG2RAD
-        elif self._u_delta >= 90*DEG2RAD:
+        elif self._u_delta >= 90 * DEG2RAD:
             self._u_delta = 90 * DEG2RAD
         # A Matrix
         asc11 = 0.
@@ -199,8 +205,8 @@ class Servo:
             ])
         # B Matrix
         bsc11 = 0
-        bsc21 = (-2624.5 * self._u_delta**3 + 9996.2 * self._u_delta**2
-                 - 13195 * self._u_delta + 6616.2)
+        bsc21 = (-2624.5*self._u_delta**3 + 9996.2*self._u_delta**2
+                 - 13195*self._u_delta + 6616.2)
         self._B_s_c = np.array([
             [bsc11],
             [bsc21]
@@ -240,13 +246,12 @@ class Servo:
         -------
         numpy float -- Current servo position.
         """
-
         self._sample_time = t_current - self._t_prev
         self._t_prev = t_current
         self._update()
+        u_2_round = self._u
         # +0.001 desynchronizes the servo and the program, thing
         # that would likely happen in a real flight computer
-        u_2_round = self._u
         if t_current > (self._timer_run + self._servo_sample_time*0.999 + 0.001):
             self._timer_run = t_current
             u_2_round = u_servo
@@ -280,7 +285,6 @@ class Servo:
         -------
         A plot?
         """
-
         u_test = u_deg * DEG2RAD
         x_plot = []
         list_plot = []
