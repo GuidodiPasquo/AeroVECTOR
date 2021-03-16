@@ -692,9 +692,9 @@ while t<=Sim_duration:
     timer()
 
     
-    setpoint_plot.append(setpoint*57.3+out[2,0])
+    setpoint_plot.append(setpoint*57.3)
     theta_plot.append(out[0,0]*57.3)
-    servo_plot.append((outs[0,0])*57.3)
+    servo_plot.append(outs[0,0]*57.3)
     
     #Plot selectors
     #out[0,0]->Pitch Angle, out[1,0]-> Pitch Rate, out[2,0]->Rection Angle of attack
