@@ -341,7 +341,7 @@ class Rocket:
         self.ca = 0
         self.cp = 0
         self.xcg = 1
-        self.Q_damp = 0
+        self.q_damp = 0
         self.motor=[[],[]]
         self.is_in_the_pad_flag = True
         self.component_cn = []
@@ -378,6 +378,7 @@ class Rocket:
         self.area_wet_body = 1
         self.avg_rad_aft = 1
         self.avg_rad_fore = 1
+        self.v_loc_tot = [10,0]
         self.mach = 0.001
         self.beta = 1
         self.actuator_angle = 0
@@ -442,7 +443,8 @@ class Rocket:
             fin[0].update(l[6], self.fins_attached[0])
             if self.use_fins_control is True:
                 fin[1].update(l[7], self.fins_attached[1])
-        self._calculate_pitch_damping(xcg)
+        self.xcg = xcg
+        self._calculate_pitch_damping_body()
         self._calculate_reynolds_crit()
 
     ## GEOMETRY - GEOMETRY - GEOMETRY - GEOMETRY - GEOMETRY - GEOMETRY - GEOMETRY -
@@ -526,8 +528,8 @@ class Rocket:
         return self.area_ref
 
     ## AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS -
-    def calculate_aero_coef(self, aoa,velocity_0=10, rho=1.225, mu=1.784e-5,
-                            mach=0.001, actuator_angle=0):
+    def calculate_aero_coef(self, aoa, v_loc_tot=[10,0], rho=1.225, mu=1.784e-5,
+                            mach=0.001, actuator_angle=0, q=0):
         """
         Calculate the CN, CP position and the CA for a certain AoA, velocity
         density, viscosity, mach, and actuator angle.
@@ -556,6 +558,9 @@ class Rocket:
         ca
             Axial force coefficient.
         """
+        self.q = q
+        self.v_loc_tot = v_loc_tot
+        velocity_0 = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
         if mach < 0.001:
             self.mach = 0.001
         else:
@@ -707,36 +712,43 @@ class Rocket:
             cm = k1 * k2
             self.component_cm[i] = cm
 
-    def _calculate_pitch_damping(self, xcg):
+    def _calculate_pitch_damping_body(self):
         # Average drag moment of a cilinder rotating,
         # i.e., facing a 90º aoa
-        self.xcg = xcg
+        # Not ideal, but doing it properly (calculating the AoA in each
+        # component, then the cn) requires a complete rewrite of the code
+        # and it's not worth it for now.
         self._calculate_avg_radius_fore()
         self._calculate_avg_radius_aft()
         l_fore = self.xcg
         l_aft = (self.rocket_dim[-1][0] - self.xcg)
-        Q_damp_fore = 0.275 * self.avg_rad_fore * l_fore**4
-        Q_damp_aft = 0.275 * self.avg_rad_aft * l_aft**4
-        if self.use_fins is True:
-            Q_damp_fin = self._calculate_pitch_damp_fin()
-        else:
-            Q_damp_fin = 0
-        self.Q_damp =  Q_damp_fore + Q_damp_aft + Q_damp_fin
+        q_damp_fore = 0.275 * self.avg_rad_fore * l_fore**4
+        q_damp_aft = 0.275 * self.avg_rad_aft * l_aft**4
+        self.q_damp_body =  q_damp_fore + q_damp_aft
         # Has to be multiplied by rho * Q**2 to obtain a moment
 
     def _calculate_pitch_damp_fin(self):
-        # Average drag moment of a flat plate
-        # rotating, i.e., facing a 90º aoa
-        cd_flat_plate = 1.28
+        # Aproximate force (and moment) produced by the increase in AoA
+        # of the fin due to the pitching velocity.
+        # (1/2 * rho * v**2 * cl_a * aoa * s) * r
+        # aoa = atan(q*r / v) = q*r / v
+        flat_plate_slope = 5.65 # 2 Pi * 0.9
         m=0
         for i in range(len(fin)):
-            F = (0.5 * (fin[i].cp-self.xcg)**2 * cd_flat_plate
-                 * fin[i].area*2) # * rho * Q**2 for the force
+            F = (0.5  * self.v_loc_tot[0] * flat_plate_slope
+                 * (fin[i].cp-self.xcg) * 2*fin[i].area) # * rho * Q for the force
             m += abs(F * (fin[i].cp-self.xcg))
         return m
 
-    def get_q_damp(self):
-        return self.Q_damp
+    def get_q_damp_body(self):
+        return self.q_damp_body
+
+    def get_q_damp_fin(self):
+        if self.use_fins is True:
+            self.q_damp_fin = self._calculate_pitch_damp_fin()
+        else:
+            self.q_damp_fin = 0
+        return self.q_damp_fin
 
     ## DRAG - DRAG - DRAG - DRAG - DRAG
     def _calculate_total_ca(self, aoa=0, velocity_0=10, rho=1.225, mu=1.784e-5):

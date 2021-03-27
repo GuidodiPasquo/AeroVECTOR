@@ -270,11 +270,11 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     fov = conf_3d[7]
 
     ## rocket Class
-    global S, Q_damp
+    global S, Q_damp_body
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
     rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(),xcg)
-    Q_damp = rocket.get_q_damp()
+    Q_damp_body = rocket.get_q_damp_body()
     S = rocket.reference_area
 
     ## controller
@@ -433,7 +433,7 @@ def glob2loc(u0,v0,theta):
 def update_parameters():
     global wind_rand, wind_total
     global q
-    global n_alpha, Q_damp, fin_force
+    global n_alpha, Q_damp_body, Q_damp_fin, fin_force
     global x
     global xa
     global i
@@ -466,13 +466,14 @@ def update_parameters():
     T, P, rho, spd_sound, mu = atm.calculate_at_h(position_global[0], atmosphere)
     thrust = rocket.get_thrust(t, t_launch)
     S = rocket.reference_area
-    V_modulus = np.sqrt( V_loc_tot[0]**2 + V_loc_tot[1]**2 )
+    V_modulus = np.sqrt(V_loc_tot[0]**2 + V_loc_tot[1]**2)
     M = V_modulus/spd_sound
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
-        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_modulus , rho, mu, M, actuator_angle)
+        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_loc_tot , rho, mu, M, actuator_angle, Q)
     else:
-        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_modulus , rho, mu, M)
+        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_loc_tot , rho, mu, M, Q)
+    Q_damp_fin = rocket.get_q_damp_fin()
     # Computes the dynamic pressure
     q = 0.5 * rho * V_modulus**2
     # Gravity in local coordinates, theta=0 equals to rocket up
@@ -500,7 +501,7 @@ def simulation():
     global Q_d , Q
     global theta, aoa, g
     global F_loc , F_glob
-    global n_alpha , thrust, rho, Q_damp, fin_force
+    global n_alpha , thrust, rho, Q_damp_body, Q_damp_fin, fin_force
     global CA
     global t_timer_3d
     global position_global
@@ -540,7 +541,8 @@ def simulation():
             accz = (( thrust*np.sin(actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*n_alpha)
                     / m + U*Q*v_d)
             accQ = (( thrust*np.sin(actuator_angle+u_initial_offset) * (xt-xcg)
-                     + q*S*n_alpha * (xa-xcg) - (Q_damp * rho * Q * abs(Q)))
+                     + q*S*n_alpha * (xa-xcg)
+                     - rho * Q * (Q_damp_body * abs(Q) + Q_damp_fin))
                     / Iy)
         else:
             """
@@ -556,7 +558,7 @@ def simulation():
             # Transversal acceleration (local)
             accz = ( fin_force + m*g_loc[1] + q*S*n_alpha) / m + U*Q*v_d
             accQ = (( fin_force * (rkt.fin[1].cp-xcg) + q*S*n_alpha * (xa-xcg)
-                     - (Q_damp * rho * Q * abs(Q))) / Iy)
+                     - rho * Q * (Q_damp_body * abs(Q) + Q_damp_fin)) / Iy)
 
     # Updates the variables
     U_d.new_f_dd(accx)
