@@ -7,15 +7,15 @@
 #include "WProgram.h"
 #endif
 
-class SinL {
+class SITL {
   public:
     // Constructor
-    SinL(bool hello = true);
+    SITL(bool hello = true);
 
     // Methods
     void sendCommand (float servo, int parachute);
     void getSimData (float & SimGiroY, float & SimAccX, float & SimAccZ, float & SimAlt);
-    void StartSinL();
+    void StartSITL();
 
   private:
     String _rxString;

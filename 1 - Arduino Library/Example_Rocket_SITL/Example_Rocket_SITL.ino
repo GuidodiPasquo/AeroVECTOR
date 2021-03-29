@@ -4,8 +4,8 @@
 SITL Sim;
 Servo servo;
 
-double deg2rad = 3.14159265/180;
-double rad2deg = 180/3.14159265;
+double DEG2RAD = 3.14159265/180;
+double RAD2DEG = 180/3.14159265;
 
 // Sample Time
 double T_Program = 0.01;
@@ -27,7 +27,7 @@ double out;
 
 // Saturation and Real Actuator
 double Actuator_reduction = 5;
-double Max_Actuator_Angle = 10 * deg2rad;
+double Max_Actuator_Angle = 10 * DEG2RAD;
 double Max_servo_Angle = Max_Actuator_Angle * Actuator_reduction;
 
 // SinL
@@ -54,9 +54,9 @@ if (micros() >= timer_run + T_Program_micros){
   Sim.getSimData(GyroY, AccX, AccZ, Alt);
 
   // Integrate the Gyros to find the angle.
-  theta += (GyroY * deg2rad) * dt;
+  theta += (GyroY * DEG2RAD) * dt;
 
-  double setpoint = 10 * deg2rad;
+  double setpoint = 10 * DEG2RAD;
   out = PID(setpoint, theta);
   servo_command = PID2Servo(out);
   
@@ -95,7 +95,7 @@ double PID2Servo(double out){
   // Saturation
   if(servo_command > Max_servo_Angle){servo_command = Max_servo_Angle;}
   if(servo_command < -Max_servo_Angle){servo_command = -Max_servo_Angle;}
-  servo_command *= rad2deg;
+  servo_command *= RAD2DEG;
   return servo_command;  
 }
 

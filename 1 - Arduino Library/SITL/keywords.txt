@@ -1,12 +1,12 @@
 #############################################
-# Syntax Coloring Map for SinL
+# Syntax Coloring Map for SITL
 #############################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-SinL	KEYWORD1
+SITL	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -14,7 +14,7 @@ SinL	KEYWORD1
 
 sendCommand	KEYWORD2
 getSimData	KEYWORD2
-StartSinL	KEYWORD2
+StartSITL	KEYWORD2
 
 
 

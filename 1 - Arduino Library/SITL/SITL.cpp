@@ -1,13 +1,13 @@
-#include "SinL.h"
+#include "SITL.h"
 
 
 const unsigned int MAX_INPUT = 100;
 
-SinL::SinL(bool hello){
-  
+SITL::SITL(bool hello){
+
 }
 // Starts the Simulation
-void SinL::StartSinL(){
+void SITL::StartSITL(){
   delay(100);
   Serial.println("A");
 }
@@ -15,11 +15,11 @@ void SinL::StartSinL(){
 
 
 // Functions that read the data sended by Python
-void SinL::process_data (const char * data) // here to process incoming serial data after a terminator received
+void SITL::process_data (const char * data) // here to process incoming serial data after a terminator received
   {
   _rxString = "";
   int stringStart = 0;
-  int arrayIndex = 0;    
+  int arrayIndex = 0;
   _rxString = (String) data;
 
   for (int i = 0; i  < _rxString.length(); i++) {
@@ -33,13 +33,13 @@ void SinL::process_data (const char * data) // here to process incoming serial d
           stringStart = (i + 1);
           arrayIndex++;
       }
-    }  
-    
+    }
+
   }  // end of process_data
 
 
 
-void SinL::processIncomingByte (const byte inByte)
+void SITL::processIncomingByte (const byte inByte)
   {
   static char input_line [MAX_INPUT];
   static unsigned int input_pos = 0;
@@ -54,7 +54,7 @@ void SinL::processIncomingByte (const byte inByte)
       process_data (input_line);
 
       // reset buffer for next time
-      input_pos = 0;  
+      input_pos = 0;
       break;
 
     case '\r':   // discard carriage return
@@ -68,18 +68,18 @@ void SinL::processIncomingByte (const byte inByte)
 
     }  // end of switch
 
-  } // end of processIncomingByte  
+  } // end of processIncomingByte
 
 
-void SinL::getSimData(float & SimGiroY, float & SimAccX, float & SimAccZ, float & SimAlt)
+void SITL::getSimData(float & SimGiroY, float & SimAccX, float & SimAccZ, float & SimAlt)
 {
-  
+
   Serial.println("R");
-  
+
   unsigned long timer_send = micros();
-  
+
   while (micros() < timer_send+3UL*1000UL)
-  { 
+  {
     while (Serial.available()>0)
     {
        processIncomingByte (Serial.read ());
@@ -97,10 +97,10 @@ void SinL::getSimData(float & SimGiroY, float & SimAccX, float & SimAccZ, float 
 
 
 // Send the Servo and Parachute commands
-void SinL::sendCommand (float servo, int parachute)
+void SITL::sendCommand (float servo, int parachute)
 {
   Serial.print(servo,6);
   Serial.print(",");
-  Serial.print(parachute); 
+  Serial.print(parachute);
   Serial.print('\n');
 }
