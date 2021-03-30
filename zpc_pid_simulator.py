@@ -1408,7 +1408,7 @@ def run_3d():
             V.text = ("Local Velocity => " + " X = "+
                       str(round(V_loc_3d[i][0],2)) + " m/s , Z = "
                       + str(round(V_loc_3d[i][1],2)) + " m/s")
-            aoa_plot.text = "aoa = " + str(round(aoa_3d[i]*RAD2DEG,2)) + u'\xb0'
+            aoa_plot.text = "AoA = " + str(round(aoa_3d[i]*RAD2DEG,2)) + u'\xb0'
             Altitude.text = "Altitude = " + str(round(position_3d[i][0],2)) + "m"
             Time_label.text = "Time = " + str(round(t_3d[i],3))
         plt.draw()

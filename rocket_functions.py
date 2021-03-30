@@ -97,42 +97,12 @@ class Airfoil:
         self.cn = 0
         self.ca = 0
         self.cn_alpha = 0
-
-    def _calculate_cn_ca(self, aoa):
-        self._sign = self.__sign_correction(aoa)
-        # Data goes from 0º-180º, later it is corrected with
-        # the self._sign variable in case the aoa is negative
-        self.x = abs(aoa)
-        # Obtain current cl, cd and use them to obtain the normal and
-        # axial coefficients RELATED TO THE FIN
         if self.use_windtunel is True:
-            aoa_list_interp = self.aoa_cl
-            cl_list_interp = self.cl_list
+            self.aoa_list_interp = self.aoa_cl
+            self.cl_list_interp = self.cl_list
         elif self.use_windtunnel_modified is True:
-            aoa_list_interp = self.aoa_cl_modified
-            cl_list_interp = self.cl_list_modified
-        self.cl = np.interp(self.x, aoa_list_interp, cl_list_interp)
-        self.cd = np.interp(self.x, self.aoa_cd, self.cd_list)
-        # Sing correction
-        self.cn = (self._sign *
-                  (self.cl*np.cos(self.x) + self.cd*np.sin(self.x)))
-        # ca always agains the fin, independent of aoa
-        self.ca = -self.cl*np.sin(self.x) + self.cd*np.cos(self.x)
-        return self.cn
-
-    def _calculate_cn_alpha(self, aoa):
-        # Prandtl-Glauert applied in the cn
-        self.cn_alpha = self.cn / aoa
-        if self.use_2pi is True:
-            self.cn_alpha = 2 * np.pi
-
-    def __sign_correction(self, aoa):
-        # Saves the sign of the aoa to apply it after computing the cn
-        if aoa >= 0:
-            x = 1
-        else:
-            x = -1
-        return x
+            self.aoa_list_interp = self.aoa_cl_modified
+            self.cl_list_interp = self.cl_list_modified
 
     def get_aero_coef(self, aoa):
         """
@@ -156,6 +126,35 @@ class Airfoil:
         self._calculate_cn_alpha(aoa)
         return self.cn, self.ca, self.cn_alpha
 
+    def _calculate_cn_ca(self, aoa):
+        self._sign = self.__sign_correction(aoa)
+        # Data goes from 0º-180º, later it is corrected with
+        # the self._sign variable in case the aoa is negative
+        self.x = abs(aoa)
+        # Obtain current cl, cd and use them to obtain the normal and
+        # axial coefficients RELATED TO THE FIN
+        self.cl = np.interp(self.x, self.aoa_list_interp, self.cl_list_interp)
+        self.cd = np.interp(self.x, self.aoa_cd, self.cd_list)
+        # Sing correction
+        self.cn = (self._sign *
+                  (self.cl*np.cos(self.x) + self.cd*np.sin(self.x)))
+        # ca always agains the fin, independent of aoa
+        self.ca = -self.cl*np.sin(self.x) + self.cd*np.cos(self.x)
+        return self.cn
+
+    def _calculate_cn_alpha(self, aoa):
+        # Prandtl-Glauert applied in the cn
+        self.cn_alpha = self.cn / aoa
+        if self.use_2pi is True:
+            self.cn_alpha = 2 * np.pi
+
+    def __sign_correction(self, aoa):
+        # Saves the sign of the aoa to apply it after computing the cn
+        if aoa >= 0:
+            x = 1
+        else:
+            x = -1
+        return x
 
 class Fin:
     """Class that handles the fin geometry and its individual parameters
@@ -372,6 +371,8 @@ class Rocket:
         self.plan_area = 1
         self.area_wet_component = 1
         self.area_wet_body = 1
+        self._barrowman_const = [0]
+        self._body_cn_const = [0]
         self.avg_rad_aft = 1
         self.avg_rad_fore = 1
         self.v_loc_tot = [10,0]
@@ -480,6 +481,8 @@ class Rocket:
                 self.component_plan_area[0] = 2/3 * l * d
         self._compute_total_rocket_plan_area()
         self._calculate_wet_area_body()
+        self._calculate_barrowman_constants()
+        self._calculate_body_cn_constants()
 
     def _separate_xcg_component(self):
         for i,elem in enumerate(self.rocket_dim):
@@ -527,6 +530,19 @@ class Rocket:
         self.area_wet_body = 0
         for i in range(len(self.area_wet_component)):
             self.area_wet_body += self.area_wet_component[i]
+
+    def _calculate_barrowman_constants(self):
+        self._barrowman_const = [0] * (len(self.station_cross_area)-1)
+        for i in range(len(self._barrowman_const)):
+            k1 = (1 / self.area_ref)
+            self._barrowman_const[i] = k1 * (self.station_cross_area[i+1]-self.station_cross_area[i])
+
+    def _calculate_body_cn_constants(self):
+        K = 1.1
+        self._body_cn_const = [0]*len(self.component_plan_area)
+        for i in range(len(self.component_plan_area)):
+            k1 = self.component_plan_area[i] / self.area_ref
+            self._body_cn_const[i] = K * k1
 
     @property
     def reference_area(self):
@@ -603,7 +619,8 @@ class Rocket:
         """
         self.q = q
         self.v_loc_tot = v_loc_tot
-        v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
+        self.v_modulus_sq = v_loc_tot[0]**2 + v_loc_tot[1]**2
+        v_modulus = np.sqrt(self.v_modulus_sq)
         if mach < 0.001:
             self.mach = 0.001
         else:
@@ -652,11 +669,13 @@ class Rocket:
         self._body_cn()
         if self.use_fins is True:
             self._fin_cn()
+        self._compute_dynamic_pressure_scale()
         for i in range(len(self.component_cn)):
-            self.cn += self.component_cn[i]
+            self.cn += self.component_cn[i] * self.v_sq_over_v_tot_sq_body[i]
+        # print(self.v_sq_over_v_tot_sq_body)
         if self.use_fins is True:
             for i in range(len(fin)):
-                self.cn += self.fin_cn[i]
+                self.cn += self.fin_cn[i] * self.v_sq_over_v_tot_sq_fin[i]
         return self.cn
 
     def __sign_correction(self):
@@ -675,20 +694,17 @@ class Rocket:
                 self._sign_correction_fin[i] = 1
 
     def _barrowman_cn(self):
-        for i in range(len(self.station_cross_area)-1):
+        for i in range(len(self.component_aoa)):
             aoa = abs(self.component_aoa[i])
-            k1 = (2*np.sin(aoa) / self.area_ref)
-            cn = k1 * (self.station_cross_area[i+1]-self.station_cross_area[i])
+            cn = 2*np.sin(aoa) * self._barrowman_const[i]
             cn *= self._sign_correction[i]
             self.component_cn[i] = cn
 
     def _body_cn(self):
-        K = 1.1
         cn = [0]*len(self.component_plan_area)
         for i in range(len(self.component_plan_area)):
             aoa = abs(self.component_aoa[i])
-            k1 = self.component_plan_area[i] / self.area_ref
-            cn[i] = K * k1 * np.sin(aoa)**2
+            cn[i] = self._body_cn_const[i] * np.sin(aoa)**2
             cn[i] *= self._sign_correction[i]
         for i in range(len(self.component_cn)):
             self.component_cn[i] += cn[i]
@@ -750,6 +766,18 @@ class Rocket:
         # Absolute because ca is always positive, i.e., pointing backwards,
         # independently of the actuator angle being positive or negative
         self.cn_alpha_ctrl_fin_3d_arrow = self.cn_alpha_fin[1] * np.cos(self.actuator_angle)
+
+    def _compute_dynamic_pressure_scale(self):
+        self.v_sq_over_v_tot_sq_body = [0] * len(self.component_tan_vel)
+        for i in range(len(self.v_sq_over_v_tot_sq_body)):
+            v_component_sq = (self.v_loc_tot[0]**2 +
+                             (self.v_loc_tot[1] + self.component_tan_vel[i])**2)
+            self.v_sq_over_v_tot_sq_body[i] = (v_component_sq+0.001) / (self.v_modulus_sq+0.001)
+        self.v_sq_over_v_tot_sq_fin = [0] * 2
+        for i in range(len(self.v_sq_over_v_tot_sq_fin)):
+            v_fin_sq = (self.v_loc_tot[0]**2 +
+                       (self.v_loc_tot[1] + self.fin_tan_vel[i])**2)
+            self.v_sq_over_v_tot_sq_fin[i] = (v_fin_sq+0.001) / (self.v_modulus_sq+0.001)
 
     def _calculate_cp_position(self):
         a = 0
