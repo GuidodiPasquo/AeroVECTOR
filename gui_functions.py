@@ -832,8 +832,10 @@ class TabWithCanvas(Tab):
         # Creates a point where the CP is located
         # the slider can move it by modifying the aoa
         f = point_diameter / 2
-        self.rocket.update_rocket(self.get_configuration_destringed(), self.rocket_length/2)
-        cn, cp_point, ca = self.rocket.calculate_aero_coef(self.aoa)
+        xcg_point = float(gui_setup.savefile.get_parameters()[3])
+        self.rocket.update_rocket(self.get_configuration_destringed(), xcg_point)
+        v = [1, np.tan(self.aoa)]
+        cn, cm , ca, cp_point= self.rocket.calculate_aero_coef(v)
         self.canvas.create_oval(self.canvas_width/2-f, cp_point*self.scale_y - f,
                                 self.canvas_width/2+f, cp_point*self.scale_y + f,
                                 fill="red", outline="red")

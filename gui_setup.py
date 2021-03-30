@@ -373,7 +373,7 @@ def create_draw_rocket_tab(notebook):
 
     def slider_aoa(a):
         # Changes the aoa and re draws the CP
-        draw_rocket_tab.aoa = float(a)*DEG2RAD + 0.01
+        draw_rocket_tab.aoa = float(a)*DEG2RAD*0.9999 + 0.0001
         draw_rocket_tab.draw_rocket()
 
     aoa_scale = tk.Scale(draw_rocket_tab.tab, from_=0.01, to=90,
@@ -484,6 +484,8 @@ def create_run_sim_tab(notebook):
                                  "Global Velocity Z", "Total Velocity",
                                  "Local Acc X",  "Local Acc Z", "Global Acc X",
                                  "Global Acc Z", "Angle of Atack","Cp Position",
+                                 "Normal Force Coefficient", "Axial Force Coefficient",
+                                 "Moment Coefficient",
                                  "Altitude","Distance Downrange",
                                  "Proportional Contribution", "Integral Contribution",
                                  "Derivative Contribution","Total Error",

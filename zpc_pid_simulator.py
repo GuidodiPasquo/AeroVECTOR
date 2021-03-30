@@ -66,7 +66,9 @@ wind = 2 #Wind speed in m/s (positive right to left)
 wind_distribution = 0.1  # wind*wind_distribution = max gust speed
 
 ## OTHER PARAMETERS OR VARIABLES
-n_alpha = 0
+cn = 0
+ca = 0
+cm_xcg = 0
 xa = 0
 fin_force = 0
 g = 9.8  # gravity in m/s^2
@@ -80,7 +82,6 @@ wind_rand = 0
 i_turns = 0
 actuator_angle = 0
 CA0 = 0
-CA = 0
 wind_total = 0
 
 ############# NEW SIMULATION PARAMETERS
@@ -143,7 +144,6 @@ class IntegrableVariable:
         return self.f
 
 theta = 0
-CA = 0
 aoa = 0
 U = 0
 W = 0
@@ -185,7 +185,7 @@ Airspeed_3d = []
 position_3d = []
 X_3d = []
 Z_3d = []
-n_alpha_3d = []
+cn_3d = []
 fin_force_3d = []
 thrust_3d = []
 xa_3d = []
@@ -270,12 +270,13 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     fov = conf_3d[7]
 
     ## rocket Class
-    global S, Q_damp_body
+    global S, Q_damp_body, d
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
-    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(),xcg)
+    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg)
     Q_damp_body = rocket.get_q_damp_body()
     S = rocket.reference_area
+    d = rocket.max_diam
 
     ## controller
     global kp, ki, kd, k_all, k_damping, anti_windup, torque_controller, inp, inp_time, t_launch
@@ -307,8 +308,8 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
 def reset_variables():
     ## Ugly ugly piece of code
     ##
-    global n_alpha, w, q, U_prev, U2, wind_rand, i_turns, fin_force, wind_total
-    n_alpha = 0
+    global cn, w, q, U_prev, U2, wind_rand, i_turns, fin_force, wind_total
+    cn = 0
     fin_force = 0
     w = 0
     q = 0
@@ -319,10 +320,10 @@ def reset_variables():
     wind_total = 0
 
     ##
-    global theta, CA, aoa, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, V_loc, V_loc_tot
+    global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, V_loc, V_loc_tot
     global V_glob, g_loc, F_loc, F_glob, position_global, acc_glob
     theta = 0
-    CA = 0
+    ca = 0
     aoa = 0
     U = 0
     W = 0
@@ -343,7 +344,7 @@ def reset_variables():
 
     ##
     global t_3d, theta_3d, servo_3d, V_loc_3d, V_glob_3d, position_3d, xa_3d
-    global thrust_3d, n_alpha_3d, fin_force_3d, aoa_3d, setpoint_3d, Airspeed_3d
+    global thrust_3d, cn_3d, fin_force_3d, aoa_3d, setpoint_3d, Airspeed_3d
     global X_3d, Z_3d
     t_3d = []
     theta_3d = []
@@ -355,7 +356,7 @@ def reset_variables():
     position_3d = []
     X_3d = []
     Z_3d = []
-    n_alpha_3d = []
+    cn_3d = []
     fin_force_3d = []
     thrust_3d = []
     xa_3d = []
@@ -433,7 +434,7 @@ def glob2loc(u0,v0,theta):
 def update_parameters():
     global wind_rand, wind_total
     global q
-    global n_alpha, Q_damp_body, Q_damp_fin, fin_force
+    global cn, Q_damp_body, fin_force
     global x
     global xa
     global i
@@ -441,7 +442,7 @@ def update_parameters():
     global wind
     global thrust,t_launch
     global out,timer_disturbance,timer_U,U2,q_wind
-    global CA, S
+    global cm_xcg, ca, S
     global actuator_angle
 
     # NEW SIMULATION
@@ -470,10 +471,11 @@ def update_parameters():
     M = V_modulus/spd_sound
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
-        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_loc_tot , rho, mu, M, actuator_angle, Q)
+        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(V_loc_tot, Q, rho, mu, M, actuator_angle)
     else:
-        n_alpha, xa, CA = rocket.calculate_aero_coef(aoa , V_loc_tot , rho, mu, M, Q)
-    Q_damp_fin = rocket.get_q_damp_fin()
+        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(V_loc_tot, Q, rho, mu, M)
+    if abs(xa) > 1.5 * rocket.length:
+        xa = 1.5 * rocket.length * np.sign(xa)
     # Computes the dynamic pressure
     q = 0.5 * rho * V_modulus**2
     # Gravity in local coordinates, theta=0 equals to rocket up
@@ -495,14 +497,14 @@ def simulation():
     global u_controller
     global u,timer_run_servo,u_servos,actuator_angle
 
-    global V_loc , V_loc_tot , V_glob
-    global U_d , U , X
-    global W_d , W , Z
-    global Q_d , Q
+    global V_loc, V_loc_tot , V_glob
+    global U_d, U , X
+    global W_d, W , Z
+    global Q_d, Q
     global theta, aoa, g
     global F_loc , F_glob
-    global n_alpha , thrust, rho, Q_damp_body, Q_damp_fin, fin_force
-    global CA
+    global cn, thrust, rho, Q_damp_body, fin_force
+    global cm_xcg, ca
     global t_timer_3d
     global position_global
     global i_turns
@@ -526,39 +528,40 @@ def simulation():
     X_d = global X speed (Y in Vpython)
     Z_d = global Z speed (-X in Vpython)
     """
-    Drag = q*S*CA
     v_d = 0 # 0 uses Local and Global Velocities, 1 uses vector derivatives.
     if rocket.is_in_the_pad(position_global[0]) and thrust < m*g or t < t_launch:
         accx = 0
         accz = 0
         accQ = 0
     else:
+        if rocket.is_in_the_pad(position_global[0]):
+            launchrod_lock = 1
+            # launchrod_lock = 0 in case one day I add a launchrod
+        else:
+            launchrod_lock = 1
         if rocket.use_fins_control is False:
             # Longitudinal acceleration (local)
-            accx = (( thrust*np.cos(actuator_angle+u_initial_offset) + m*g_loc[0] - Drag)
+            accx = ((thrust * np.cos(actuator_angle+u_initial_offset) + m*g_loc[0] - q*S*ca)
                     / m - W*Q*v_d)
             # Transversal acceleration (local)
-            accz = (( thrust*np.sin(actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*n_alpha)
-                    / m + U*Q*v_d)
-            accQ = (( thrust*np.sin(actuator_angle+u_initial_offset) * (xt-xcg)
-                     + q*S*n_alpha * (xa-xcg)
-                     - rho * Q * (Q_damp_body * abs(Q) + Q_damp_fin))
-                    / Iy)
+            accz = ((thrust * np.sin(actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*cn)
+                    / m + U*Q*v_d) * launchrod_lock
+            accQ = ((thrust * np.sin(actuator_angle+u_initial_offset) * (xt-xcg)
+                     + S * q * d * cm_xcg
+                     - rho * Q * (Q_damp_body * abs(Q)*0.2))
+                     / Iy) * launchrod_lock
         else:
-            """
-            rocket surface because CN_Alpha is already adimensionalised for it.
-            CN_Alpha already corrected for the angle of the fin relative to the body.
-
-            Positive actuator angle generates positive fin force.
-            Fin rotates in the same direction of the TVC.
-            """
-            fin_force = q * S * rocket.cn_alpha_fin[1] * actuator_angle
             # Longitudinal acceleration (local)
-            accx = ( thrust + m*g_loc[0] - Drag) / m - W*Q*v_d
+            accx = ((thrust * np.cos(u_initial_offset) + m*g_loc[0] - q*S*ca)
+                    / m - W*Q*v_d)
             # Transversal acceleration (local)
-            accz = ( fin_force + m*g_loc[1] + q*S*n_alpha) / m + U*Q*v_d
-            accQ = (( fin_force * (rkt.fin[1].cp-xcg) + q*S*n_alpha * (xa-xcg)
-                     - rho * Q * (Q_damp_body * abs(Q) + Q_damp_fin)) / Iy)
+            accz = ((thrust * np.sin(u_initial_offset) + m*g_loc[1] + q*S*cn)
+                    / m + U*Q*v_d) * launchrod_lock
+            accQ = ((thrust * np.sin(u_initial_offset) * (rocket.length-xcg)
+                     + S * q * d * cm_xcg
+                     - rho * Q * (Q_damp_body * abs(Q)*0.2))
+                     / Iy) * launchrod_lock
+            fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle
 
     # Updates the variables
     U_d.new_f_dd(accx)
@@ -638,9 +641,9 @@ def simulation():
         V_loc_3d.append(V_loc)
         V_glob_3d.append(V_glob)
         position_3d.append(position_global)
-        xa_3d.append(xa)
+        xa_3d.append(rocket.cp_w_o_ctrl_fin)
         thrust_3d.append(thrust)
-        n_alpha_3d.append(n_alpha*S*q)
+        cn_3d.append(cn*S*q)
         fin_force_3d.append(fin_force)
         aoa_3d.append(aoa)
         setpoint_3d.append(setpoint)
@@ -703,8 +706,14 @@ def check_which_plot(s):
         return acc_glob[1]
     if s == "Angle of Atack":
         return aoa * RAD2DEG
-    if s == "Cp position":
+    if s == "Cp Position":
         return xa
+    if s == "Normal Force Coefficient":
+        return cn
+    if s == "Axial Force Coefficient":
+        return ca
+    if s == "Moment Coefficient":
+        return cm_xcg
     if s == "Altitude":
         return position_global[0]
     if s == "Distance Downrange":
@@ -730,16 +739,16 @@ def check_which_plot(s):
 
 def plot_data():
     s = gui.run_sim_tab.get_configuration_destringed()
-    a = check_which_plot(s[0])
-    b = check_which_plot(s[1])
-    c = check_which_plot(s[2])
-    d = check_which_plot(s[3])
-    e = check_which_plot(s[4])
-    first_plot.append(a)
-    second_plot.append(b)
-    third_plot.append(c)
-    fourth_plot.append(d)
-    fifth_plot.append(e)
+    a_plt = check_which_plot(s[0])
+    b_plt = check_which_plot(s[1])
+    c_plt = check_which_plot(s[2])
+    d_plt = check_which_plot(s[3])
+    e_plt = check_which_plot(s[4])
+    first_plot.append(a_plt)
+    second_plot.append(b_plt)
+    third_plot.append(c_plt)
+    fourth_plot.append(d_plt)
+    fifth_plot.append(e_plt)
     t_plot.append(t)
 
 def plot_plots():
@@ -1291,7 +1300,7 @@ def run_3d():
 
             #Normal force arrow
             # Same as before, makes the one active visible
-            if n_alpha_3d[i] <= 0:
+            if cn_3d[i] <= 0:
                 Nforce_pos.visible = False
                 Nforce_neg.visible = True
             else:
@@ -1300,14 +1309,14 @@ def run_3d():
             # Displacements and rotations
             Nforce_pos.pos.y+=delta_pos_X - xa_radius[0]
             Nforce_pos.pos.x+=delta_pos_Z - xa_radius[1]
-            Nforce_pos.axis=vp.vector(n_alpha_3d[i]*force_scale,0,0)
+            Nforce_pos.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_pos.pos)
             Nforce_pos.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
                               origin=vect_cg)
             Nforce_neg.pos.y+=delta_pos_X - xa_radius[0]
             Nforce_neg.pos.x+=delta_pos_Z - xa_radius[1]
-            Nforce_neg.axis=vp.vector(n_alpha_3d[i]*force_scale,0,0)
+            Nforce_neg.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_neg.pos)
             Nforce_neg.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
