@@ -834,7 +834,7 @@ class TabWithCanvas(Tab):
         f = point_diameter / 2
         xcg_point = float(gui_setup.savefile.get_parameters()[3])
         self.rocket.update_rocket(self.get_configuration_destringed(), xcg_point)
-        v = [1, np.tan(self.aoa)]
+        v = [1, np.tan(self.aoa)]/np.sqrt(1 + np.tan(self.aoa)**2)
         cn, cm , ca, cp_point= self.rocket.calculate_aero_coef(v)
         self.canvas.create_oval(self.canvas_width/2-f, cp_point*self.scale_y - f,
                                 self.canvas_width/2+f, cp_point*self.scale_y + f,

@@ -15,9 +15,11 @@ Classes:
 
 import copy
 import numpy as np
+import ISA_calculator as atm
 
 DEG2RAD = np.pi / 180
 RAD2DEG = 1 / DEG2RAD
+atmosphere = atm.get_atmosphere()
 
 
 class Airfoil:
@@ -376,9 +378,16 @@ class Rocket:
         self.avg_rad_aft = 1
         self.avg_rad_fore = 1
         self.v_loc_tot = [10,0]
+        self.v_modulus = 1
+        self.v_modulus_sq = 1
+        self.T = 273
+        self.P = 101000
+        self.rho = 1.225
+        self.spd_sound = 343
+        self.mu = 0
         self.mach = 0.001
         self.beta = 1
-        self.q = 0
+        self.Q = 0
         self.actuator_angle = 0
         self.aoa_ctrl_fin = 0
         self.cn_alpha_og = 6.28
@@ -409,6 +418,8 @@ class Rocket:
         self.fin_aoa = [0,0]
         self.fin_tan_vel = [0,0]
         self.aoa_total = 0
+        self.v_sq_over_v_tot_sq_body = [0]
+        self.v_sq_over_v_tot_sq_fin = [0,0]
         self._sign_correction = [0]
         self._sign_correction_fin = [0,0]
         self.fin_cn = [0,0]
@@ -535,7 +546,8 @@ class Rocket:
         self._barrowman_const = [0] * (len(self.station_cross_area)-1)
         for i in range(len(self._barrowman_const)):
             k1 = (1 / self.area_ref)
-            self._barrowman_const[i] = k1 * (self.station_cross_area[i+1]-self.station_cross_area[i])
+            self._barrowman_const[i] = k1 * (self.station_cross_area[i+1]
+                                             -self.station_cross_area[i])
 
     def _calculate_body_cn_constants(self):
         K = 1.1
@@ -587,8 +599,7 @@ class Rocket:
         self.reynolds_crit = 51 * (self.relative_rough/self.length)**-1.039
 
     ## AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS -
-    def calculate_aero_coef(self, v_loc_tot=[10,0], q=0, rho=1.225, mu=1.784e-5,
-                            mach=0.001, actuator_angle=0):
+    def calculate_aero_coef(self, v_loc_tot=[10,0], Q=0, h=0, actuator_angle=0):
         """
         Calculate the CN, CP position and the CA for a certain AoA, velocity
         density, viscosity, mach, and actuator angle.
@@ -597,7 +608,7 @@ class Rocket:
         ----------
         v_loc_tot : list, optional
             Total velocity. The default is [10,0].
-        q : float, optional
+        Q : float, optional
             Pitching velocity. The default is 0.
         rho : float, optional
             Density. The default is 1.225.
@@ -617,42 +628,47 @@ class Rocket:
         ca
             Axial force coefficient.
         """
-        self.q = q
+        self.Q = Q
         self.v_loc_tot = v_loc_tot
         self.v_modulus_sq = v_loc_tot[0]**2 + v_loc_tot[1]**2
-        v_modulus = np.sqrt(self.v_modulus_sq)
-        if mach < 0.001:
-            self.mach = 0.001
-        else:
-            self.mach = mach
-        self.beta = np.sqrt(1 - mach**2)
+        self.v_modulus = np.sqrt(self.v_modulus_sq)
+        self.T, self.P, self.rho, self.spd_sound, self.mu = atm.calculate_at_h(h, atmosphere)
+        self._calculate_mach()
+        self.beta = np.sqrt(1 - self.mach**2)
         self.actuator_angle = actuator_angle
         self._calculate_aoa_components()
         self._calculate_total_cn()
         self._calculate_cp_position()
         self._calculate_cm()
-        self._calculate_total_ca(self.aoa_total, v_modulus, rho, mu)
+        self._calculate_total_ca(self.aoa_total)
         return self.cn, self.cm_xcg, self.ca, self.cp
+
+    def _calculate_mach(self):
+        mach = self.v_modulus / self.spd_sound
+        if mach < 0.001:
+            self.mach = 0.001
+        else:
+            self.mach = mach
 
     def _calculate_aoa_components(self):
         self.component_aoa = [0] * len(self.component_centroid)
         self.component_tan_vel = [0] * len(self.component_centroid)
         self.fin_aoa = [0,0]
         self.fin_tan_vel = [0,0]
-        for i, elem in enumerate(self.component_tan_vel):
+        for i in range(len(self.component_tan_vel)):
             r = self.component_centroid_pos[i] - self.xcg
-            self.component_tan_vel[i] = self.q * r
-        for i, elem in enumerate(self.component_aoa):
+            self.component_tan_vel[i] = self.Q * r
+        for i in range(len(self.component_aoa)):
             self.component_aoa[i] = self._calculate_aoa(self.component_tan_vel[i])
         for i in range(2):
             r = fin[i].cp - self.xcg
-            self.fin_tan_vel[i] = self.q * r
+            self.fin_tan_vel[i] = self.Q * r
         for i in range(2):
-            if i == 0:
-                self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
-            else:
+            if i == 1:
                 self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
                 self.fin_aoa[i] -= self.actuator_angle # + delta gives -aoa
+            else:
+                self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
         self.aoa_total = self._calculate_aoa(0)
 
     def _calculate_aoa(self, v_tan):
@@ -672,9 +688,8 @@ class Rocket:
         self._compute_dynamic_pressure_scale()
         for i in range(len(self.component_cn)):
             self.cn += self.component_cn[i] * self.v_sq_over_v_tot_sq_body[i]
-        # print(self.v_sq_over_v_tot_sq_body)
         if self.use_fins is True:
-            for i in range(len(fin)):
+            for i in range(2):
                 self.cn += self.fin_cn[i] * self.v_sq_over_v_tot_sq_fin[i]
         return self.cn
 
@@ -735,27 +750,28 @@ class Rocket:
         self._obtain_fin_cn()
         self._nondimensionalize_fin_cn()
         self._compute_body_interference()
-        self._correct_sign_cn_fin()
+        self._compute_fin_cn()
         self._correct_ctrl_fin_coeff_for_actuator_angle()
 
     def _obtain_fin_cn(self):
         for i in range(2):
-            self.cn_alpha_og[i] = fin[i].calculate_cn_alpha(abs(self.fin_aoa[i]), self.beta, self.mach)
+            self.cn_alpha_og[i] = fin[i].calculate_cn_alpha(abs(self.fin_aoa[i]),
+                                                            self.beta, self.mach)
 
     def _nondimensionalize_fin_cn(self):
         n_fin = 2
-        for i in range(len(fin)):
+        for i in range(2):
             self.cn_alpha_fin[i] = n_fin * (fin[i].area/self.area_ref) * self.cn_alpha_og[i]
 
     def _compute_body_interference(self):
-        for i in range(len(fin)):
+        for i in range(2):
             if self.fins_attached[i] is True:
                 r_body_at_fin = fin[i].dim[0][1]
                 KT = 1 + (r_body_at_fin / (fin[i].wingspan+r_body_at_fin))
                 self.cn_alpha_fin[i] = KT * self.cn_alpha_fin[i]
 
-    def _correct_sign_cn_fin(self):
-        for i in range (len(fin)):
+    def _compute_fin_cn(self):
+        for i in range(2):
             self.fin_cn[i] = self.cn_alpha_fin[i] * abs(self.fin_aoa[i])
             self.fin_cn[i] *= self._sign_correction_fin[i]
 
@@ -809,7 +825,7 @@ class Rocket:
         self.cm_xcg = self.cn * (self.cp-self.xcg) / self.max_diam
 
     ## DRAG - DRAG - DRAG - DRAG - DRAG
-    def _calculate_total_ca(self, aoa=0, v_modulus=10, rho=1.225, mu=1.784e-5):
+    def _calculate_total_ca(self, aoa=0):
         """
         Boundry layer always turbulent
         There are no boattails, if they are, they are treated as shoulders
@@ -819,15 +835,15 @@ class Rocket:
         More detailed explanations of the methods applied here are in the
         Open Rocket's documentation.
         """
-        self._calculate_reynolds(v_modulus, rho, mu)
+        self._calculate_reynolds()
         self._calculate_cf()
         self._calculate_pressure_drag()
         self._calculate_base_drag()
         self._calculate_cd(aoa)
         self._calculate_ca(aoa)
 
-    def _calculate_reynolds(self, v_modulus, rho, mu):
-        self.reynolds = (rho * v_modulus * self.length) / mu
+    def _calculate_reynolds(self):
+        self.reynolds = (self.rho * self.v_modulus * self.length) / self.mu
 
     def _calculate_cf(self):
         if self.reynolds < 10e4:
@@ -894,7 +910,7 @@ class Rocket:
             self._add_control_fin_drag()
 
     def _add_fin_ca(self):
-        for i in range(len(fin)):
+        for i in range(2):
             # Asumes control fin parallel to the body
             self.ca += fin[i].ca * (2*fin[i].area/self.area_ref)
 

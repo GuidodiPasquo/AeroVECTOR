@@ -49,12 +49,10 @@ import vpython as vp
 import time
 import gui_setup as gui
 import rocket_functions as rkt
-import ISA_calculator as atm
 import control
 import servo_lib
 
 rocket = rkt.Rocket()
-atmosphere = atm.get_atmosphere()
 controller = control.Controller()
 servo = servo_lib.Servo()
 
@@ -155,8 +153,8 @@ W_d = IntegrableVariable()
 Q_d = IntegrableVariable()
 X_d = IntegrableVariable()
 Z_d = IntegrableVariable()
-V_loc = [0.00001,0.00001]
-V_loc_tot = [0.00001,0.00001]
+v_loc = [0.00001,0.00001]
+v_loc_tot = [0.00001,0.00001]
 V_glob = [0.00001,0.00001]
 g_loc = [0.0000,0.0000]
 acc_glob = [0.0001,0.0001]
@@ -179,7 +177,7 @@ t_3d = []
 theta_3d = []
 setpoint_3d = []
 servo_3d = []
-V_loc_3d = []
+v_loc_3d = []
 V_glob_3d = []
 Airspeed_3d = []
 position_3d = []
@@ -320,7 +318,7 @@ def reset_variables():
     wind_total = 0
 
     ##
-    global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, V_loc, V_loc_tot
+    global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, v_loc, v_loc_tot
     global V_glob, g_loc, F_loc, F_glob, position_global, acc_glob
     theta = 0
     ca = 0
@@ -333,8 +331,8 @@ def reset_variables():
     Q_d = IntegrableVariable()
     X_d = IntegrableVariable()
     Z_d = IntegrableVariable()
-    V_loc = [0.00001,0.00001]
-    V_loc_tot = [0.00001,0.00001]
+    v_loc = [0.00001,0.00001]
+    v_loc_tot = [0.00001,0.00001]
     V_glob = [0.00001,0.00001]
     g_loc = [0.0000,0.0000]
     acc_glob = [0.0001,0.0001]
@@ -343,14 +341,14 @@ def reset_variables():
     position_global = [0,0]
 
     ##
-    global t_3d, theta_3d, servo_3d, V_loc_3d, V_glob_3d, position_3d, xa_3d
+    global t_3d, theta_3d, servo_3d, v_loc_3d, V_glob_3d, position_3d, xa_3d
     global thrust_3d, cn_3d, fin_force_3d, aoa_3d, setpoint_3d, Airspeed_3d
     global X_3d, Z_3d
     t_3d = []
     theta_3d = []
     setpoint_3d = []
     servo_3d = []
-    V_loc_3d = []
+    v_loc_3d = []
     V_glob_3d = []
     Airspeed_3d = []
     position_3d = []
@@ -446,7 +444,7 @@ def update_parameters():
     global actuator_angle
 
     # NEW SIMULATION
-    global V_loc , V_loc_tot , V_glob
+    global v_loc , v_loc_tot , V_glob
     global U_d , U , X
     global W_d , W , Z
     global Q_d , Q
@@ -462,28 +460,27 @@ def update_parameters():
     # Computes the velocity of the wind in local coordinates
     wind_loc = glob2loc(0, wind_total, theta)
     # Computes the total airspeed in local coordinates
-    V_loc_tot = [ V_loc[0]-wind_loc[0] , V_loc[1]-wind_loc[1] ]
-    aoa = calculate_aoa(V_loc_tot)
-    T, P, rho, spd_sound, mu = atm.calculate_at_h(position_global[0], atmosphere)
+    v_loc_tot = [ v_loc[0]-wind_loc[0] , v_loc[1]-wind_loc[1] ]
+    aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
     S = rocket.reference_area
-    V_modulus = np.sqrt(V_loc_tot[0]**2 + V_loc_tot[1]**2)
-    M = V_modulus/spd_sound
+    v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
-        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(V_loc_tot, Q, rho, mu, M, actuator_angle)
+        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q, position_global[0], actuator_angle)
     else:
-        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(V_loc_tot, Q, rho, mu, M)
+        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q, position_global[0])
     if abs(xa) > 1.5 * rocket.length:
         xa = 1.5 * rocket.length * np.sign(xa)
     # Computes the dynamic pressure
-    q = 0.5 * rho * V_modulus**2
+    rho = rocket.rho
+    q = 0.5 * rho * v_modulus**2
     # Gravity in local coordinates, theta=0 equals to rocket up
     g_loc = glob2loc(-g,0,theta)
 
-def calculate_aoa(V_loc_tot):
-    if V_loc_tot[0] != 0:
-        aoa = np.arctan2(V_loc_tot[1], V_loc_tot[0]) # Computes the angle of attack
+def calculate_aoa(v_loc_tot):
+    if v_loc_tot[0] != 0:
+        aoa = np.arctan2(v_loc_tot[1], v_loc_tot[0]) # Computes the angle of attack
     else:
         aoa = np.pi/2
     return aoa
@@ -497,7 +494,7 @@ def simulation():
     global u_controller
     global u,timer_run_servo,u_servos,actuator_angle
 
-    global V_loc, V_loc_tot , V_glob
+    global v_loc, v_loc_tot , V_glob
     global U_d, U , X
     global W_d, W , Z
     global Q_d, Q
@@ -589,19 +586,19 @@ def simulation():
     acc_glob = loc2glob(accx, accz, theta)
     if v_d == 1:
         # Just integrates, the transfer of velocities was already done in the vector derivative
-        V_loc[0] = U_d.integrate_f_dd()
-        V_loc[1] = W_d.integrate_f_dd()
+        v_loc[0] = U_d.integrate_f_dd()
+        v_loc[1] = W_d.integrate_f_dd()
     else:
         # Takes the global velocity, transforms it into local coordinates, adds the accelerations
         # and transforms the velocity back into global coordinates
-        V_loc = glob2loc(V_glob[0], V_glob[1], theta)
+        v_loc = glob2loc(V_glob[0], V_glob[1], theta)
         U_d.integrate_f_dd()
         W_d.integrate_f_dd()
-        V_loc[0] += U_d.delta_f_d
-        V_loc[1] += W_d.delta_f_d
+        v_loc[0] += U_d.delta_f_d
+        v_loc[1] += W_d.delta_f_d
 
     # New velocity in global coordinates
-    V_glob = loc2glob(V_loc[0], V_loc[1], theta)
+    V_glob = loc2glob(v_loc[0], v_loc[1], theta)
 
     # Updates the global velocity in the X_d class
     X_d.new_f_d(V_glob[0])
@@ -638,7 +635,7 @@ def simulation():
         t_3d.append(t)
         theta_3d.append(theta)
         servo_3d.append(actuator_angle+u_initial_offset)
-        V_loc_3d.append(V_loc)
+        v_loc_3d.append(v_loc)
         V_glob_3d.append(V_glob)
         position_3d.append(position_global)
         xa_3d.append(rocket.cp_w_o_ctrl_fin)
@@ -687,15 +684,15 @@ def check_which_plot(s):
     if s == "Pitch Rate":
         return Q*RAD2DEG
     if s == "Local Velocity X":
-        return V_loc[0]
+        return v_loc[0]
     if s == "Local Velocity Z":
-        return V_loc[1]
+        return v_loc[1]
     if s == "Global Velocity X":
         return V_glob[0]
     if s == "Global Velocity Z":
         return V_glob[1]
     if s == "Total Velocity":
-        return np.sqrt(V_loc_tot[0]**2 + V_loc_tot[1]**2)
+        return np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if s == "Local Acc X":
         return accx
     if s == "Local Acc Z":
@@ -1406,8 +1403,8 @@ def run_3d():
                                 str(round((servo_3d[i]-u_initial_offset)*RAD2DEG,2))
                                 + u'\xb0')
             V.text = ("Local Velocity => " + " X = "+
-                      str(round(V_loc_3d[i][0],2)) + " m/s , Z = "
-                      + str(round(V_loc_3d[i][1],2)) + " m/s")
+                      str(round(v_loc_3d[i][0],2)) + " m/s , Z = "
+                      + str(round(v_loc_3d[i][1],2)) + " m/s")
             aoa_plot.text = "AoA = " + str(round(aoa_3d[i]*RAD2DEG,2)) + u'\xb0'
             Altitude.text = "Altitude = " + str(round(position_3d[i][0],2)) + "m"
             Time_label.text = "Time = " + str(round(t_3d[i],3))
