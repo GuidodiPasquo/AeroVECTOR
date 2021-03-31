@@ -299,6 +299,9 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     acc_sd = conf_sitl[5]
     alt_sd = conf_sitl[6]
 
+    global data_plot
+    data_plot = gui.run_sim_tab.get_configuration_destringed()
+
     ## Servo Class
     servo.setup(Actuator_weight_compensation,servo_definition,Ts)
 
@@ -460,7 +463,7 @@ def update_parameters():
     # Computes the velocity of the wind in local coordinates
     wind_loc = glob2loc(0, wind_total, theta)
     # Computes the total airspeed in local coordinates
-    v_loc_tot = [ v_loc[0]-wind_loc[0] , v_loc[1]-wind_loc[1] ]
+    v_loc_tot = [v_loc[0]-wind_loc[0], v_loc[1]-wind_loc[1] ]
     aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
     S = rocket.reference_area
@@ -735,12 +738,12 @@ def check_which_plot(s):
         return None
 
 def plot_data():
-    s = gui.run_sim_tab.get_configuration_destringed()
-    a_plt = check_which_plot(s[0])
-    b_plt = check_which_plot(s[1])
-    c_plt = check_which_plot(s[2])
-    d_plt = check_which_plot(s[3])
-    e_plt = check_which_plot(s[4])
+    global data_plot
+    a_plt = check_which_plot(data_plot[0])
+    b_plt = check_which_plot(data_plot[1])
+    c_plt = check_which_plot(data_plot[2])
+    d_plt = check_which_plot(data_plot[3])
+    e_plt = check_which_plot(data_plot[4])
     first_plot.append(a_plt)
     second_plot.append(b_plt)
     third_plot.append(c_plt)
@@ -784,7 +787,7 @@ def run_sim_local():
         if position_global[0] < -0.1:
             print("CRASH")
             break
-        if t == sim_duration * 0.999:
+        if t >= sim_duration:
             print("Simulation Ended")
             break
         """
@@ -851,7 +854,7 @@ def run_sim_sitl():
             if parachute == 1:
                 print("Parachute Deployed")
                 break
-            if t == sim_duration*0.999:
+            if t >= sim_duration:
                 print("Simulation Ended")
                 break
             if t >= timer_run_sim + T_glob*0.999:

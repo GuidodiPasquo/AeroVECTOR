@@ -545,7 +545,7 @@ class Rocket:
     def _calculate_barrowman_constants(self):
         self._barrowman_const = [0] * (len(self.station_cross_area)-1)
         for i in range(len(self._barrowman_const)):
-            k1 = (1 / self.area_ref)
+            k1 = (2 / self.area_ref)
             self._barrowman_const[i] = k1 * (self.station_cross_area[i+1]
                                              -self.station_cross_area[i])
 
@@ -711,7 +711,7 @@ class Rocket:
     def _barrowman_cn(self):
         for i in range(len(self.component_aoa)):
             aoa = abs(self.component_aoa[i])
-            cn = 2*np.sin(aoa) * self._barrowman_const[i]
+            cn = np.sin(aoa) * self._barrowman_const[i]
             cn *= self._sign_correction[i]
             self.component_cn[i] = cn
 
