@@ -145,8 +145,11 @@ class Airfoil:
         return self.cn
 
     def _calculate_cn_alpha(self, aoa):
-        # Prandtl-Glauert applied in the cn
-        self.cn_alpha = self.cn / aoa
+        # Prandtl-Glauert applied in Diederich
+        if aoa != 0:
+            self.cn_alpha = self.cn / aoa
+        else:
+            self.cn_alpha = 5.65
         if self.use_2pi is True:
             self.cn_alpha = 2 * np.pi
 
@@ -301,15 +304,19 @@ class Fin:
 
     def _correct_cna_diederich(self):
         # Plantform modification as in the original paper.
-        eff_factor = self.cn_alpha_0 / (2*np.pi)
-        cos_sbe = (((self.beta)
-                    / np.sqrt((1 - self.mach**2 * np.cos(self.sb_angle)**2)))
-                   * np.cos(self.sb_angle))
-        k1 = 1 / self.beta
-        k2 = (self.aspect_ratio * self.beta) / (eff_factor * cos_sbe)
-        k3 = (4 * eff_factor**2 * cos_sbe**2) / (self.aspect_ratio**2 * self.beta**2)
-        k4 = np.sqrt(1 + k3)
-        self.cn_alpha = k1 * ((k2)/(k2*k4 + 2)) * self.cn_alpha_0 * cos_sbe
+        # eff_factor = self.cn_alpha_0 / (2*np.pi)
+        # cos_sbe = (((self.beta)
+        #             / np.sqrt((1 - self.mach**2 * np.cos(self.sb_angle)**2)))
+        #            * np.cos(self.sb_angle))
+        # k1 = 1 / self.beta
+        # k2 = (self.aspect_ratio * self.beta) / (eff_factor * cos_sbe)
+        # k3 = (4 * eff_factor**2 * cos_sbe**2) / (self.aspect_ratio**2 * self.beta**2)
+        # k4 = np.sqrt(1 + k3)
+        # self.cn_alpha = k1 * ((k2)/(k2*k4 + 2)) * self.cn_alpha_0 * cos_sbe
+        cn_alpha_comp = self.cn_alpha_0 / (np.sqrt(1 - self.mach**2*np.cos(self.sb_angle)**2))
+        eff_factor = cn_alpha_comp / (2*np.pi)
+        F = self.aspect_ratio / (eff_factor * np.cos(self.sb_angle))
+        self.cn_alpha = F / (F * np.sqrt(1+(4/F**2)) + 2) * (cn_alpha_comp * np.cos(self.sb_angle))
 
 
 
@@ -387,7 +394,7 @@ class Rocket:
         self.mu = 0
         self.mach = 0.001
         self.beta = 1
-        self.Q = 0
+        self.q = 0
         self.actuator_angle = 0
         self.aoa_ctrl_fin = 0
         self.cn_alpha_og = 6.28
@@ -563,10 +570,10 @@ class Rocket:
     def _calculate_pitch_damping_body(self):
         # Average drag moment of a cilinder rotating, i.e., facing a 90º
         # aoa. It's how Open Rocket does it, it gives good looking
-        # results (idk how accurate), and does not affect much when Q is
+        # results (idk how accurate), and does not affect much when q is
         # low, so it stays and its added in the simulation (maybe multiplied
         # by 0.5 or 0.1, since it would increase the stability of the rocket).
-        # Has to be multiplied by rho * Q**2 to obtain a moment.
+        # Has to be multiplied by rho * q**2 to obtain a moment.
         self._calculate_avg_radius_fore()
         self._calculate_avg_radius_aft()
         l_fore = self.xcg
@@ -599,7 +606,7 @@ class Rocket:
         self.reynolds_crit = 51 * (self.relative_rough/self.length)**-1.039
 
     ## AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS -
-    def calculate_aero_coef(self, v_loc_tot=[10,0], Q=0, h=0, actuator_angle=0):
+    def calculate_aero_coef(self, v_loc_tot=[10,0], q=0, h=0, actuator_angle=0):
         """
         Calculate the CN, CP position and the CA for a certain AoA, velocity
         density, viscosity, mach, and actuator angle.
@@ -608,7 +615,7 @@ class Rocket:
         ----------
         v_loc_tot : list, optional
             Total velocity. The default is [10,0].
-        Q : float, optional
+        q : float, optional
             Pitching velocity. The default is 0.
         rho : float, optional
             Density. The default is 1.225.
@@ -628,7 +635,7 @@ class Rocket:
         ca
             Axial force coefficient.
         """
-        self.Q = Q
+        self.q = q
         self.v_loc_tot = v_loc_tot
         self.v_modulus_sq = v_loc_tot[0]**2 + v_loc_tot[1]**2
         self.v_modulus = np.sqrt(self.v_modulus_sq)
@@ -657,12 +664,12 @@ class Rocket:
         self.fin_tan_vel = [0,0]
         for i in range(len(self.component_tan_vel)):
             r = self.component_centroid_pos[i] - self.xcg
-            self.component_tan_vel[i] = self.Q * r
+            self.component_tan_vel[i] = self.q * r
         for i in range(len(self.component_aoa)):
             self.component_aoa[i] = self._calculate_aoa(self.component_tan_vel[i])
         for i in range(2):
             r = fin[i].cp - self.xcg
-            self.fin_tan_vel[i] = self.Q * r
+            self.fin_tan_vel[i] = self.q * r
         for i in range(2):
             if i == 1:
                 self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
@@ -759,9 +766,8 @@ class Rocket:
                                                             self.beta, self.mach)
 
     def _nondimensionalize_fin_cn(self):
-        n_fin = 2
         for i in range(2):
-            self.cn_alpha_fin[i] = n_fin * (fin[i].area/self.area_ref) * self.cn_alpha_og[i]
+            self.cn_alpha_fin[i] = 2 * (fin[i].area/self.area_ref) * self.cn_alpha_og[i]
 
     def _compute_body_interference(self):
         for i in range(2):
@@ -778,9 +784,7 @@ class Rocket:
     def _correct_ctrl_fin_coeff_for_actuator_angle(self):
         ctrl_fin_cn =  self.fin_cn[1]# Still normal to the fin
         self.fin_cn[1] = ctrl_fin_cn * np.cos(self.actuator_angle) # now normal to the rocket
-        self.ctrl_fin_ca = ctrl_fin_cn * abs(np.sin(self.actuator_angle))
-        # Absolute because ca is always positive, i.e., pointing backwards,
-        # independently of the actuator angle being positive or negative
+        self.ctrl_fin_ca = ctrl_fin_cn * np.sin(self.actuator_angle)
         self.cn_alpha_ctrl_fin_3d_arrow = self.cn_alpha_fin[1] * np.cos(self.actuator_angle)
 
     def _compute_dynamic_pressure_scale(self):
@@ -907,14 +911,14 @@ class Rocket:
         self.ca = self.cd0 * cd2ca
         if self.use_fins is True:
             self._add_fin_ca()
-            self._add_control_fin_drag()
+            self._add_control_fin_ca()
 
     def _add_fin_ca(self):
         for i in range(2):
             # Asumes control fin parallel to the body
             self.ca += fin[i].ca * (2*fin[i].area/self.area_ref)
 
-    def _add_control_fin_drag(self):
+    def _add_control_fin_ca(self):
         self.ca += self.ctrl_fin_ca
 
     ## MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR

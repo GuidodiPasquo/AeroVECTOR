@@ -217,7 +217,7 @@ def create_draw_rocket_tab(notebook):
     draw_rocket_tab.checkbox[0].config(command=draw_rocket_tab.draw_rocket)
     # Uses fins checkbox
     draw_rocket_tab.checkbox[1].config(command=draw_rocket_tab.change_state_fins)
-    draw_rocket_tab.checkbox[3].config(command=draw_rocket_tab.draw_rocket)
+    draw_rocket_tab.checkbox[3].config(command=draw_rocket_tab.change_state_control_fins)
     draw_rocket_tab.checkbox[4].config(command=draw_rocket_tab.draw_rocket)
 
     def hollow_fin_body():
@@ -370,16 +370,7 @@ def create_draw_rocket_tab(notebook):
                                            command=reset_fin, width=12,
                                            fg="black", bg = "yellow")
     update_fins_control_button.grid(row=19, column=1, sticky="N")
-
-    def slider_aoa(a):
-        # Changes the aoa and re draws the CP
-        draw_rocket_tab.aoa = float(a)*DEG2RAD*0.9999 + 0.0001
-        draw_rocket_tab.draw_rocket()
-
-    aoa_scale = tk.Scale(draw_rocket_tab.tab, from_=0.01, to=90,
-                         orient=tk.HORIZONTAL, command=slider_aoa)
-    aoa_scale.grid(row=20, column=0)
-    tk.Label(draw_rocket_tab.tab, text="Angle of Attack").grid(row=21, column=0)
+    draw_rocket_tab.create_sliders()
     draw_rocket_tab.create_active_file_label(24, 0)
     draw_rocket_tab.configure()
 

@@ -269,6 +269,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
 
     ## rocket Class
     global S, Q_damp_body, d
+    gui.savefile.read_motor_data(gui.param_file_tab.combobox[0].get())
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
     rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg)
@@ -279,6 +280,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     ## controller
     global kp, ki, kd, k_all, k_damping, anti_windup, torque_controller, inp, inp_time, t_launch
     global T, Ts, T_Program, sim_duration,input_type,reference_thrust
+    global average_T
     input_type = conf_controller[2]
     controller.setup_controller(conf_controller[0:9], Actuator_reduction, Actuator_max)
     inp = conf_controller[9]
@@ -288,6 +290,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     T_Program = conf_controller[13]
     sim_duration = conf_controller[14]
     T = conf_controller[15]
+    average_T = T
 
     ## SITL
     global Activate_SITL, use_noise, port, baudrate, gyro_sd, acc_sd, alt_sd
@@ -405,11 +408,12 @@ def reset_variables():
     flag2 = False
 
     ## SITL
-    global arduino_ready_flag0, timer_flag_t0, t0_timer, parachute
+    global arduino_ready_flag0, timer_flag_t0, t0_timer, parachute, average_T_counter
     arduino_ready_flag0 = ""
     timer_flag_t0 = False
     t0_timer = 0.
     parachute = 0
+    average_T_counter = 0
     rocket.reset_variables()
 
 # Transforms from local coordinates to global coordinates
@@ -492,7 +496,7 @@ def simulation():
     global x,xs,k
     global xdot,xdots
     global out,outs
-    global out_prev,out_prevs
+    global out_prev, out_prevs
 
     global u_controller
     global u,timer_run_servo,u_servos,actuator_angle
@@ -534,9 +538,10 @@ def simulation():
         accz = 0
         accQ = 0
     else:
-        if rocket.is_in_the_pad(position_global[0]):
+        launchrod_lenght = 1
+        if position_global[0] <= launchrod_lenght:
             launchrod_lock = 1
-            # launchrod_lock = 0 in case one day I add a launchrod
+            # launchrod_lock = 0 # in case one day I add a launchrod
         else:
             launchrod_lock = 1
         if rocket.use_fins_control is False:
@@ -633,7 +638,7 @@ def simulation():
     To ensure fluidity at least a rate of 100 ish is recommended, so a
     rate of 1000 allows for 10 times slower animations.
     """
-    if t >= t_timer_3d + (1/1000)*0.999:
+    if t >= t_timer_3d + T*0.999:
         #### 3d
         t_3d.append(t)
         theta_3d.append(theta)
@@ -655,7 +660,7 @@ def timer():
     t = round(t + T,12) #Trying to avoid error, not sure it works
 
 def timer_SITL():
-    global t, timer_flag_t0, t0_timer, T
+    global t, timer_flag_t0, t0_timer, T, average_T, average_T_counter
     if timer_flag_t0 is False:
         t0_timer = time.perf_counter()/clock_dif
         timer_flag_t0 = True
@@ -663,6 +668,8 @@ def timer_SITL():
     t = time.perf_counter()/clock_dif - t0_timer
     # Sample time in SITL = Time elapsed between runs
     T = t-t_prev
+    average_T_counter += 1
+    average_T = t / average_T_counter
 
 def set_setpoint(inp):
     global input_type
@@ -1216,7 +1223,7 @@ def run_3d():
                               font='sans',box=False,line=False,align ="left")
         i=0
         for i in range(len(theta_3d)-2):
-            vp.rate(1000/slow_mo) # For a smooth animation
+            vp.rate((1/average_T)/slow_mo) # For a smooth animation
 
             # How much to move each time-step , X and Z are the rocket's axes, not the world's
             delta_pos_X=(position_3d[i+1][0]-position_3d[i][0])

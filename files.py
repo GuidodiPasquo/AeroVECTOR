@@ -362,7 +362,7 @@ class SaveFile:
                         self.thrust_mot.append(b)
                     except ValueError:
                         pass
-            print("Motor Opened Successfully")
+            # print("Motor Opened Successfully")
         except EnvironmentError:
             print("Error Reading Motor")
 
