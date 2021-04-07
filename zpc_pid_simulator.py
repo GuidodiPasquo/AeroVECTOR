@@ -467,7 +467,7 @@ def update_parameters():
     # Computes the velocity of the wind in local coordinates
     wind_loc = glob2loc(0, wind_total, theta)
     # Computes the total airspeed in local coordinates
-    v_loc_tot = [v_loc[0]-wind_loc[0], v_loc[1]-wind_loc[1] ]
+    v_loc_tot = [v_loc[0]-wind_loc[0], v_loc[1]-wind_loc[1]]
     aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
     S = rocket.reference_area

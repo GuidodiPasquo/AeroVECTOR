@@ -745,6 +745,45 @@ class TabWithCanvas(Tab):
         self.thrust_entry = tk.Entry(self.tab)
         move_tk_object(self.thrust_entry, 18, 3)
 
+    def draw_rocket(self):
+        """
+        Draws the rocket using the set points.
+
+        Returns
+        -------
+        None.
+        """
+        # x in the canvas is y/z in the rocket
+        # y in the canvas is x in the rocket
+        self.canvas.delete("all")
+        l2 = self.get_points_float(0)
+        self.rocket_length = l2[-1][0]
+        self.max_fin_len = self.get_points_float(1)[2][0]
+        if self.checkbox_status[1].get() == "True":
+            if self.rocket_length > self.max_fin_len:
+                self.max_length = self.rocket_length
+            else:
+                self.max_length = self.max_fin_len
+        else:
+            self.max_length = self.rocket_length
+        if self.rocket_length != 0:
+            self.scale_y = self.canvas_height / self.max_length
+        else:
+            self.scale_y = 1
+        # Centers the rocket in the horizontal
+        self.centering = (self.canvas_height-self.max_length*self.scale_y) / 2
+        self._re_draw_rocket(l2)
+        if self.checkbox_status[1].get() == "True":
+            fin_stab_points = self.get_points_float(1)
+            attached = self.checkbox_status[2].get()
+            separate = "False"
+            self._draw_fins(fin_stab_points,"black", attached, separate)
+            if self.checkbox_status[3].get() == "True":
+                fin_control_points = self.get_points_float(2)
+                attached = self.checkbox_status[4].get()
+                separate = "True"
+                self._draw_fins(fin_control_points, "red", attached, separate)
+
     def _re_draw_rocket(self, l2):
         # x in the canvas is y/z in the rocket
         # y in the canvas is x in the rocket
@@ -794,6 +833,70 @@ class TabWithCanvas(Tab):
                 self._create_point_xcg(point_diameter)
                 self._update_n_f_app_m_labels()
             self._draw_base_component(l2)
+
+    def _create_point_cp(self, point_diameter):
+        # Creates a point where the CP is located
+        # the slider can move it by modifying the aoa
+        f = point_diameter / 2
+        xcg_point = float(gui_setup.savefile.get_parameters()[3])
+        self._update_actuator_scale_limits()
+        self.rocket.update_rocket(self.get_configuration_destringed(), xcg_point)
+        v = [1, np.tan(self.aoa)]/np.sqrt(1 + np.tan(self.aoa)**2) * self.velocity
+        cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
+                                                               actuator_angle=self.aoa_ctrl_fin)
+        self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
+        self._set_f_app_point_color(self.normal_force)
+        self.canvas.create_oval(self.canvas_width/2-f, self.force_app_point*self.scale_y - f,
+                                self.canvas_width/2+f, self.force_app_point*self.scale_y + f,
+                                fill=self.f_app_colour, outline=self.f_app_colour)
+
+    def _update_actuator_scale_limits(self):
+        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[6]
+        self.scale_act_angle.config(from_=-max_actuator_angle,
+                                    to=max_actuator_angle)
+
+    def _calculate_total_cn_cp(self, cn, cp_point):
+        q = 0.5 * 1.225 * self.velocity**2
+        aero_force = q * self.rocket.area_ref * cn
+        thrust = self._get_motor_data()
+        xt = float(gui_setup.param_file_tab.entry[3].get())
+        normal_force = thrust*np.sin(self.tvc_angle) + aero_force
+        force_app_point = (aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt) / normal_force
+        return normal_force, force_app_point
+
+    def _get_motor_data(self):
+        if self.current_motor != gui_setup.param_file_tab.combobox[0].get():
+            gui_setup.savefile.read_motor_data(gui_setup.param_file_tab.combobox[0].get())
+            self.rocket.set_motor(gui_setup.savefile.get_motor_data())
+            self.current_motor = gui_setup.param_file_tab.combobox[0].get()
+            self.thrust_entry.delete(0,100)
+            self.thrust_entry.insert(0,str(round(self.rocket.get_thrust(0.5, 0),3)))
+            self.thrust = float(self.thrust_entry.get())
+        else:
+            self.thrust = float(self.thrust_entry.get())
+        return self.thrust
+
+    def _set_f_app_point_color(self, cn):
+        if cn <= 0:
+            self.f_app_colour = "red"
+        else:
+            self.f_app_colour = "green"
+
+    def _create_point_xcg(self, point_diameter):
+        f = point_diameter / 2
+        self.xcg_point = float(gui_setup.param_file_tab.entry[2].get())
+        self.canvas.create_oval(self.canvas_width/2 - f, self.xcg_point*self.scale_y - f,
+                                self.canvas_width/2 + f, self.xcg_point*self.scale_y + f,
+                                fill="blue", outline="blue")
+
+    def _update_n_f_app_m_labels(self):
+        n_force = "N Force = " + str(round(self.normal_force,3)) + " N"
+        f_point = "Force App point = " + str(round(self.force_app_point,3)) + " m"
+        moment = self.normal_force * (self.force_app_point-self.xcg_point)
+        moment_text = "Moment = " + str(round(moment,3)) + " N.m"
+        self.n_force_label.config(text=n_force)
+        self.f_point_label.config(text=f_point)
+        self.moment_label.config(text=moment_text)
 
     def _draw_base_component(self,l2):
         # Draws the horizontal line that separates each component
@@ -846,103 +949,6 @@ class TabWithCanvas(Tab):
             y2_m = l2[3][0]*self.scale_y + self.centering
             self.canvas.create_line(x1, y1, x2, y2, fill=s)
             self.canvas.create_line(x1_m, y1_m, x2_m, y2_m, fill=s)
-
-    def _create_point_cp(self, point_diameter):
-        # Creates a point where the CP is located
-        # the slider can move it by modifying the aoa
-        f = point_diameter / 2
-        xcg_point = float(gui_setup.savefile.get_parameters()[3])
-        self.rocket.update_rocket(self.get_configuration_destringed(), xcg_point)
-        v = [1, np.tan(self.aoa)]/np.sqrt(1 + np.tan(self.aoa)**2) * self.velocity
-        cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
-                                                               actuator_angle=self.aoa_ctrl_fin)
-        self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
-        self._set_f_app_point_color(self.normal_force)
-        self.canvas.create_oval(self.canvas_width/2-f, self.force_app_point*self.scale_y - f,
-                                self.canvas_width/2+f, self.force_app_point*self.scale_y + f,
-                                fill=self.f_app_colour, outline=self.f_app_colour)
-
-    def _calculate_total_cn_cp(self, cn, cp_point):
-        q = 0.5 * 1.225 * self.velocity**2
-        aero_force = q * self.rocket.area_ref * cn
-        thrust = self._get_motor_data()
-        xt = float(gui_setup.param_file_tab.entry[3].get())
-        normal_force = thrust*np.sin(self.tvc_angle) + aero_force
-        force_app_point = (aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt) / normal_force
-        return normal_force, force_app_point
-
-    def _get_motor_data(self):
-        if self.current_motor != gui_setup.param_file_tab.combobox[0].get():
-            gui_setup.savefile.read_motor_data(gui_setup.param_file_tab.combobox[0].get())
-            self.rocket.set_motor(gui_setup.savefile.get_motor_data())
-            self.current_motor = gui_setup.param_file_tab.combobox[0].get()
-            self.thrust_entry.delete(0,100)
-            self.thrust_entry.insert(0,str(round(self.rocket.get_thrust(0.5, 0),3)))
-            self.thrust = float(self.thrust_entry.get())
-        else:
-            self.thrust = float(self.thrust_entry.get())
-        return self.thrust
-
-    def _set_f_app_point_color(self, cn):
-        if cn <= 0:
-            self.f_app_colour = "red"
-        else:
-            self.f_app_colour = "green"
-
-    def _update_n_f_app_m_labels(self):
-        n_force = "N Force = " + str(round(self.normal_force,3)) + " N"
-        f_point = "Force App point = " + str(round(self.force_app_point,3)) + " m"
-        moment = self.normal_force * (self.force_app_point-self.xcg_point)
-        moment_text = "Moment = " + str(round(moment,3)) + " N.m"
-        self.n_force_label.config(text=n_force)
-        self.f_point_label.config(text=f_point)
-        self.moment_label.config(text=moment_text)
-
-    def _create_point_xcg(self, point_diameter):
-        f = point_diameter / 2
-        self.xcg_point = float(gui_setup.savefile.get_parameters()[3])
-        self.canvas.create_oval(self.canvas_width/2 - f, self.xcg_point*self.scale_y - f,
-                                self.canvas_width/2 + f, self.xcg_point*self.scale_y + f,
-                                fill="blue", outline="blue")
-
-    def draw_rocket(self):
-        """
-        Draws the rocket using the set points.
-
-        Returns
-        -------
-        None.
-        """
-        # x in the canvas is y/z in the rocket
-        # y in the canvas is x in the rocket
-        self.canvas.delete("all")
-        l2 = self.get_points_float(0)
-        self.rocket_length = l2[-1][0]
-        self.max_fin_len = self.get_points_float(1)[2][0]
-        if self.checkbox_status[1].get() == "True":
-            if self.rocket_length > self.max_fin_len:
-                self.max_length = self.rocket_length
-            else:
-                self.max_length = self.max_fin_len
-        else:
-            self.max_length = self.rocket_length
-        if self.rocket_length != 0:
-            self.scale_y = self.canvas_height / self.max_length
-        else:
-            self.scale_y = 1
-        # Centers the rocket in the horizontal
-        self.centering = (self.canvas_height-self.max_length*self.scale_y) / 2
-        self._re_draw_rocket(l2)
-        if self.checkbox_status[1].get() == "True":
-            fin_stab_points = self.get_points_float(1)
-            attached = self.checkbox_status[2].get()
-            separate = "False"
-            self._draw_fins(fin_stab_points,"black", attached, separate)
-            if self.checkbox_status[3].get() == "True":
-                fin_control_points = self.get_points_float(2)
-                attached = self.checkbox_status[4].get()
-                separate = "True"
-                self._draw_fins(fin_control_points, "red", attached, separate)
 
     def populate(self,l0):
         # Populates the entries and more importantly, the points[i]
@@ -1081,7 +1087,7 @@ class TabWithCanvas(Tab):
             self.velocity = float(a)
             self.draw_rocket()
 
-        self.scale_velocity = tk.Scale(self.tab, from_=1, to=200,
+        self.scale_velocity = tk.Scale(self.tab, from_=1, to=100,
                              orient=tk.HORIZONTAL, command=slider_velocity, length=150)
         self.scale_velocity.set(10)
         self.scale_velocity.grid(row=20, column=3)

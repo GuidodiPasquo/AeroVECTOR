@@ -101,6 +101,15 @@ class SaveFile:
         """Update the name of the savefile instance (not the actual file) to n."""
         self.name = n
 
+    def _save_all(self, tofile):
+        tofile = self._save_parameters(tofile)
+        tofile = self._save_conf_3d(tofile)
+        tofile = self._save_conf_controller(tofile)
+        tofile = self._save_conf_sitl(tofile)
+        tofile = self._save_conf_plots(tofile)
+        tofile = self._save_rocket_dim(tofile)
+        return tofile
+
     def _save_parameters(self, tofile):
         for i in range(len(self.parameter_names)):
             tofile += self.parameter_names[i] + self.parameters[i] + "\n"
@@ -114,20 +123,20 @@ class SaveFile:
                 tofile += self.conf_3d_names[i] + self.conf_3d[i-1] + "\n"
         return tofile
 
-    def _save_conf_sitl(self, tofile):
-        for i in range(len(self.conf_sitl_names)):
-            if i == 0:
-                tofile += "###=#\n"
-            else:
-                tofile += self.conf_sitl_names[i] + self.conf_sitl[i-1] + "\n"
-        return tofile
-
     def _save_conf_controller(self, tofile):
         for i in range(len(self.conf_controller_names)):
             if i == 0:
                 tofile += "###=#\n"
             else:
                 tofile += self.conf_controller_names[i] + self.conf_controller[i-1] + "\n"
+        return tofile
+
+    def _save_conf_sitl(self, tofile):
+        for i in range(len(self.conf_sitl_names)):
+            if i == 0:
+                tofile += "###=#\n"
+            else:
+                tofile += self.conf_sitl_names[i] + self.conf_sitl[i-1] + "\n"
         return tofile
 
     def _save_conf_plots(self, tofile):
@@ -142,15 +151,6 @@ class SaveFile:
         tofile += "###=#\n"
         for i in range(len(self.rocket_dim)):
             tofile += self.rocket_dim[i] + "\n"
-        return tofile
-
-    def _save_all(self, tofile):
-        tofile = self._save_parameters(tofile)
-        tofile = self._save_conf_3d(tofile)
-        tofile = self._save_conf_controller(tofile)
-        tofile = self._save_conf_sitl(tofile)
-        tofile = self._save_conf_plots(tofile)
-        tofile = self._save_rocket_dim(tofile)
         return tofile
 
     def check_if_file_exists2overwrite(self, n):
@@ -290,6 +290,7 @@ class SaveFile:
         del res[4][0]
         del res[5][0]
         return res
+
     def read_file(self):
         """
         Set the Savefile instance parameters to the ones on the save file.

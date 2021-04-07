@@ -137,10 +137,10 @@ class Airfoil:
         # axial coefficients RELATED TO THE FIN
         self.cl = np.interp(self.x, self.aoa_list_interp, self.cl_list_interp)
         self.cd = np.interp(self.x, self.aoa_cd, self.cd_list)
-        # Sing correction
+        # Sign correction
         self.cn = (self._sign *
                   (self.cl*np.cos(self.x) + self.cd*np.sin(self.x)))
-        # ca always agains the fin, independent of aoa
+        # ca always against the fin, independent of aoa
         self.ca = -self.cl*np.sin(self.x) + self.cd*np.cos(self.x)
         return self.cn
 
@@ -253,31 +253,11 @@ class Fin:
         else:
             self.x_force_fin = 0
         if self.area != 0:
-            # Because the fin is attached to the body, there are
-            # no wingtip vortices in the root. For this reason
-            # the aspect ratio is that of a wing composed of two
-            # fins attached together at the root of each other
             self.aspect_ratio = 2 * self.wingspan**2 / self.area
         if self.fin_attached is True:
             # aspect_ratio = aspect_ratio calculated before (2*aspect_ratio fin alone)
             pass
         else:
-            # Fins aren't attached to the body, so the lift distribution is
-            # closer to the one of the fin alone. End plate theory in Airplane
-            # Performance, Stability and Control, Perkings and Hage. Is assumed
-            # that the piece of body where the fin is attached acts as an end
-            # plate of 0.2 h/wingspan. Rounding down, the aspect ratio is increased
-            # by 1-(r/2) being r the correction factor (r = 0.75). One must
-            # remember that this end plate acts not to increase the aspect_ratio/Lift
-            # Slope, but to mitigate its reduction. It also affects only the
-            # root, leaving the tip unaltered (unlike the ones in the Perkins).
-            # The formula checks at the extremes: r=1 (no end plate, aspect_ratio = aspect_ratio
-            # of one fin alone (0.5 calculated aspect_ratio)), r=0 (fin attached to the
-            # body, aspect_ratio doubles (i.e. stays the same as the one calculated
-            # prior)). It also compensates in the case that the fin is separated
-            # from the body by a servo or rod, accounting for the increase in
-            # lift the body produces, but not going to the extreme of calculating
-            # it as if it was attached.
             self.aspect_ratio *= 0.625
 
     def _calculate_force_application_point(self):
@@ -296,28 +276,16 @@ class Fin:
     def calculate_cn_alpha(self, aoa, beta, mach):
         self.beta = beta
         self.mach = mach
-        # 2D coefficients
-        self.cn0, self.ca, self.cn_alpha_0 = self.flat_plate.get_aero_coef(aoa)
-        # Diederich's semi-empirical method
+        self.cn0, self.ca, self.cn_alpha_0 = self.flat_plate.get_aero_coef(aoa) # 2D coefficients
         self._correct_cna_diederich()
         return self.cn_alpha
 
     def _correct_cna_diederich(self):
         # Plantform modification as in the original paper.
-        # eff_factor = self.cn_alpha_0 / (2*np.pi)
-        # cos_sbe = (((self.beta)
-        #             / np.sqrt((1 - self.mach**2 * np.cos(self.sb_angle)**2)))
-        #            * np.cos(self.sb_angle))
-        # k1 = 1 / self.beta
-        # k2 = (self.aspect_ratio * self.beta) / (eff_factor * cos_sbe)
-        # k3 = (4 * eff_factor**2 * cos_sbe**2) / (self.aspect_ratio**2 * self.beta**2)
-        # k4 = np.sqrt(1 + k3)
-        # self.cn_alpha = k1 * ((k2)/(k2*k4 + 2)) * self.cn_alpha_0 * cos_sbe
         cn_alpha_comp = self.cn_alpha_0 / (np.sqrt(1 - self.mach**2*np.cos(self.sb_angle)**2))
         eff_factor = cn_alpha_comp / (2*np.pi)
         F = self.aspect_ratio / (eff_factor * np.cos(self.sb_angle))
         self.cn_alpha = F / (F * np.sqrt(1+(4/F**2)) + 2) * (cn_alpha_comp * np.cos(self.sb_angle))
-
 
 
 fin = [Fin(), Fin()]
