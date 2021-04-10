@@ -648,7 +648,7 @@ def simulation():
         position_3d.append(position_global)
         xa_3d.append(rocket.cp_w_o_ctrl_fin)
         thrust_3d.append(thrust)
-        cn_3d.append(cn*S*q)
+        cn_3d.append(rocket.passive_cn*S*q)
         fin_force_3d.append(fin_force)
         aoa_3d.append(aoa)
         setpoint_3d.append(setpoint)

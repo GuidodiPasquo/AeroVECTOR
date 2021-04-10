@@ -400,6 +400,7 @@ class Rocket:
         self.fin_cn = [0,0]
         self.cn_alpha_ctrl_fin_3d_arrow = 0
         self.cp_w_o_ctrl_fin = 0
+        self.passive_cn = 0
 
     def update_rocket(self, l0, xcg):
         """
@@ -656,16 +657,16 @@ class Rocket:
     def _calculate_total_cn(self):
         self.cn = 0
         self.__sign_correction()
+        self._compute_dynamic_pressure_scale()
         self._barrowman_cn()
         self._body_cn()
         if self.use_fins is True:
             self._fin_cn()
-        self._compute_dynamic_pressure_scale()
         for i in range(len(self.component_cn)):
-            self.cn += self.component_cn[i] * self.v_sq_over_v_tot_sq_body[i]
+            self.cn += self.component_cn[i]
         if self.use_fins is True:
             for i in range(2):
-                self.cn += self.fin_cn[i] * self.v_sq_over_v_tot_sq_fin[i]
+                self.cn += self.fin_cn[i]
         return self.cn
 
     def __sign_correction(self):
@@ -688,7 +689,7 @@ class Rocket:
             aoa = abs(self.component_aoa[i])
             cn = np.sin(aoa) * self._barrowman_const[i]
             cn *= self._sign_correction[i]
-            self.component_cn[i] = cn
+            self.component_cn[i] = cn * self.v_sq_over_v_tot_sq_body[i]
 
     def _body_cn(self):
         cn = [0]*len(self.component_plan_area)
@@ -748,6 +749,7 @@ class Rocket:
         for i in range(2):
             self.fin_cn[i] = self.cn_alpha_fin[i] * abs(self.fin_aoa[i])
             self.fin_cn[i] *= self._sign_correction_fin[i]
+            self.fin_cn[i] *= self.v_sq_over_v_tot_sq_fin[i]
 
     def _correct_ctrl_fin_coeff_for_actuator_angle(self):
         ctrl_fin_cn =  self.fin_cn[1]# Still normal to the fin
@@ -782,6 +784,7 @@ class Rocket:
             b += self.fin_cn[0]
         if b != 0:
             self.cp_w_o_ctrl_fin = a / b # For the 3D Cn Arrow
+            self.passive_cn = b
         else:
             self.cp_w_o_ctrl_fin = self.component_centroid[0]
         if self.use_fins is True:
