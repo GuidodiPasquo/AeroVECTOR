@@ -297,7 +297,6 @@ class Rocket:
     Methods:
         update_rocket -- Update the rocket characteristics.
         calculate_aero_coef -- Compute the aerodynamics of the rocket.
-        get_q_damp -- Returns the damping coefficient.
         set_motor -- Set the rocket's motor.
         get_thrust -- Returns the motor's thrust.
         is_in_the_pad -- Check if the rocket is in the pad.
@@ -314,7 +313,6 @@ class Rocket:
         self.cp = 0
         self.cm_xcg = 0
         self.xcg = 1
-        self.q_damp = 0
         self.motor=[[],[]]
         self.is_in_the_pad_flag = True
         self.component_cn = []
@@ -370,7 +368,6 @@ class Rocket:
         self.cn_alpha_control_normal = 2
         self.cn_alpha_fin = 2
         self.ctrl_fin_ca = 0
-        self.q_damp_body = 0
         self.reynolds = 100
         self.Cf = 1
         self.cd_pressure_component = 1
@@ -431,7 +428,6 @@ class Rocket:
             fin[0].update(l[6], self.fins_attached[0])
             if self.use_fins_control is True:
                 fin[1].update(l[7], self.fins_attached[1])
-        self._calculate_pitch_damping_body()
         self._calculate_reynolds_crit()
 
     def _update_rocket_dim(self, l):
@@ -472,16 +468,18 @@ class Rocket:
         self._calculate_body_cn_constants()
 
     def _separate_xcg_component(self):
-        for i,elem in enumerate(self.rocket_dim):
-            if elem[0] > self.xcg:
-                index = i
-                break
-            if elem[0] == self.xcg:
-                return None
-        x = [self.rocket_dim[index-1][0], self.rocket_dim[index][0]]
-        diam = [self.rocket_dim[index-1][1], self.rocket_dim[index][1]]
-        diameter_at_xcg = np.interp(self.xcg, x, diam)
-        self.rocket_dim.insert(index, [self.xcg, diameter_at_xcg])
+        index = 1
+        if self.xcg <= self.length:
+            for i,elem in enumerate(self.rocket_dim):
+                if elem[0] > self.xcg:
+                    index = i
+                    break
+                if elem[0] == self.xcg:
+                    return None
+            x = [self.rocket_dim[index-1][0], self.rocket_dim[index][0]]
+            diam = [self.rocket_dim[index-1][1], self.rocket_dim[index][1]]
+            diameter_at_xcg = np.interp(self.xcg, x, diam)
+            self.rocket_dim.insert(index, [self.xcg, diameter_at_xcg])
         return None
 
     def __initialize(self, n):
@@ -535,40 +533,6 @@ class Rocket:
     @property
     def reference_area(self):
         return self.area_ref
-
-    def _calculate_pitch_damping_body(self):
-        # Average drag moment of a cilinder rotating, i.e., facing a 90º
-        # aoa. It's how Open Rocket does it, it gives good looking
-        # results (idk how accurate), and does not affect much when q is
-        # low, so it stays and its added in the simulation (maybe multiplied
-        # by 0.5 or 0.1, since it would increase the stability of the rocket).
-        # Has to be multiplied by rho * q**2 to obtain a moment.
-        self._calculate_avg_radius_fore()
-        self._calculate_avg_radius_aft()
-        l_fore = self.xcg
-        l_aft = (self.rocket_dim[-1][0] - self.xcg)
-        q_damp_fore = 0.275 * self.avg_rad_fore * l_fore**4
-        q_damp_aft = 0.275 * self.avg_rad_aft * l_aft**4
-        self.q_damp_body =  q_damp_fore + q_damp_aft
-
-    def _calculate_avg_radius_fore(self):
-        i = 0
-        tot_radius = 0
-        while self.rocket_dim[i][0] < self.xcg:
-            tot_radius += self.rocket_dim[i][0]
-            i += 1
-        self.avg_rad_fore = tot_radius / self.xcg
-
-    def _calculate_avg_radius_aft(self):
-        i = len(self.rocket_dim)-1
-        tot_radius = 0
-        while self.rocket_dim[i][0] > self.xcg:
-            tot_radius += self.rocket_dim[i][0]
-            i -= 1
-        self.avg_rad_aft = tot_radius / (self.rocket_dim[-1][0]-self.xcg)
-
-    def get_q_damp_body(self):
-        return self.q_damp_body
 
     def _calculate_reynolds_crit(self):
         self.relative_rough = 60e-6
@@ -706,18 +670,15 @@ class Rocket:
         # cos(actuator_angle) to compensate.
         # Induces extra drag that is added in self.ca due to the
         # normal force beign rotated backwards
-
         # The cn 3D arrow does not contemplate the actuator influence
         # (whole control fin, reason why it has its own cn slope
         # (cn_alpha_ctrl_fin_3d_arrow)). It is that way because seeing
         # the struggle of forces between the actuator's and body's is
         # the fun part. The plotted cp is the total one, including all
         # the aerodynamic forces.
-
         # The cp can move beyond the limits show with the slider in
         # the GUI due to damping, which can produce a moment while the
         # cn is zero.
-
         # og = original 3D non corrected for body interference or separation.
         self.cn_alpha_og = [0]*len(fin)
         self.fin_cn = [0]*len(fin)
@@ -782,18 +743,12 @@ class Rocket:
         if self.use_fins is True:
             a += fin[0].cp * self.fin_cn[0]
             b += self.fin_cn[0]
-        if b != 0:
-            self.cp_w_o_ctrl_fin = a / b # For the 3D Cn Arrow
-            self.passive_cn = b
-        else:
-            self.cp_w_o_ctrl_fin = self.component_centroid[0]
+        self.cp_w_o_ctrl_fin = a / b # For the 3D Cn Arrow
+        self.passive_cn = b # For the 3D Cn Arrow
         if self.use_fins is True:
             a += fin[1].cp * self.fin_cn[1]
             b += self.fin_cn[1]
-        if b != 0:
-            self.cp = a / b
-        else:
-            self.cp = self.component_centroid[0]
+        self.cp = a / b
         return self.cp
 
     def _calculate_cm(self):

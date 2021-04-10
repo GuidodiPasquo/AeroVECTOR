@@ -268,12 +268,11 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     fov = conf_3d[7]
 
     ## rocket Class
-    global S, Q_damp_body, d
+    global S, d
     gui.savefile.read_motor_data(gui.param_file_tab.combobox[0].get())
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
     rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg)
-    Q_damp_body = rocket.get_q_damp_body()
     S = rocket.reference_area
     d = rocket.max_diam
 
@@ -439,7 +438,7 @@ def glob2loc(u0,v0,theta):
 def update_parameters():
     global wind_rand, wind_total
     global q
-    global cn, Q_damp_body, fin_force
+    global cn, fin_force
     global x
     global xa
     global i
@@ -507,7 +506,7 @@ def simulation():
     global Q_d, Q
     global theta, aoa, g
     global F_loc , F_glob
-    global cn, thrust, rho, Q_damp_body, fin_force
+    global cn, thrust, rho, fin_force
     global cm_xcg, ca
     global t_timer_3d
     global position_global
@@ -552,8 +551,7 @@ def simulation():
             accz = ((thrust * np.sin(actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*cn)
                     / m + U*Q*v_d) * launchrod_lock
             accQ = ((thrust * np.sin(actuator_angle+u_initial_offset) * (xt-xcg)
-                     + S * q * d * cm_xcg
-                     - rho * Q * (Q_damp_body * abs(Q)*0.2))
+                     + S * q * d * cm_xcg)
                      / Iy) * launchrod_lock
         else:
             # Longitudinal acceleration (local)
@@ -563,8 +561,7 @@ def simulation():
             accz = ((thrust * np.sin(u_initial_offset) + m*g_loc[1] + q*S*cn)
                     / m + U*Q*v_d) * launchrod_lock
             accQ = ((thrust * np.sin(u_initial_offset) * (rocket.length-xcg)
-                     + S * q * d * cm_xcg
-                     - rho * Q * (Q_damp_body * abs(Q)*0.2))
+                     + S * q * d * cm_xcg)
                      / Iy) * launchrod_lock
             fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle
 
