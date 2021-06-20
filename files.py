@@ -18,6 +18,7 @@ Classes:
 
 import os
 import copy
+import fileinput
 
 
 def get_save_names():
@@ -69,7 +70,8 @@ class SaveFile:
                                 "Xcg [m] = ", "Xt [m] = ", "Servo definition [º] = ",
                                 "Max Actuator Angle [º] = ", "Actuator Reduction = ",
                                 "Initial Misalignment [º] = ", "Servo Compensation = ",
-                                "Wind [m/s] = ", "Wind Gust = "]
+                                "Wind [m/s] = ", "Wind Gust = ", "Launch Rod Length = ",
+                                "Launch Rod Angle = "]
         self.conf_3d_names = ["###=#", "toggle_3D=", "camera_shake_toggle=",
                               "hide_forces=", "variable_fov=", "Camera_type=",
                               "slow_mo=", "force_scale=", "fov="]
@@ -79,9 +81,11 @@ class SaveFile:
                                       "Input = ", "Input time = ", "Launch Time = ",
                                       "Servo Sample Time [s] = ", "Controller Sample Time [s] = ",
                                       "Maximum Sim Duration [s] = ", "Sim Delta T [s] = "]
-        self.conf_sitl_names = ["###=#", "Activate_SITL=", "Use Sensor Noise=",
+        self.conf_sitl_names = ["###=#", "Activate_SITL=", "Use Sensor Noise=", "Python SITL=",
                                 "Port=", "Baudrate=", "Gyroscope SD=",
-                                "Accelerometer SD=", "Altimeter SD="]
+                                "Accelerometer SD=", "Altimeter SD=", "GNSS Pos SD=", "GNSS Vel SD=",
+                                "Gyroscope ST=", "Accelerometer ST=", "Altimeter ST=",
+                                "GNSS ST="]
         self.conf_plot_names = ["###=#", "Frist_plot=", "Second_plot=", "Third_plot=",
                                 "Fourth_plot=", "Fifth_plot="]
         self.rocket_dim_names = ["###=#"]
@@ -204,12 +208,13 @@ class SaveFile:
         """
         self.update_name(n)
         self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55',"0.85",
-                           '1', '10', '5', '2',"2.1", '2', '0.1']
+                           '1', '10', '5', '2',"2.1", '2', '0.1', "0", "0"]
         self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
-                                '0.136', '1', '0', '30','20',"0.5","1", '0.02',
+                                '0.136', '1', '0', '30','20',"0.5","0", '0.02',
                                 '0.01', "30", "0.001"]
-        self.conf_sitl = ["False","False","COM3","115200","0","0","0"]
+        self.conf_sitl = ["False","False","False","COM3","115200","0","0","0","0","0",
+                          "0.0025", "0.0025", "0.005", "1"]
         self.conf_plots = ["Pitch Angle", "Setpoint", "Actuator deflection",
                            "Off", "Off"]
         self.rocket_dim = ["True","False","True","False","False",
@@ -218,6 +223,7 @@ class SaveFile:
                            "0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000",
                            "Fins_c",
                            "0.0000,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000"]
+
         try:
             with open(".\\saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
                 self.tofile = ""
@@ -225,7 +231,7 @@ class SaveFile:
                 file.write(self.tofile)
             print("File Created Successfully")
         except EnvironmentError:
-            print("Error")
+            print("Error Creating File")
 
     def create_file_as(self, n):
         """
@@ -299,8 +305,10 @@ class SaveFile:
         -------
         None.
         """
+        self.check_and_correct_v11_save()
         try:
             with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
+                self.check_and_correct_v11_save()
                 content = []
                 split_index=[]
                 for line in file:
@@ -322,7 +330,41 @@ class SaveFile:
                 self.rocket_dim = res[5]
             print("File Opened Successfully")
         except EnvironmentError:
-            print("Error")
+            print("EnvironmentError Opening File")
+
+    def check_and_correct_v11_save(self):
+        check = False
+        flag_add_python_SITL = False
+        try:
+            with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
+                for line in file:
+                    try:
+                        if check == True:
+                            if line.split("=")[0].strip() != "Launch Rod Length":
+                                flag_add_python_SITL = True
+                                break
+                            else:
+                                break
+                        if line.split("=")[0].strip() == "Wind Gust":
+                            check = True
+                    except IndexError:
+                        pass
+        except EnvironmentError:
+            print("EnvironmentError Opening File")
+        if flag_add_python_SITL == True:
+            for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
+                print(line, end ='')
+                if line.startswith("Wind Gust"):
+                    print("Launch Rod Length = 0")
+                    print("Launch Rod Angle = 0")
+                if line.startswith("Use Sensor Noise"):
+                    print("Python SITL=True")
+                if line.startswith("Altimeter SD="):
+                    print("GNSS Pos SD=0"+"\n","GNSS Vel SD=0"+"\n","Gyroscope ST=0.0025"+"\n",
+                          "Accelerometer ST=0.0025"+"\n","Altimeter ST=0.005"+"\n",
+                          "GNSS ST=1"+"\n")
+
+
 
     def get_parameters(self):
         return copy.deepcopy(self.parameters)

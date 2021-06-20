@@ -852,6 +852,8 @@ class TabWithCanvas(Tab):
 
     def _update_actuator_scale_limits(self):
         max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[6]
+        if max_actuator_angle == "":
+            max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
                                     to=max_actuator_angle)
 

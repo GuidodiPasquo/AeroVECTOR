@@ -51,6 +51,7 @@ import gui_setup as gui
 import rocket_functions as rkt
 import control
 import servo_lib
+import python_sitl
 
 rocket = rkt.Rocket()
 controller = control.Controller()
@@ -148,14 +149,15 @@ W = 0
 Q = 0
 accx = 0
 accy = 0
+accQ = 0
 U_d = IntegrableVariable()
 W_d = IntegrableVariable()
 Q_d = IntegrableVariable()
-X_d = IntegrableVariable()
-Z_d = IntegrableVariable()
+x_d = IntegrableVariable()
+z_d = IntegrableVariable()
 v_loc = [0.00001,0.00001]
 v_loc_tot = [0.00001,0.00001]
-V_glob = [0.00001,0.00001]
+v_glob = [0.00001,0.00001]
 g_loc = [0.0000,0.0000]
 acc_glob = [0.0001,0.0001]
 F_loc = [0.0000,0.0000]
@@ -173,21 +175,21 @@ fourth_plot = []
 fifth_plot = []
 
 #3D plots
-t_3d = []
-theta_3d = []
-setpoint_3d = []
-servo_3d = []
-v_loc_3d = []
-V_glob_3d = []
-Airspeed_3d = []
-position_3d = []
-X_3d = []
-Z_3d = []
-cn_3d = []
-fin_force_3d = []
-thrust_3d = []
-xa_3d = []
-aoa_3d = []
+t_3d = [0]
+theta_3d = [0]
+setpoint_3d = [0]
+servo_3d = [0]
+v_loc_3d = [[0,0]]
+v_glob_3d = [[0,0]]
+Airspeed_3d = [[0,0]]
+position_3d = [[0,0]]
+X_3d = [0]
+Z_3d = [0]
+cn_3d = [0]
+fin_force_3d = [0]
+thrust_3d = [0]
+xa_3d = [0]
+aoa_3d = [0]
 
 # Other Variables
 alpha_calc = 0.
@@ -226,6 +228,18 @@ send_gyro = 0
 send_accx = 0
 send_accz = 0
 send_alt = 0
+send_gnss_pos = 0
+send_gnss_vel = 0
+gyro_sd = 0
+acc_sd = 0
+alt_sd = 0
+gnss_pos_sd = 0
+gnss_vel_sd = 0
+gyro_st = 0
+acc_st = 0
+alt_st = 0
+gnss_st = 0
+var_sitl_plot = [0,0,0,0,0]
 
 ################################################################ FUNCTIONS
 
@@ -241,7 +255,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global thrust, burnout_time, thrust_curve, max_thrust, average_thrust
     global m, Iy, d, xcg, xt, L, nosecone_length, CA0
     global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
-    global wind, wind_distribution
+    global wind, wind_distribution, launchrod_lenght, theta, wind_total
 
     m = parameters[1]
     Iy = parameters[2]
@@ -254,6 +268,10 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     Actuator_weight_compensation = parameters[9]
     wind = parameters[10]
     wind_distribution = parameters[11]
+    launchrod_lenght = parameters[12]
+    Q_d.f = parameters[13] * DEG2RAD
+    theta = Q_d.f
+    wind_total = wind
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
@@ -292,14 +310,24 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     average_T = T
 
     ## SITL
-    global Activate_SITL, use_noise, port, baudrate, gyro_sd, acc_sd, alt_sd
+    global Activate_SITL, use_noise, enable_python_sitl, port, baudrate
+    global gyro_sd, acc_sd, alt_sd, gnss_pos_sd, gnss_vel_sd, gyro_st, acc_st
+    global alt_st, gnss_st
     Activate_SITL = conf_sitl[0]
     use_noise = conf_sitl[1]
-    port = conf_sitl[2]
-    baudrate = conf_sitl[3]
-    gyro_sd = conf_sitl[4]
-    acc_sd = conf_sitl[5]
-    alt_sd = conf_sitl[6]
+    enable_python_sitl = conf_sitl[2]
+    port = conf_sitl[3]
+    baudrate = conf_sitl[4]
+    gyro_sd = conf_sitl[5]
+    acc_sd = conf_sitl[6]
+    alt_sd = conf_sitl[7]
+    gnss_pos_sd = conf_sitl[8]
+    gnss_vel_sd = conf_sitl[9]
+    gyro_st = conf_sitl[10]
+    acc_st = conf_sitl[11]
+    alt_st = conf_sitl[12]
+    gnss_st = conf_sitl[13]
+
 
     global data_plot
     data_plot = gui.run_sim_tab.get_configuration_destringed()
@@ -323,8 +351,8 @@ def reset_variables():
     wind_total = 0
 
     ##
-    global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, X_d, Z_d, v_loc, v_loc_tot
-    global V_glob, g_loc, F_loc, F_glob, position_global, acc_glob
+    global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, x_d, z_d, v_loc, v_loc_tot
+    global v_glob, g_loc, F_loc, F_glob, position_global, acc_glob
     theta = 0
     ca = 0
     aoa = 0
@@ -334,11 +362,11 @@ def reset_variables():
     U_d = IntegrableVariable()
     W_d = IntegrableVariable()
     Q_d = IntegrableVariable()
-    X_d = IntegrableVariable()
-    Z_d = IntegrableVariable()
-    v_loc = [0.00001,0.00001]
-    v_loc_tot = [0.00001,0.00001]
-    V_glob = [0.00001,0.00001]
+    x_d = IntegrableVariable()
+    z_d = IntegrableVariable()
+    v_loc = [0.0001,0.00001]
+    v_loc_tot = [0.0001,0.00001]
+    v_glob = [0.00001,0.00001]
     g_loc = [0.0000,0.0000]
     acc_glob = [0.0001,0.0001]
     F_loc = [0.0000,0.0000]
@@ -346,24 +374,24 @@ def reset_variables():
     position_global = [0,0]
 
     ##
-    global t_3d, theta_3d, servo_3d, v_loc_3d, V_glob_3d, position_3d, xa_3d
+    global t_3d, theta_3d, servo_3d, v_loc_3d, v_glob_3d, position_3d, xa_3d
     global thrust_3d, cn_3d, fin_force_3d, aoa_3d, setpoint_3d, Airspeed_3d
     global X_3d, Z_3d
-    t_3d = []
-    theta_3d = []
-    setpoint_3d = []
-    servo_3d = []
-    v_loc_3d = []
-    V_glob_3d = []
-    Airspeed_3d = []
-    position_3d = []
-    X_3d = []
-    Z_3d = []
-    cn_3d = []
-    fin_force_3d = []
-    thrust_3d = []
-    xa_3d = []
-    aoa_3d = []
+    t_3d = [0]
+    theta_3d = [0]
+    setpoint_3d = [0]
+    servo_3d = [0]
+    v_loc_3d = [[0,0]]
+    v_glob_3d = [[0,0]]
+    Airspeed_3d = [[0,0]]
+    position_3d = [[0,0]]
+    X_3d = [0]
+    Z_3d = [0]
+    cn_3d = [0]
+    fin_force_3d = [0]
+    thrust_3d = [0]
+    xa_3d = [0]
+    aoa_3d = [0]
 
     ##
     global second_plot, first_plot, third_plot, fourth_plot, fifth_plot, t_plot
@@ -408,11 +436,18 @@ def reset_variables():
 
     ## SITL
     global arduino_ready_flag0, timer_flag_t0, t0_timer, parachute, average_T_counter
+    global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
     arduino_ready_flag0 = ""
     timer_flag_t0 = False
     t0_timer = 0.
     parachute = 0
     average_T_counter = 0
+    send_gyro = 0
+    send_accx = 0
+    send_accz = 0
+    send_alt = 0
+    send_gnss_pos = 0
+    send_gnss_vel = 0
     rocket.reset_variables()
 
 # Transforms from local coordinates to global coordinates
@@ -450,7 +485,7 @@ def update_parameters():
     global actuator_angle
 
     # NEW SIMULATION
-    global v_loc , v_loc_tot , V_glob
+    global v_loc , v_loc_tot , v_glob
     global U_d , U , X
     global W_d , W , Z
     global Q_d , Q
@@ -500,7 +535,7 @@ def simulation():
     global u_controller
     global u,timer_run_servo,u_servos,actuator_angle
 
-    global v_loc, v_loc_tot , V_glob
+    global v_loc, v_loc_tot , v_glob
     global U_d, U , X
     global W_d, W , Z
     global Q_d, Q
@@ -527,9 +562,9 @@ def simulation():
     Q = pitch rate
     aoa = angle of attack
 
-    V_glob = global velocity
-    X_d = global X speed (Y in Vpython)
-    Z_d = global Z speed (-X in Vpython)
+    v_glob = global velocity
+    x_d = global X speed (Y in Vpython)
+    z_d = global Z speed (-X in Vpython)
     """
     v_d = 0 # 0 uses Local and Global Velocities, 1 uses vector derivatives.
     if rocket.is_in_the_pad(position_global[0]) and thrust < m*g or t < t_launch:
@@ -537,10 +572,8 @@ def simulation():
         accz = 0
         accQ = 0
     else:
-        launchrod_lenght = 1
         if position_global[0] <= launchrod_lenght:
-            launchrod_lock = 1
-            # launchrod_lock = 0 # in case one day I add a launchrod
+            launchrod_lock = 0
         else:
             launchrod_lock = 1
         if rocket.use_fins_control is False:
@@ -574,6 +607,7 @@ def simulation():
     Q = Q_d.integrate_f_dd()
     theta = Q_d.integrate_f_d()
 
+
     # In case theta is greater than 180º, to keep it between -180 and 180
     # It's alright to do this as long as theta is not integrated
     if theta > np.pi:
@@ -596,23 +630,24 @@ def simulation():
     else:
         # Takes the global velocity, transforms it into local coordinates, adds the accelerations
         # and transforms the velocity back into global coordinates
-        v_loc = glob2loc(V_glob[0], V_glob[1], theta)
+        v_loc = glob2loc(v_glob[0], v_glob[1], theta)
         U_d.integrate_f_dd()
         W_d.integrate_f_dd()
         v_loc[0] += U_d.delta_f_d
         v_loc[1] += W_d.delta_f_d
 
     # New velocity in global coordinates
-    V_glob = loc2glob(v_loc[0], v_loc[1], theta)
+    v_glob = loc2glob(v_loc[0], v_loc[1], theta)
 
-    # Updates the global velocity in the X_d class
-    X_d.new_f_d(V_glob[0])
-    Z_d.new_f_d(V_glob[1])
+    # Updates the global velocity in the x_d class
+    x_d.new_f_d(v_glob[0])
+    z_d.new_f_d(v_glob[1])
 
-    # Integrates the velocities to get the position, be it local?¿ or global
+    # Integrates the velocities to get the position, be it local or global
     position_local = [U_d.integrate_f_d() , W_d.integrate_f_d()]
 
-    position_global = [X_d.integrate_f_d() , Z_d.integrate_f_d()]
+    position_global = [x_d.integrate_f_d() , z_d.integrate_f_d()]
+
 
     """
     Adding -W*Q to U_d and +U*Q to W_d but eliminating the global to
@@ -641,7 +676,7 @@ def simulation():
         theta_3d.append(theta)
         servo_3d.append(actuator_angle+u_initial_offset)
         v_loc_3d.append(v_loc)
-        V_glob_3d.append(V_glob)
+        v_glob_3d.append(v_glob)
         position_3d.append(position_global)
         xa_3d.append(rocket.cp_w_o_ctrl_fin)
         thrust_3d.append(thrust)
@@ -680,8 +715,9 @@ def set_setpoint(inp):
 
 def check_which_plot(s):
     global okp, oki, okd, totError
-    global send_gyro, send_accx, send_accz, send_alt
+    global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
     global actuator_angle
+    global var_sitl_plot
     if s == "Setpoint":
         return setpoint * RAD2DEG
     if s == "Pitch Angle":
@@ -695,9 +731,9 @@ def check_which_plot(s):
     if s == "Local Velocity Z":
         return v_loc[1]
     if s == "Global Velocity X":
-        return V_glob[0]
+        return v_glob[0]
     if s == "Global Velocity Z":
-        return V_glob[1]
+        return v_glob[1]
     if s == "Total Velocity":
         return np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if s == "Local Acc X":
@@ -738,6 +774,20 @@ def check_which_plot(s):
         return send_accz
     if s == "Simulated Altimeter":
         return send_alt
+    if s == "Simulated GNSS Position":
+        return send_gnss_pos
+    if s == "Simulated GNSS Velocity":
+        return send_gnss_vel
+    if s == "Variable SITL 1":
+        return var_sitl_plot[0]
+    if s == "Variable SITL 2":
+        return var_sitl_plot[1]
+    if s == "Variable SITL 3":
+        return var_sitl_plot[2]
+    if s == "Variable SITL 4":
+        return var_sitl_plot[3]
+    if s == "Variable SITL 5":
+        return var_sitl_plot[4]
     if s == "Off":
         return None
 
@@ -898,6 +948,76 @@ def run_sim_sitl():
                     u_servos = float(read_split[0])*DEG2RAD
                     parachute = int(read_split[1])
 
+def run_sim_python_sitl():
+    global parameters, conf_3d, conf_controller, setpoint
+    global timer_run_sim,timer_run,setpoint, parachute, t_launch, u_servos
+    global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
+    global parachute
+
+    timer_gyro = 0
+    timer_acc = 0
+    timer_alt = 0
+    timer_gnss = 0
+    parachute = 0
+    python_sitl_program = python_sitl.SITLProgram()
+    python_sitl_program.everything_that_is_outside_functions()
+    python_sitl_program.void_setup()
+
+    while t <= sim_duration:
+        simulation()
+        if t > burnout_time * 10:
+            print("Nice Coast")
+            break
+        if i_turns >= 5:
+            print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
+            break
+        if position_global[0] < -0.1:
+            print("CRASH")
+            break
+        if parachute == 1:
+            print("Parachute Deployed")
+            break
+        if t >= sim_duration:
+            print("Simulation Ended")
+            break
+
+        python_sitl_program.void_loop()
+
+        if use_noise is True:
+            if t >= timer_gyro + gyro_st*0.999:
+                send_gyro = round(random.gauss(Q*RAD2DEG, gyro_sd),6)
+                timer_gyro = t
+            if t >= timer_acc + acc_st*0.999:
+                send_accx = round(random.gauss((accx-g_loc[0])/9.81, acc_sd),6)
+                send_accz = round(random.gauss((accz-g_loc[1])/9.81, acc_sd),6)
+                timer_acc = t
+            if t >= timer_alt + alt_st*0.999:
+                send_alt = round(random.gauss(position_global[0], alt_sd),2)
+                timer_alt = t
+            if t >= timer_gnss + gnss_st*0.999:
+                send_gnss_pos = round(random.gauss(position_global[1], gnss_pos_sd),1)
+                send_gnss_vel = round(random.gauss(v_glob[1], gnss_vel_sd),2)
+                timer_gnss = t
+        else:
+            if t >= timer_gyro + gyro_st*0.999:
+                send_gyro = round(Q*RAD2DEG,6)
+                timer_gyro = t
+            if t >= timer_acc + acc_st*0.999:
+                send_accx = round((accx-g_loc[0])/9.81,6)
+                send_accz = round((accz-g_loc[1])/9.81,6)
+                timer_acc = t
+            if t >= timer_alt + alt_st*0.999:
+                send_alt = round(position_global[0],2)
+                timer_alt = t
+            if t >= timer_gnss + gnss_st*0.999:
+                send_gnss_pos = round(position_global[1],1)
+                send_gnss_vel = round(v_glob[1],1)
+                timer_gnss = t
+        timer()
+        plot_data()
+    del python_sitl_program
+
+
 def run_simulation():
     global parameters, conf_3d, conf_controller
     global timer_run_sim,timer_run,setpoint
@@ -907,8 +1027,10 @@ def run_simulation():
     print("Simulation Started")
     if Activate_SITL is False:
         run_sim_local()
-    else:
+    elif enable_python_sitl == False:
         run_sim_sitl()
+    else:
+        run_sim_python_sitl()
     plot_plots()
     return
 
@@ -1115,6 +1237,8 @@ def run_3d():
                                                                       dim_z_floor/2))
 
         motor_radius = 0.015
+
+
         def maximum_diameter(rocket_dim):
             d = 0
             for i in range(len(rocket_dim)):
@@ -1132,8 +1256,18 @@ def run_3d():
                       color=vp.color.red,length=0.15,make_trail=True)
         control_fins = vp.compound([fin_compound_control[1],fin_compound_control[3]])
 
+        launchrod_3d_pos_z = dim_z_floor/2 + d
+        launchrod_3d = vp.cylinder(pos=vp.vector(dim_x_floor/2, 0, launchrod_3d_pos_z),
+                                    axis=vp.vector(0, 1, 0), radius=d/10,
+                                    color=vp.color.gray(0.5), length=launchrod_lenght)
+        xcg_radius = loc2glob((L-xcg),0,theta_3d[0])
+        vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[0],
+                              rocket_3d.pos.y + xcg_radius[1],
+                              0)
+        launchrod_3d.rotate(theta_3d[1],axis=vp.vector(0,0,1), origin=vect_cg)
+
         motor.trail_color=vp.color.red
-        motor.rotate(u_initial_offset,axis=vp.vector(0,0,-1))
+        # motor.rotate(u_initial_offset,axis=vp.vector(0,0,-1))
 
         if rocket.use_fins is True:
             sep = rkt.fin[0].dim[1][1] - rocket.rocket_dim[-1][1]/2
@@ -1208,7 +1342,7 @@ def run_3d():
                             xoffset=0, zoffset=0, yoffset=0,
                             space=30, height=30, border=0,
                             font='sans',box=False,line=False,align ="left")
-        Altitude = vp.label(canvas=labels, pos=vp.vector(-60,-8,0),
+        Position_label = vp.label(canvas=labels, pos=vp.vector(-60,-8,0),
                             text="Velocity"+str(""),
                             xoffset=0, zoffset=0, yoffset=0,
                             space=30, height=30, border=0,
@@ -1301,7 +1435,6 @@ def run_3d():
                     Tmotor_neg.axis=vp.vector(aux,0,0)
                     Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1))
 
-
             #Normal force arrow
             # Same as before, makes the one active visible
             if cn_3d[i] <= 0:
@@ -1359,7 +1492,7 @@ def run_3d():
                     T_fin_neg.visible=False
 
             #To avoid the ugly arrows before the rocket starts going
-            if V_glob_3d[i][0] < 0.1:
+            if v_glob_3d[i][0] < 0.1:
                 Nforce_neg.visible = False
                 Nforce_pos.visible = False
                 Tmotor_pos.visible = False
@@ -1367,7 +1500,7 @@ def run_3d():
 
             #Camera
             if camera_shake_toggle is True:
-                camera_shake=loc2glob(V_glob_3d[i][0],V_glob_3d[i][1],theta_3d[i])
+                camera_shake=loc2glob(v_glob_3d[i][0],v_glob_3d[i][1],theta_3d[i])
             else:
                 camera_shake = [0,0]
 
@@ -1413,7 +1546,8 @@ def run_3d():
                       str(round(v_loc_3d[i][0],2)) + " m/s , Z = "
                       + str(round(v_loc_3d[i][1],2)) + " m/s")
             aoa_plot.text = "AoA = " + str(round(aoa_3d[i]*RAD2DEG,2)) + u'\xb0'
-            Altitude.text = "Altitude = " + str(round(position_3d[i][0],2)) + "m"
+            Position_label.text = ("Position => " + "Altitude = "
+            + str(round(position_3d[i][0],2)) + "m , Distance Downrange = " + str(round(position_3d[i][1],2)) + "m")
             Time_label.text = "Time = " + str(round(t_3d[i],3))
         plt.draw()
         plt.show()

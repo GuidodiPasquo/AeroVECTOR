@@ -94,10 +94,13 @@ def create_file_tab(notebook):
             file_tab.combobox[0]["values"] = files.get_save_names()
             file_tab.combobox[0].set(savefile.name)
             fun.Tab.update_active_file_label(savefile.name)
+            param_file_tab.depopulate()
+            param_file_tab.populate(savefile.get_parameters())
             draw_rocket_tab.populate(savefile.get_rocket_dim())
             conf_3d_tab.depopulate()
             conf_3d_tab.change_state()
             sim_setup_tab.depopulate()
+            read_file()
         else:
             print("File was not created")
 
@@ -120,7 +123,8 @@ def create_file_tab(notebook):
             conf_3d_tab.change_state()
             conf_sitl_tab.depopulate()
             conf_sitl_tab.populate(savefile.get_conf_sitl())
-            conf_sitl_tab.change_state()
+            conf_sitl_tab.checkbox[0].invoke()
+            conf_sitl_tab.checkbox[0].invoke()
             sim_setup_tab.depopulate()
             sim_setup_tab.populate(savefile.get_conf_controller())
             run_sim_tab.depopulate()
@@ -178,7 +182,8 @@ def create_parameters_tab(notebook):
     names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg [m] = ","Xt [m] = ",
                    "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
                    "Actuator Reduction = ","Initial Misalignment [º] = ",
-                   "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust = "]
+                   "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust [m/s] = ",
+                   "Launch Rod Length [m] = ", "Launch Rod Angle [º] = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
 
     def button_save_parameters():
@@ -189,7 +194,7 @@ def create_parameters_tab(notebook):
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
                                   command=button_save_parameters, width=20)
-    h = 39
+    h = 36
     save_file_button.grid(row=h, column=14)
     param_file_tab.create_active_file_label(h, 0)
     param_file_tab.configure()
@@ -401,28 +406,90 @@ def create_conf_3d_tab(notebook):
 
 ## SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB
 def create_sitl_tab(notebook):
-    conf_sitl_tab.create_tab(notebook, "SITL")
-    checkboxes = ["Activate Software in the Loop", "Use Simulated Sensor Noise"]
-    conf_sitl_tab.create_checkboxes(checkboxes,0,0,"W",True)
-    fun.move_tk_object(conf_sitl_tab.checkbox[0], columnspan=2)
-    fun.move_tk_object(conf_sitl_tab.checkbox[1], 5, 0, 2)
-    names_entry = ["Port", "Baudrate",
-                     "Gyroscope SD", "Accelerometer SD","Altimeter SD"]
-    conf_sitl_tab.create_entry(names_entry, 1, 0, "W")
-    for i in range(3):
-        fun.move_tk_object(conf_sitl_tab.entry_label[i+2], 6+i)
-        fun.move_tk_object(conf_sitl_tab.entry[i+2], 6+i, 1)
 
-    def change_state_sitl():
+    def move_sitl_checkbox():
+        fun.move_tk_object(conf_sitl_tab.checkbox[0], columnspan=2)
+
+    def move_sensor_noise_checkbox():
+        fun.move_tk_object(conf_sitl_tab.checkbox[1], 11, 0, 2)
+
+    def move_python_sitl_checkbox():
+        fun.move_tk_object(conf_sitl_tab.checkbox[2], 5, 0, 2)
+
+    def move_sensor_noise_entries():
+        for i in range(5):
+            fun.move_tk_object(conf_sitl_tab.entry_label[i+2], 12+i)
+            fun.move_tk_object(conf_sitl_tab.entry[i+2], 12+i, 1)
+
+    def move_python_sitl_entries():
+        for i in range(4):
+            fun.move_tk_object(conf_sitl_tab.entry_label[i+7], 7+i,0)
+            fun.move_tk_object(conf_sitl_tab.entry[i+7], 7+i, 1)
+
+    conf_sitl_tab.create_tab(notebook, "SITL")
+    checkboxes = ["Activate Software in the Loop", "Use Simulated Sensor Noise", "Python SITL"]
+    names_entry = ["Port", "Baudrate",
+                     "Gyroscope SD [º] = ", "Accelerometer SD [g] = ","Altimeter SD [m] = ",
+                     "GNSS Position SD [m] = ", "GNSS Velocity SD [m/s] = ",
+                     "Gyroscope Sample Time [s] = ", "Accelerometer Sample Time [s] = ",
+                     "Altimeter Sample Time [s] = ", "GNSS Sample Time [s] = "]
+    conf_sitl_tab.create_checkboxes(checkboxes,0,0,"W",True)
+    conf_sitl_tab.create_entry(names_entry, 1, 0, "W")
+    move_sitl_checkbox()
+    move_sensor_noise_checkbox()
+    move_python_sitl_checkbox()
+    move_sensor_noise_entries()
+    move_python_sitl_entries()
+
+    def change_state_all():
+        conf_sitl_tab.change_state()
+        change_state_sensor_noise()
+        change_state_python_sitl()
+
+    conf_sitl_tab.checkbox[0].config(command=change_state_all)
+
+    def change_state_sensor_noise():
         if conf_sitl_tab.checkbox_status[1].get() == "True":
-            for i in range(3):
+            for i in range(5):
                 conf_sitl_tab.entry[i+2].config(state="normal")
         else:
-            for i in range(3):
+            for i in range(5):
+                conf_sitl_tab.entry[i+2].config(state="disable")
+        if conf_sitl_tab.checkbox[1].cget("state") == "disabled":
+            for i in range(5):
                 conf_sitl_tab.entry[i+2].config(state="disable")
 
-    conf_sitl_tab.checkbox[1].config(command=change_state_sitl)
-    conf_sitl_tab.change_state()
+
+        if conf_sitl_tab.checkbox_status[2].get() == "False":
+            for i in range(2):
+                conf_sitl_tab.entry[i+5].config(state="disable")
+        if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
+            for i in range(2):
+                conf_sitl_tab.entry[i+5].config(state="disable")
+
+
+
+    def change_state_python_sitl():
+        if conf_sitl_tab.checkbox_status[2].get() == "False":
+            for i in range(2):
+                conf_sitl_tab.entry[i].config(state="normal")
+            for i in range(4):
+                conf_sitl_tab.entry[i+7].config(state="disable")
+        else:
+            for i in range(2):
+                conf_sitl_tab.entry[i].config(state="disable")
+            for i in range(4):
+                conf_sitl_tab.entry[i+7].config(state="normal")
+        if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
+            for i in range(2):
+                conf_sitl_tab.entry[i].config(state="disable")
+            for i in range(4):
+                conf_sitl_tab.entry[i+7].config(state="disable")
+        change_state_sensor_noise()
+
+
+    conf_sitl_tab.checkbox[2].config(command=change_state_python_sitl)
+    conf_sitl_tab.checkbox[1].config(command=change_state_sensor_noise)
 
     def button_save_conf_sitl():
         d = conf_sitl_tab.get_configuration()
@@ -431,9 +498,12 @@ def create_sitl_tab(notebook):
 
     save_conf_sitl_button = tk.Button(conf_sitl_tab.tab, text="Save",
                                       command=button_save_conf_sitl, width=20)
-    save_conf_sitl_button.grid(row=45, column=23)
-    conf_sitl_tab.create_active_file_label(45, 0)
+    save_conf_sitl_button.grid(row=37, column=13)
+    conf_sitl_tab.create_active_file_label(37, 0)
     conf_sitl_tab.configure(10)
+
+
+
 
 
 ## SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB
@@ -481,7 +551,10 @@ def create_run_sim_tab(notebook):
                                  "Proportional Contribution", "Integral Contribution",
                                  "Derivative Contribution","Total Error",
                                  "Simulated Gyro", "Simulated Acc X", "Simulated Acc Z",
-                                 "Simulated Altimeter"])
+                                 "Simulated Altimeter", "Simulated GNSS Position",
+                                 "Simulated GNSS Velocity", "Variable SITL 1",
+                                 "Variable SITL 2", "Variable SITL 3", "Variable SITL 4",
+                                 "Variable SITL 5"])
     names_combobox = ["First Plot","Second Plot", "Third Plot", "Fourth Plot", "Fifth Plot"]
     run_sim_tab.create_combobox(combobox_options,names_combobox, 0, 0)
 
