@@ -4,7 +4,7 @@ This is a Model Rocket Simulator oriented towards active stabilization. It integ
 ![](/Images/Readme/GIF-TVC-only.gif)
 
 #### Simulation Procedure
-The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behavior. The program also allows for fins separated from the body. More information can be found inside *ZPC_PID_SIMULATOR.py* and *rocket_functions.py*
+The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found inside *ZPC_PID_SIMULATOR.py* and *rocket_functions.py*
 
 ## Dependencies
 ### Mandatory
@@ -36,13 +36,15 @@ One must fill the required parameters of the rocket. New motors can be added in 
   - Speed is your enemy, therefore is recommended to use the lowest mass and inertia.
 - *Xcg* is the position of the Center of Gravity.
 - *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
-  - All distances are measured from the tip of the nosecone.
+  - All distances are measured from the tip of the nose cone.
 - The *Servo Definition* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
 - The *Initial Misalignment* only modifies the initial angle of the TVC mount (in case of using TVC stabilization).
 - The *Servo Velocity Compensation* slows down the servo according  to the load, its value is 1.45 for an SG90 without load, and 2.1 with a TVC mount. The *servo* class found in *servo_lib.py* has a test method to modify this value to fit one's servo.
-- The wind is positive from right to left, and the gusts follow a Gaussian distribution.  
+- The wind is positive from right to left, and the gusts follow a Gaussian distribution.
+- The effective launch rod length is the length at which the rocket can pitch somewhat freely.
+- Angle of the launch rod.  
 **Please do not leave blank entries**
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
@@ -51,16 +53,16 @@ One must fill the required parameters of the rocket. New motors can be added in 
 ![](/Images/Readme/Screenshot_3.png)
 
 #### Body
-To draw the rocket, one must insert the point as **coordinate from the nosecone tip, diameter in that point**.
+To draw the rocket, one must insert the point as **coordinate from the nose cone tip, diameter in that point**.
 With the *Add Point* button, one adds the point written in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
 
 #### Fins
 To draw the fins, the procedure is similar. One must fill the entries with their respective points as:  
-**coordinate from the nosecone tip, *radius* to that point**.   
+**coordinate from the nose cone tip, *radius* to that point**.   
 The order is the following:  
 ![](/Images/Readme/Screenshot_8.png)
 
-**Only trapezoidal fins are modeled**, therefore, ensure that the root and tip chords are parallel.
+**Only trapezoidal fins are modelled**, therefore, ensure that the root and tip chords are parallel.
 
 After the points are written in the entries, one can either update the stabilization or control fin. Clicking the *Load "" Fins* button will fill the entries with the current data of the fin. The button *Reset Fin* sets the fin entries to a zero-area fin.
 
@@ -116,7 +118,9 @@ Replace your sensor readings with *Sim.getSimData()* and the name of your variab
 
 - **The Gyroscope data is in º/s.**  
 - **The Accelerometer measures the reaction force applied to it (like the real ones), the data is in g's.**   
-- **The Altimeter measures the data in meters.**     
+- **The Altimeter measures the data in meters.**  
+- **The GNSS measures the distance in the horizontal axis from the launch pad, in m.**
+- **The GNSS measures the horizontal velocity, in m/s.**   
   
 **Positive values are positive in the direction of the axes!**    
 **(Refer to the Technical Documentation)**  
@@ -128,7 +132,10 @@ Replace your *servo.write()* for:
 ![](/Images/Readme/Screenshot_12.png)  
 Replace *servo_command* for your servo variable (in º).    
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would deploy. 
-  
+
+#### Python SITL
+In case of using the Python SITL module, refer to the example. The objective was to make it as similar as possible to an Arduino, but there are some differences, specially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
+
 **REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
 
 ### Tuning the Internal Controller   
@@ -140,7 +147,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 - *K All* scales the error before sending it to the PID.
 - *K Damping* feeds the gyro back at the output of the PID and acts as damping.
   - To disable the controller, one must set *K All and K Damping* to zero.
-  - In case the Control Fins are ahead of the CG, the controller miltiplies *K All* and *K Damping* by -1.
+  - In case the Control Fins are ahead of the CG, the controller multiplies *K All* and *K Damping* by -1.
 - *Reference Thrust* is the Reference Thrust of the Torque Controller, more info in the *control.py* file.
 - *Input* is the input to the rocket, be it a Step (deg), or a Ramp (deg/s)
   - If the selected input is *Up*, then this entry is bypassed
