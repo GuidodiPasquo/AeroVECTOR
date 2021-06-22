@@ -67,7 +67,8 @@ class SaveFile:
 
     def __init__(self):
         self.parameter_names = ["Motor[N] = ", "Mass [kg] = ", "Iy [kg*m] = ",
-                                "Xcg [m] = ", "Xt [m] = ", "Servo definition [º] = ",
+                                "Xcg Liftoff [m] = ","Xcg Burnout [m] = ",
+                                "Xt [m] = ", "Servo definition [º] = ",
                                 "Max Actuator Angle [º] = ", "Actuator Reduction = ",
                                 "Initial Misalignment [º] = ", "Servo Compensation = ",
                                 "Wind [m/s] = ", "Wind Gust = ", "Launch Rod Length = ",
@@ -207,7 +208,7 @@ class SaveFile:
         None.
         """
         self.update_name(n)
-        self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55',"0.85",
+        self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55', "0.51","0.85",
                            '1', '10', '5', '2',"2.1", '2', '0.1', "0", "0"]
         self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
@@ -306,9 +307,9 @@ class SaveFile:
         None.
         """
         self.check_and_correct_v11_save()
+        self.check_and_correct_v20_save()
         try:
             with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
-                self.check_and_correct_v11_save()
                 content = []
                 split_index=[]
                 for line in file:
@@ -333,25 +334,7 @@ class SaveFile:
             print("EnvironmentError Opening File")
 
     def check_and_correct_v11_save(self):
-        check = False
-        flag_add_python_SITL = False
-        try:
-            with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
-                for line in file:
-                    try:
-                        if check == True:
-                            if line.split("=")[0].strip() != "Launch Rod Length":
-                                flag_add_python_SITL = True
-                                break
-                            else:
-                                break
-                        if line.split("=")[0].strip() == "Wind Gust":
-                            check = True
-                    except IndexError:
-                        pass
-        except EnvironmentError:
-            print("EnvironmentError Opening File")
-        if flag_add_python_SITL == True:
+        if self.check_file("Wind Gust =", "###"):
             for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
                 print(line, end ='')
                 if line.startswith("Wind Gust"):
@@ -360,9 +343,45 @@ class SaveFile:
                 if line.startswith("Use Sensor Noise"):
                     print("Python SITL=True")
                 if line.startswith("Altimeter SD="):
-                    print("GNSS Pos SD=0"+"\n","GNSS Vel SD=0"+"\n","Gyroscope ST=0.0025"+"\n",
-                          "Accelerometer ST=0.0025"+"\n","Altimeter ST=0.005"+"\n",
-                          "GNSS ST=1"+"\n")
+                    print("GNSS Pos SD=0")
+                    print("GNSS Vel SD=0")
+                    print("Gyroscope ST=0.0025")
+                    print("Accelerometer ST=0.0025")
+                    print("Altimeter ST=0.005")
+                    print("GNSS ST=1")
+            print("Save updated to v2.0")
+
+    def check_and_correct_v20_save(self):
+        if self.check_file("Xcg [m]", "Xt [m]"):
+            for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
+                if line.startswith("Xcg"):
+                    print("Xcg Liftoff [m] = 0.55")
+                    print("Xcg Burnout [m] = 0.51")
+                else:
+                    print(line, end ='')
+
+            print("Save updated to v2.1")
+
+    def check_file(self, parameter1, parameter2):
+        flag = False
+        found_param = False
+        try:
+            with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
+                for line in file:
+                    try:
+                        if found_param == True:
+                            if line.startswith(parameter2):
+                                flag = True
+                                break
+                            else:
+                                break
+                        if line.startswith(parameter1):
+                            found_param = True
+                    except IndexError:
+                        pass
+        except EnvironmentError:
+            print("EnvironmentError Opening File")
+        return flag
 
 
 

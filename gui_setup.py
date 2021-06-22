@@ -177,9 +177,10 @@ def create_parameters_tab(notebook):
     tk.Label(param_file_tab.tab, text="Parameters", fg="black", bg="#CCFFCC",
               padx=0).grid(row=0, column=0, sticky="NESW", columnspan=3)
     combobox_options = [files.get_motor_names()]
-    names_combobox = ["Motor[N] = "]
+    names_combobox = ["Motor = "]
     param_file_tab.create_combobox(combobox_options,names_combobox, 1, 1)
-    names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg [m] = ","Xt [m] = ",
+    names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg Liftoff [m] = ",
+                   "Xcg Burnout [m] = ","Xt [m] = ",
                    "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
                    "Actuator Reduction = ","Initial Misalignment [º] = ",
                    "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust [m/s] = ",
@@ -374,7 +375,8 @@ def create_draw_rocket_tab(notebook):
     update_fins_control_button = tk.Button(draw_rocket_tab.tab, text="Reset Fin",
                                            command=reset_fin, width=12,
                                            fg="black", bg = "yellow")
-    update_fins_control_button.grid(row=19, column=1, sticky="N")
+    update_fins_control_button.grid(row=18, column=1, sticky="S")
+
     draw_rocket_tab.create_sliders()
     draw_rocket_tab.create_active_file_label(24, 0)
     draw_rocket_tab.configure()
@@ -545,6 +547,7 @@ def create_run_sim_tab(notebook):
                                  "Global Velocity Z", "Total Velocity",
                                  "Local Acc X",  "Local Acc Z", "Global Acc X",
                                  "Global Acc Z", "Angle of Atack","Cp Position",
+                                 "Cg Position",
                                  "Normal Force Coefficient", "Axial Force Coefficient",
                                  "Moment Coefficient",
                                  "Altitude","Distance Downrange",

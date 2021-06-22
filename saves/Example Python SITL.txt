@@ -1,7 +1,8 @@
 Motor[N] = AeroTech_G12.csv
 Mass [kg] = 1
 Iy [kg*m] = 0.0662
-Xcg [m] = 0.55
+Xcg Liftoff [m] = 0.55
+Xcg Burnout [m] = 0.51
 Xt [m] = 0.85
 Servo definition [º] = 1
 Max Actuator Angle [º] = 30
@@ -75,6 +76,6 @@ Fins_s
 1,0.033
 Fins_c
 0.2,0.033
-0.24,0.07
-0.25,0.07
+0.23,0.08
+0.25,0.08
 0.255,0.033

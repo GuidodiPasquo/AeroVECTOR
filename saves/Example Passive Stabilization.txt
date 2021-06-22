@@ -1,7 +1,8 @@
 Motor[N] = Estes_F15.csv
 Mass [kg] = 0.451
 Iy [kg*m] = 0.0662
-Xcg [m] = 0.55
+Xcg Liftoff [m] = 0.55
+Xcg Burnout [m] = 0.51
 Xt [m] = 0.85
 Servo definition [º] = 1
 Max Actuator Angle [º] = 10

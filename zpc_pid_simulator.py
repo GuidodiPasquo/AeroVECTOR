@@ -189,6 +189,7 @@ cn_3d = [0]
 fin_force_3d = [0]
 thrust_3d = [0]
 xa_3d = [0]
+xcg_3d = [0]
 aoa_3d = [0]
 
 # Other Variables
@@ -253,25 +254,27 @@ def get_data_savefile():
 
 def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_dim):
     global thrust, burnout_time, thrust_curve, max_thrust, average_thrust
-    global m, Iy, d, xcg, xt, L, nosecone_length, CA0
+    global m, Iy, d, xcg, xcg_liftoff, xcg_burnout, xt, L, nosecone_length, CA0
     global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
     global wind, wind_distribution, launchrod_lenght, theta, wind_total
 
     m = parameters[1]
     Iy = parameters[2]
-    xcg = parameters[3]
-    xt = parameters[4]
-    servo_definition = parameters[5]
-    Actuator_max = parameters[6] * DEG2RAD
-    Actuator_reduction = parameters[7]
-    u_initial_offset = parameters[8] * DEG2RAD
-    Actuator_weight_compensation = parameters[9]
-    wind = parameters[10]
-    wind_distribution = parameters[11]
-    launchrod_lenght = parameters[12]
-    Q_d.f = parameters[13] * DEG2RAD
+    xcg_liftoff = parameters[3]
+    xcg_burnout = parameters[4]
+    xt = parameters[5]
+    servo_definition = parameters[6]
+    Actuator_max = parameters[7] * DEG2RAD
+    Actuator_reduction = parameters[8]
+    u_initial_offset = parameters[9] * DEG2RAD
+    Actuator_weight_compensation = parameters[10]
+    wind = parameters[11]
+    wind_distribution = parameters[12]
+    launchrod_lenght = parameters[13]
+    Q_d.f = parameters[14] * DEG2RAD
     theta = Q_d.f
     wind_total = wind
+    xcg = xcg_liftoff
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
@@ -290,7 +293,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     gui.savefile.read_motor_data(gui.param_file_tab.combobox[0].get())
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
-    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg)
+    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg_liftoff, xcg_burnout)
     S = rocket.reference_area
     d = rocket.max_diam
 
@@ -376,7 +379,7 @@ def reset_variables():
     ##
     global t_3d, theta_3d, servo_3d, v_loc_3d, v_glob_3d, position_3d, xa_3d
     global thrust_3d, cn_3d, fin_force_3d, aoa_3d, setpoint_3d, Airspeed_3d
-    global X_3d, Z_3d
+    global X_3d, Z_3d, xcg_3d
     t_3d = [0]
     theta_3d = [0]
     setpoint_3d = [0]
@@ -391,6 +394,7 @@ def reset_variables():
     fin_force_3d = [0]
     thrust_3d = [0]
     xa_3d = [0]
+    xcg_3d = [0]
     aoa_3d = [0]
 
     ##
@@ -479,7 +483,7 @@ def update_parameters():
     global i
     global aoa
     global wind
-    global thrust,t_launch
+    global thrust,t_launch, xcg
     global out,timer_disturbance,timer_U,U2,q_wind
     global cm_xcg, ca, S
     global actuator_angle
@@ -504,6 +508,7 @@ def update_parameters():
     v_loc_tot = [v_loc[0]-wind_loc[0], v_loc[1]-wind_loc[1]]
     aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
+    xcg = rocket.get_xcg(t, t_launch)
     S = rocket.reference_area
     v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if rocket.use_fins_control is True:
@@ -542,7 +547,7 @@ def simulation():
     global theta, aoa, g
     global F_loc , F_glob
     global cn, thrust, rho, fin_force
-    global cm_xcg, ca
+    global cm_xcg, ca, xcg
     global t_timer_3d
     global position_global
     global i_turns
@@ -679,6 +684,7 @@ def simulation():
         v_glob_3d.append(v_glob)
         position_3d.append(position_global)
         xa_3d.append(rocket.cp_w_o_ctrl_fin)
+        xcg_3d.append(rocket.xcg)
         thrust_3d.append(thrust)
         cn_3d.append(rocket.passive_cn*S*q)
         fin_force_3d.append(fin_force)
@@ -748,6 +754,8 @@ def check_which_plot(s):
         return aoa * RAD2DEG
     if s == "Cp Position":
         return xa
+    if s == "Cg Position":
+        return xcg
     if s == "Normal Force Coefficient":
         return cn
     if s == "Axial Force Coefficient":
@@ -1260,7 +1268,7 @@ def run_3d():
         launchrod_3d = vp.cylinder(pos=vp.vector(dim_x_floor/2, 0, launchrod_3d_pos_z),
                                     axis=vp.vector(0, 1, 0), radius=d/10,
                                     color=vp.color.gray(0.5), length=launchrod_lenght)
-        xcg_radius = loc2glob((L-xcg),0,theta_3d[0])
+        xcg_radius = loc2glob((L-xcg_3d[1]),0,theta_3d[0])
         vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[0],
                               rocket_3d.pos.y + xcg_radius[1],
                               0)
@@ -1367,10 +1375,10 @@ def run_3d():
             # Creates a cg and cp vector with reference to the origin of the
             # 3d rocket (not the math model rocket)
             # Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
-            xcg_radius = loc2glob((L-xcg),0,theta_3d[i])
+            xcg_radius = loc2glob((L-xcg_3d[i]),0,theta_3d[i])
             xa_radius = loc2glob(xa_3d[i+1]-xa_3d[i],0,theta_3d[i])
             if rocket.use_fins_control is True:
-                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg),0,theta_3d[i])
+                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg_3d[i]),0,theta_3d[i])
 
             #CP and CG global vectors
             vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[0],

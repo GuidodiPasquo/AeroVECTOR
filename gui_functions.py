@@ -576,6 +576,8 @@ class TabWithCanvas(Tab):
         self.max_length = 0
         self.scale_y = 1
         self.centering = 0
+        self.choose_cg = 2
+        self.flight_time = 0
 
     def _sort(self, l):
         """
@@ -740,10 +742,8 @@ class TabWithCanvas(Tab):
         self.f_point_label.grid(row=15, column=3)
         self.moment_label = tk.Label(self.tab, text="")
         self.moment_label.grid(row=16, column=3)
-        self.thrust_label = tk.Label(self.tab, text="Thrust in N")
+        self.thrust_label = tk.Label(self.tab, text="")
         self.thrust_label.grid(row=17, column=3)
-        self.thrust_entry = tk.Entry(self.tab)
-        move_tk_object(self.thrust_entry, 18, 3)
 
     def draw_rocket(self):
         """
@@ -838,10 +838,12 @@ class TabWithCanvas(Tab):
         # Creates a point where the CP is located
         # the slider can move it by modifying the aoa
         f = point_diameter / 2
-        xcg_point = float(gui_setup.savefile.get_parameters()[3])
-        self._update_actuator_scale_limits()
-        self.rocket.update_rocket(self.get_configuration_destringed(), xcg_point)
-        v = [1, np.tan(self.aoa)]/np.sqrt(1 + np.tan(self.aoa)**2) * self.velocity
+        self.xcg_point = float(gui_setup.param_file_tab.entry[2].get())
+        self.xcg_burnout = float(gui_setup.param_file_tab.entry[3].get())
+        self._update_scale_limits()
+        self.rocket.update_rocket(self.get_configuration_destringed(), self.xcg_point, self.xcg_burnout)
+        v = self.transform_AoA_2_v(self.aoa) * self.velocity
+
         cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
                                                                actuator_angle=self.aoa_ctrl_fin)
         self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
@@ -850,18 +852,31 @@ class TabWithCanvas(Tab):
                                 self.canvas_width/2+f, self.force_app_point*self.scale_y + f,
                                 fill=self.f_app_colour, outline=self.f_app_colour)
 
-    def _update_actuator_scale_limits(self):
-        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[6]
+    def transform_AoA_2_v(self, aoa):
+        if aoa <= -np.pi/2:
+            v = [-1, -np.tan(aoa)]/np.sqrt(1+np.tan(aoa)**2)
+        elif aoa <= 0:
+            v = [1, np.tan(aoa)]/np.sqrt(1+np.tan(aoa)**2)
+        elif aoa <= np.pi/2:
+            v = [1, np.tan(aoa)]/np.sqrt(1+np.tan(aoa)**2)
+        else:
+            v = [-1, -np.tan(aoa)]/np.sqrt(1+np.tan(aoa)**2)
+        return v
+
+    def _update_scale_limits(self):
+        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[7]
         if max_actuator_angle == "":
             max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
                                     to=max_actuator_angle)
+        self.scale_time.config(to=self.rocket.t_burnout)
+
 
     def _calculate_total_cn_cp(self, cn, cp_point):
         q = 0.5 * 1.225 * self.velocity**2
         aero_force = q * self.rocket.area_ref * cn
         thrust = self._get_motor_data()
-        xt = float(gui_setup.param_file_tab.entry[3].get())
+        xt = float(gui_setup.param_file_tab.entry[4].get())
         normal_force = thrust*np.sin(self.tvc_angle) + aero_force
         force_app_point = (aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt) / normal_force
         return normal_force, force_app_point
@@ -871,11 +886,11 @@ class TabWithCanvas(Tab):
             gui_setup.savefile.read_motor_data(gui_setup.param_file_tab.combobox[0].get())
             self.rocket.set_motor(gui_setup.savefile.get_motor_data())
             self.current_motor = gui_setup.param_file_tab.combobox[0].get()
-            self.thrust_entry.delete(0,100)
-            self.thrust_entry.insert(0,str(round(self.rocket.get_thrust(0.5, 0),3)))
-            self.thrust = float(self.thrust_entry.get())
+            # self.thrust_entry.delete(0,100)
+            # self.thrust_entry.insert(0,str(round(self.rocket.get_thrust(0.5, 0),3)))
+            self.thrust = self.rocket.get_thrust(self.flight_time, 0)
         else:
-            self.thrust = float(self.thrust_entry.get())
+            self.thrust = self.rocket.get_thrust(self.flight_time, 0)
         return self.thrust
 
     def _set_f_app_point_color(self, cn):
@@ -886,7 +901,7 @@ class TabWithCanvas(Tab):
 
     def _create_point_xcg(self, point_diameter):
         f = point_diameter / 2
-        self.xcg_point = float(gui_setup.param_file_tab.entry[2].get())
+        self.xcg_point = self.rocket.get_xcg(self.flight_time, 0)
         self.canvas.create_oval(self.canvas_width/2 - f, self.xcg_point*self.scale_y - f,
                                 self.canvas_width/2 + f, self.xcg_point*self.scale_y + f,
                                 fill="blue", outline="blue")
@@ -896,9 +911,11 @@ class TabWithCanvas(Tab):
         f_point = "Force App point = " + str(round(self.force_app_point,3)) + " m"
         moment = self.normal_force * (self.force_app_point-self.xcg_point)
         moment_text = "Moment = " + str(round(moment,3)) + " N.m"
+        thrust_text = "T = " + str(round(self.rocket.get_thrust(self.flight_time, 0),3)) + " N"
         self.n_force_label.config(text=n_force)
         self.f_point_label.config(text=f_point)
         self.moment_label.config(text=moment_text)
+        self.thrust_label.config(text=thrust_text)
 
     def _draw_base_component(self,l2):
         # Draws the horizontal line that separates each component
@@ -1061,12 +1078,10 @@ class TabWithCanvas(Tab):
     def create_sliders(self):
         def slider_aoa(a):
             # Changes the aoa and re draws the CP
-            self.aoa = float(a)/57.295 + 0.01
-            if self.aoa > 3.14159/2:
-                self.aoa = 3.14159/2
+            self.aoa = float(a)/57.295 + 0.000001
             self.draw_rocket()
 
-        self.aoa_scale = tk.Scale(self.tab, from_=0.01, to=90,
+        self.aoa_scale = tk.Scale(self.tab, from_=0, to=90,
                              orient=tk.HORIZONTAL, command=slider_aoa, length=200)
         self.aoa_scale.grid(row=20, column=0)
         tk.Label(self.tab, text="Angle of Attack" + u' [\xb0]').grid(row=21, column=0)
@@ -1094,4 +1109,15 @@ class TabWithCanvas(Tab):
         self.scale_velocity.set(10)
         self.scale_velocity.grid(row=20, column=3)
         tk.Label(self.tab, text="Speed [m/s]").grid(row=21, column=3)
+
+        def slider_time(a):
+            self.flight_time = float(a)
+            self.draw_rocket()
+
+        self.scale_time = tk.Scale(self.tab, from_=0.1, to=15,
+                             orient=tk.HORIZONTAL, command=slider_time, length=150,
+                             resolution = 0.1)
+        self.scale_time.set(0.1)
+        self.scale_time.grid(row=18, column=3)
+        tk.Label(self.tab, text="Time [s]").grid(row=19, column=3)
 

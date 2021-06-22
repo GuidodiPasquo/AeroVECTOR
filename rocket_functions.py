@@ -63,7 +63,7 @@ class Airfoil:
                 1.3189550556586267, 1.595045918367347, 1.846872263450835,
                 2.0253221243042674, 2.2514994897959184, 2.4605532467532463,
                 2.6914669294990725, 2.83479517625232, 2.98810612244898,
-                3.105202458256029, 3.150015306122449]
+                3.105202458256029, np.pi]
         self.cl_list = [0.0, 0.5363636363636364, 0.781818181818182, 0.7,
                 0.8818181818181818, 1.0727272727272728, 1.1, 1.0,
                 0.7545454545454546, 0.44545454545454555, 0.0,
@@ -73,7 +73,7 @@ class Airfoil:
 
         self.aoa_cl_modified = [0.0, 0.13658937500000003, 0.7249800000000002,
                 0.9137768750000002, 1.0950218750000003, 1.57079,
-                2.0239025, 2.4166, 2.937679375, 3.103820625]
+                2.0239025, 2.4166, 2.937679375, np.pi]
         self.cl_list_modified = [0.0, 0.7739130434782606, 1.1043478260869564,
                 1.026086956521739, 0.8086956521739128, 0.0,
                 -0.7217391304347824, -0.991304347826087,
@@ -84,7 +84,7 @@ class Airfoil:
                 1.5468165300174515, 1.7918205335344766, 1.960067086805354,
                 2.1704261134642255, 2.359869138105717, 2.4862486286726804,
                 2.668785095490799, 2.819614501925884, 2.9527883625749265,
-                3.040406988525037, 3.1349532075000113, 3.1415972095888027]
+                3.040406988525037, 3.1349532075000113, np.pi]
         self.cd_list = [0.001, 0.11315179890472304, 0.3266637804448056,
                 1.053982763006967, 1.5607557140498007, 1.7623865781756995,
                 1.8074741244259172, 1.7606280656808881, 1.5891418548289915,
@@ -398,8 +398,9 @@ class Rocket:
         self.cn_alpha_ctrl_fin_3d_arrow = 0
         self.cp_w_o_ctrl_fin = 0
         self.passive_cn = 0
+        self.t_burnout = 5
 
-    def update_rocket(self, l0, xcg):
+    def update_rocket(self, l0, xcg_liftoff, xcg_burnout):
         """
         Update the Rocket instance with the data in l0 and the cg position.
 
@@ -419,7 +420,9 @@ class Rocket:
         self.use_fins = l[1]
         self.fins_attached = [l[2], l[4]]
         self.use_fins_control = l[3]
-        self.xcg = xcg
+        self.xcg_liftoff = xcg_liftoff
+        self.xcg_burnout = xcg_burnout
+        self.xcg = xcg_liftoff
         self._update_rocket_dim(l[5])
         # In case one fin is not set up
         zero_fin = [[0.00001,0.0000],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0000]]
@@ -865,6 +868,7 @@ class Rocket:
         # t, thrust
         self.motor[0] = copy.deepcopy(data[0])
         self.motor[1] = copy.deepcopy(data[1])
+        self.t_burnout = self.burnout_time()
 
     def get_thrust(self, t, t_launch):
         """
@@ -917,6 +921,30 @@ class Rocket:
             Burn time.
         """
         return self.motor[0][-1]
+
+    def get_xcg(self, t, t_launch):
+        """
+        Input the current time and the time at which the motor ignited
+        to get its current xcg.
+
+        Parameters
+        ----------
+        t : float
+            current time.
+        t_launch : float
+            ignition time.
+
+        Returns
+        -------
+        thrust : float
+            xcg.
+        """
+        x = t - t_launch
+        yp = [self.xcg_liftoff, self.xcg_burnout]
+        xp = [0, self.t_burnout]
+        self.xcg = np.interp(x, xp, yp)
+        return float(self.xcg)
+
 
     def reset_variables(self):
         """Resets some variables of the rocket."""
