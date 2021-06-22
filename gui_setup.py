@@ -179,8 +179,9 @@ def create_parameters_tab(notebook):
     combobox_options = [files.get_motor_names()]
     names_combobox = ["Motor = "]
     param_file_tab.create_combobox(combobox_options,names_combobox, 1, 1)
-    names_entry = ["Mass [kg] = ","Iy [kg*m**2] = ", "Xcg Liftoff [m] = ",
-                   "Xcg Burnout [m] = ","Xt [m] = ",
+    names_entry = ["Mass Liftoff [kg] = ", "Mass Burnout [kg] = ",
+                   "Iy Liftoff [kg*m^2] = ", "Iy Burnout [kg*m^2] = ",
+                   "Xcg Liftoff [m] = ", "Xcg Burnout [m] = ","Xt [m] = ",
                    "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
                    "Actuator Reduction = ","Initial Misalignment [º] = ",
                    "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust [m/s] = ",
@@ -195,8 +196,8 @@ def create_parameters_tab(notebook):
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
                                   command=button_save_parameters, width=20)
-    h = 36
-    save_file_button.grid(row=h, column=14)
+    h = 34
+    save_file_button.grid(row=h, column=12)
     param_file_tab.create_active_file_label(h, 0)
     param_file_tab.configure()
 
@@ -546,8 +547,8 @@ def create_run_sim_tab(notebook):
                                  "Local Velocity Z", "Global Velocity X",
                                  "Global Velocity Z", "Total Velocity",
                                  "Local Acc X",  "Local Acc Z", "Global Acc X",
-                                 "Global Acc Z", "Angle of Atack","Cp Position",
-                                 "Cg Position",
+                                 "Global Acc Z", "Angle of Atack","CP Position",
+                                 "Mass", "Iy", "CG Position",
                                  "Normal Force Coefficient", "Axial Force Coefficient",
                                  "Moment Coefficient",
                                  "Altitude","Distance Downrange",

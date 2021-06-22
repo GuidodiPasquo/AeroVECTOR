@@ -66,7 +66,9 @@ class SaveFile:
     """
 
     def __init__(self):
-        self.parameter_names = ["Motor[N] = ", "Mass [kg] = ", "Iy [kg*m] = ",
+        self.parameter_names = ["Motor[N] = ",
+                                "Mass Liftoff [kg] = ", "Mass Burnout [kg] = ",
+                                "Iy Liftoff [kg*m] = ", "Iy Burnout [kg*m] = ",
                                 "Xcg Liftoff [m] = ","Xcg Burnout [m] = ",
                                 "Xt [m] = ", "Servo definition [º] = ",
                                 "Max Actuator Angle [º] = ", "Actuator Reduction = ",
@@ -208,8 +210,9 @@ class SaveFile:
         None.
         """
         self.update_name(n)
-        self.parameters = ["Estes_D12.csv", '0.451', '0.0662', '0.55', "0.51","0.85",
-                           '1', '10', '5', '2',"2.1", '2', '0.1', "0", "0"]
+        self.parameters = ["Estes_D12.csv", '0.451', '0.351', '0.0662', '0.0601',
+                           '0.55', "0.51","0.85", '1', '10', '5', '2',"2.1",
+                           '2', '0.1', "0", "0"]
         self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
                                 '0.136', '1', '0', '30','20',"0.5","0", '0.02',
@@ -352,11 +355,17 @@ class SaveFile:
             print("Save updated to v2.0")
 
     def check_and_correct_v20_save(self):
-        if self.check_file("Xcg [m]", "Xt [m]"):
+        if self.check_file("Mass [kg]", "Iy"):
             for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
-                if line.startswith("Xcg"):
+                if line.startswith("Mass"):
+                    print("Mass Liftoff [kg] = 1")
+                    print("Mass Burnout [kg] = 0.8")
+                    print("Iy Liftoff [kg*m^2] = 0.0662")
+                    print("Iy Burnout [kg*m^2] = 0.0562")
                     print("Xcg Liftoff [m] = 0.55")
                     print("Xcg Burnout [m] = 0.51")
+                elif line.startswith("Iy") or line.startswith("Xcg"):
+                    pass
                 else:
                     print(line, end ='')
 

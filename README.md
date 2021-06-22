@@ -34,7 +34,7 @@ One can create a new file or open an existing one. Once a file is open, a copy c
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy* is the pitching moment of inertia.
   - Speed is your enemy, therefore is recommended to use the lowest mass and inertia.
-- *Xcg Liftoff/Burnout* are the position of the wet and dry Center of Gravity.
+- *Xcg* is the position of the Center of Gravity.
 - *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
   - All distances are measured from the tip of the nose cone.
 - The *Servo Definition* is the minimum angle it can rotate.
@@ -93,13 +93,10 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
   
 ### Software in the Loop
 ![](/Images/Readme/Screenshot_5.png)
-
-#### Python SITL
-In case of using the Python SITL module, refer to the example. One can create functions, classes, modules, etc., or modify the code at will. The objective was to make it as similar as possible to an Arduino, but there are some differences, specially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
   
 #### On what boards can I use this software?
 It was only tested on an Arduino Nano clone, so compatibility is not ensured.  
-Even on the Arduino, the program did not work properly with program runtimes times smaller than 5 milliseconds.
+Even on the Arduino, the program did not work properly with sample times smaller than 5 milliseconds.
 
 #### How to set up the serial communication in Python.
 To use the Software in the Loop function, one has to set the *Port* to the one in which the board is connected, and the *Baudrate* to the one set in the Arduino program.  
@@ -135,6 +132,9 @@ Replace your *servo.write()* for:
 ![](/Images/Readme/Screenshot_12.png)  
 Replace *servo_command* for your servo variable (in º).    
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would deploy. 
+
+#### Python SITL
+In case of using the Python SITL module, refer to the example. The objective was to make it as similar as possible to an Arduino, but there are some differences, specially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
 
 **REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
 

@@ -254,27 +254,34 @@ def get_data_savefile():
 
 def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_dim):
     global thrust, burnout_time, thrust_curve, max_thrust, average_thrust
-    global m, Iy, d, xcg, xcg_liftoff, xcg_burnout, xt, L, nosecone_length, CA0
+    global m, m_liftoff, m_burnout, Iy, Iy_liftoff, Iy_burnout, d, xcg
+    global xcg_liftoff, xcg_burnout, xt
     global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
     global wind, wind_distribution, launchrod_lenght, theta, wind_total
 
-    m = parameters[1]
-    Iy = parameters[2]
-    xcg_liftoff = parameters[3]
-    xcg_burnout = parameters[4]
-    xt = parameters[5]
-    servo_definition = parameters[6]
-    Actuator_max = parameters[7] * DEG2RAD
-    Actuator_reduction = parameters[8]
-    u_initial_offset = parameters[9] * DEG2RAD
-    Actuator_weight_compensation = parameters[10]
-    wind = parameters[11]
-    wind_distribution = parameters[12]
-    launchrod_lenght = parameters[13]
-    Q_d.f = parameters[14] * DEG2RAD
+    m_liftoff = parameters[1]
+    m_burnout = parameters[2]
+    Iy_burnout = parameters[3]
+    Iy_liftoff = parameters[4]
+    xcg_liftoff = parameters[5]
+    xcg_burnout = parameters[6]
+    xt = parameters[7]
+    servo_definition = parameters[8]
+    Actuator_max = parameters[9] * DEG2RAD
+    Actuator_reduction = parameters[10]
+    u_initial_offset = parameters[11] * DEG2RAD
+    Actuator_weight_compensation = parameters[12]
+    wind = parameters[13]
+    wind_distribution = parameters[14]
+    launchrod_lenght = parameters[15]
+    Q_d.f = parameters[16] * DEG2RAD
     theta = Q_d.f
     wind_total = wind
+    m = m_liftoff
+    Iy = Iy_liftoff
     xcg = xcg_liftoff
+    rocket_mass_parameters = [m_liftoff, m_burnout, Iy_burnout, Iy_liftoff,
+                              xcg_liftoff, xcg_burnout]
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
@@ -293,7 +300,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     gui.savefile.read_motor_data(gui.param_file_tab.combobox[0].get())
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
-    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), xcg_liftoff, xcg_burnout)
+    rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(), rocket_mass_parameters)
     S = rocket.reference_area
     d = rocket.max_diam
 
@@ -483,7 +490,7 @@ def update_parameters():
     global i
     global aoa
     global wind
-    global thrust,t_launch, xcg
+    global thrust,t_launch, xcg, m, Iy
     global out,timer_disturbance,timer_U,U2,q_wind
     global cm_xcg, ca, S
     global actuator_angle
@@ -508,7 +515,7 @@ def update_parameters():
     v_loc_tot = [v_loc[0]-wind_loc[0], v_loc[1]-wind_loc[1]]
     aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
-    xcg = rocket.get_xcg(t, t_launch)
+    m, Iy, xcg = rocket.get_mass_parameters(t, t_launch)
     S = rocket.reference_area
     v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if rocket.use_fins_control is True:
@@ -752,9 +759,13 @@ def check_which_plot(s):
         return acc_glob[1]
     if s == "Angle of Atack":
         return aoa * RAD2DEG
-    if s == "Cp Position":
+    if s == "CP Position":
         return xa
-    if s == "Cg Position":
+    if s == "Mass":
+        return m
+    if s == "Iy":
+        return Iy
+    if s == "CG Position":
         return xcg
     if s == "Normal Force Coefficient":
         return cn

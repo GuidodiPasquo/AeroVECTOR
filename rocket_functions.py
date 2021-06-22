@@ -400,7 +400,7 @@ class Rocket:
         self.passive_cn = 0
         self.t_burnout = 5
 
-    def update_rocket(self, l0, xcg_liftoff, xcg_burnout):
+    def update_rocket(self, l0, mass_param):
         """
         Update the Rocket instance with the data in l0 and the cg position.
 
@@ -420,9 +420,13 @@ class Rocket:
         self.use_fins = l[1]
         self.fins_attached = [l[2], l[4]]
         self.use_fins_control = l[3]
-        self.xcg_liftoff = xcg_liftoff
-        self.xcg_burnout = xcg_burnout
-        self.xcg = xcg_liftoff
+        self.m_liftoff = mass_param[0]
+        self.m_burnout = mass_param[1]
+        self.Iy_liftoff = mass_param[2]
+        self.Iy_burnout = mass_param[3]
+        self.xcg_liftoff = mass_param[4]
+        self.xcg_burnout = mass_param[5]
+        self.xcg = self.xcg_liftoff
         self._update_rocket_dim(l[5])
         # In case one fin is not set up
         zero_fin = [[0.00001,0.0000],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0000]]
@@ -922,6 +926,20 @@ class Rocket:
         """
         return self.motor[0][-1]
 
+    def get_mass(self, t, t_launch):
+        x = t - t_launch
+        yp = [self.m_liftoff, self.m_burnout]
+        xp = [0, self.t_burnout]
+        self.m = np.interp(x, xp, yp)
+        return float(self.m)
+
+    def get_Iy(self, t, t_launch):
+        x = t - t_launch
+        yp = [self.Iy_liftoff, self.Iy_burnout]
+        xp = [0, self.t_burnout]
+        self.Iy = np.interp(x, xp, yp)
+        return float(self.Iy)
+
     def get_xcg(self, t, t_launch):
         """
         Input the current time and the time at which the motor ignited
@@ -945,6 +963,11 @@ class Rocket:
         self.xcg = np.interp(x, xp, yp)
         return float(self.xcg)
 
+    def get_mass_parameters(self, t, t_launch):
+        m = self.get_mass(t, t_launch)
+        Iy = self.get_Iy(t, t_launch)
+        xcg = self.get_xcg(t, t_launch)
+        return m, Iy, xcg
 
     def reset_variables(self):
         """Resets some variables of the rocket."""

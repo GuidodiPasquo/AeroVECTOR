@@ -566,7 +566,7 @@ class TabWithCanvas(Tab):
         self.active_point = 0
         self.active_point_fins = 0
         self.flag_hollow_body = False
-        self.aoa = 0.01
+        self.aoa = 0.00000001
         self.aoa_ctrl_fin = 0
         self.tvc_angle = 0
         self.current_motor = ""
@@ -838,12 +838,12 @@ class TabWithCanvas(Tab):
         # Creates a point where the CP is located
         # the slider can move it by modifying the aoa
         f = point_diameter / 2
-        self.xcg_point = float(gui_setup.param_file_tab.entry[2].get())
-        self.xcg_burnout = float(gui_setup.param_file_tab.entry[3].get())
+        mass_parameters = [0]*6
+        for i in range(6):
+            mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
         self._update_scale_limits()
-        self.rocket.update_rocket(self.get_configuration_destringed(), self.xcg_point, self.xcg_burnout)
+        self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
         v = self.transform_AoA_2_v(self.aoa) * self.velocity
-
         cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
                                                                actuator_angle=self.aoa_ctrl_fin)
         self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
@@ -864,7 +864,7 @@ class TabWithCanvas(Tab):
         return v
 
     def _update_scale_limits(self):
-        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[7]
+        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[9]
         if max_actuator_angle == "":
             max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
@@ -876,7 +876,7 @@ class TabWithCanvas(Tab):
         q = 0.5 * 1.225 * self.velocity**2
         aero_force = q * self.rocket.area_ref * cn
         thrust = self._get_motor_data()
-        xt = float(gui_setup.param_file_tab.entry[4].get())
+        xt = float(gui_setup.param_file_tab.entry[6].get())
         normal_force = thrust*np.sin(self.tvc_angle) + aero_force
         force_app_point = (aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt) / normal_force
         return normal_force, force_app_point
