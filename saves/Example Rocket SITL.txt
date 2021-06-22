@@ -1,6 +1,6 @@
 Motor[N] = Estes_D12.csv
-Mass Liftoff [kg] = 1
-Mass Burnout [kg] = 0.8
+Mass Liftoff [kg] = 0.451
+Mass Burnout [kg] = 0.390
 Iy Liftoff [kg*m] = 0.0662
 Iy Burnout [kg*m] = 0.0562
 Xcg Liftoff [m] = 0.55

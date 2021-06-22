@@ -1,10 +1,10 @@
 Motor[N] = AeroTech_G12.csv
 Mass Liftoff [kg] = 1
-Mass Burnout [kg] = 0.8
+Mass Burnout [kg] = 1
 Iy Liftoff [kg*m] = 0.0662
-Iy Burnout [kg*m] = 0.0562
+Iy Burnout [kg*m] = 0.0662
 Xcg Liftoff [m] = 0.55
-Xcg Burnout [m] = 0.51
+Xcg Burnout [m] = 0.55
 Xt [m] = 0.85
 Servo definition [º] = 1
 Max Actuator Angle [º] = 30
