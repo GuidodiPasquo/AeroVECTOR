@@ -1375,10 +1375,10 @@ def run_3d():
             # Creates a cg and cp vector with reference to the origin of the
             # 3d rocket (not the math model rocket)
             # Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
-            xcg_radius = loc2glob((L-xcg_3d[i]),0,theta_3d[i])
+            xcg_radius = loc2glob((L-xcg_3d[i+1]),0,theta_3d[i])
             xa_radius = loc2glob(xa_3d[i+1]-xa_3d[i],0,theta_3d[i])
             if rocket.use_fins_control is True:
-                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg_3d[i]),0,theta_3d[i])
+                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg_3d[i+1]),0,theta_3d[i])
 
             #CP and CG global vectors
             vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[0],
