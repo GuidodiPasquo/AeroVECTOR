@@ -51,7 +51,7 @@ import gui_setup as gui
 import rocket_functions as rkt
 import control
 import servo_lib
-import python_sitl
+import importlib
 
 rocket = rkt.Rocket()
 controller = control.Controller()
@@ -285,12 +285,12 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
-    global Camera_type, variable_fov, fov
+    global camera_type, variable_fov, fov
     toggle_3d = conf_3d[0]
     camera_shake_toggle = conf_3d[1]
     hide_forces = conf_3d[2]
     variable_fov = conf_3d[3]
-    Camera_type = conf_3d[4]
+    camera_type = conf_3d[4]
     slow_mo = conf_3d[5]
     force_scale = conf_3d[6]
     fov = conf_3d[7]
@@ -320,23 +320,24 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     average_T = T
 
     ## SITL
-    global Activate_SITL, use_noise, enable_python_sitl, port, baudrate
+    global Activate_SITL, use_noise, enable_python_sitl, module, port, baudrate
     global gyro_sd, acc_sd, alt_sd, gnss_pos_sd, gnss_vel_sd, gyro_st, acc_st
     global alt_st, gnss_st
     Activate_SITL = conf_sitl[0]
     use_noise = conf_sitl[1]
     enable_python_sitl = conf_sitl[2]
-    port = conf_sitl[3]
-    baudrate = conf_sitl[4]
-    gyro_sd = conf_sitl[5]
-    acc_sd = conf_sitl[6]
-    alt_sd = conf_sitl[7]
-    gnss_pos_sd = conf_sitl[8]
-    gnss_vel_sd = conf_sitl[9]
-    gyro_st = conf_sitl[10]
-    acc_st = conf_sitl[11]
-    alt_st = conf_sitl[12]
-    gnss_st = conf_sitl[13]
+    module = conf_sitl[3]
+    port = conf_sitl[4]
+    baudrate = conf_sitl[5]
+    gyro_sd = conf_sitl[6]
+    acc_sd = conf_sitl[7]
+    alt_sd = conf_sitl[8]
+    gnss_pos_sd = conf_sitl[9]
+    gnss_vel_sd = conf_sitl[10]
+    gyro_st = conf_sitl[11]
+    acc_st = conf_sitl[12]
+    alt_st = conf_sitl[13]
+    gnss_st = conf_sitl[14]
 
 
     global data_plot
@@ -678,7 +679,7 @@ def simulation():
     """
     """
     Only saves the points used in the animation.
-    (1000) is the rate of the animation, when you use slow_mo it drops.
+    (500) is the rate of the animation, when you use slow_mo it drops.
     To ensure fluidity at least a rate of 100 ish is recommended, so a
     rate of 1000 allows for 10 times slower animations.
     """
@@ -971,13 +972,14 @@ def run_sim_python_sitl():
     global parameters, conf_3d, conf_controller, setpoint
     global timer_run_sim,timer_run,setpoint, parachute, t_launch, u_servos
     global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
-    global parachute
+    global parachute, python_sitl
 
     timer_gyro = 0
     timer_acc = 0
     timer_alt = 0
     timer_gnss = 0
     parachute = 0
+    python_sitl = importlib.import_module("SITL Modules."+module)
     python_sitl_program = python_sitl.SITLProgram()
     python_sitl_program.everything_that_is_outside_functions()
     python_sitl_program.void_setup()
@@ -1058,8 +1060,17 @@ def run_simulation():
 ############################################ 3D 3D 3D 3D 3D
 ############################################ 3D 3D 3D 3D 3D
 ############################################ 3D 3D 3D 3D 3D
+break_flag_buttom = False
+pause_resume_flag = False
+skip_flag = False
+skip_ahead_flag = False
+skip_backwards_flag = False
+skip_steps = 10
 
 def run_3d():
+    global break_flag_buttom, pause_resume_flag, skip_flag, skip_ahead_flag
+    global skip_backwards_flag, skip_steps
+
     if toggle_3d is False:
         plt.draw()
         plt.show()
@@ -1255,9 +1266,6 @@ def run_3d():
                                                                       0,
                                                                       dim_z_floor/2))
 
-        motor_radius = 0.015
-
-
         def maximum_diameter(rocket_dim):
             d = 0
             for i in range(len(rocket_dim)):
@@ -1267,12 +1275,14 @@ def run_3d():
 
         # Create final components
         d = maximum_diameter(rocket_dim)
+        motor_radius = d / 4.5
+        motor_lenght = motor_radius * 10
         compound_rocket = (compound_list + fin_compound
                            + [fin_compound_control[0],fin_compound_control[2]])
         rocket_3d = vp.compound(compound_rocket)
         motor=vp.cone(pos=vp.vector(dim_x_floor/2,0,dim_z_floor/2),
                       axis=vp.vector(0,-1,0),radius=motor_radius,
-                      color=vp.color.red,length=0.15,make_trail=True)
+                      color=vp.color.red,length=motor_lenght,make_trail=True)
         control_fins = vp.compound([fin_compound_control[1],fin_compound_control[3]])
 
         launchrod_3d_pos_z = dim_z_floor/2 + d
@@ -1333,8 +1343,97 @@ def run_3d():
             T_fin_pos.visible=False
             T_fin_neg.visible=False
 
-        #Labels
-        labels=vp.canvas(width=1280,height=200,center=vp.vector(0,0,0),background=vp.color.white)
+        """Sliders #########################################################"""
+        break_flag_buttom = False
+        pause_resume_flag = False
+
+        vp.wtext(text="\n")
+        vp.wtext(text="                                                 "+
+                     "                                ")
+
+        def skip_back_coarse(b):
+            global skip_flag, skip_backwards_flag, skip_steps
+            skip_flag = True
+            skip_backwards_flag = True
+            skip_steps = int(coarse_step)
+        skip_back_coarse_button = vp.button(canvas=scene, bind=skip_back_coarse, text='   <<<<<   ',
+                                            color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
+
+        def skip_back_fine(b):
+            global skip_flag, skip_backwards_flag, skip_steps
+            skip_flag = True
+            skip_backwards_flag = True
+            skip_steps = int(fine_step)
+        skip_back_fine_button = vp.button(canvas=scene, bind=skip_back_fine, text='    <<<    ',
+                                          color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
+
+
+        def pause_resume(b):
+            global pause_resume_flag
+            pause_resume_flag = not pause_resume_flag
+        pause_resume_button = vp.button(canvas=scene, bind=pause_resume, text='  >||  ',
+                                        color=vp.vec(0,0,0), background=vp.vec(1,1,1))
+
+        def skip_ahead_fine(b):
+            global skip_flag, skip_ahead_flag, skip_steps
+            skip_flag = True
+            skip_ahead_flag = True
+            skip_steps = int(fine_step)
+        skip_ahead_fine_button = vp.button(canvas=scene, bind=skip_ahead_fine, text='    >>>    ',
+                                        color=vp.vec(1,1,1), background=vp.vec(0.273,0.588,0))
+
+        def skip_ahead_coarse(b):
+            global skip_flag, skip_ahead_flag, skip_steps
+            skip_flag = True
+            skip_ahead_flag = True
+            skip_steps = int(coarse_step)
+        skip_ahead_coarse_button = vp.button(canvas=scene, bind=skip_ahead_coarse,
+                                        text='   >>>>>   ',color=vp.vec(1,1,1),
+                                        background=vp.vec(0.273,0.588,0))
+        vp.wtext(text="                                                      "+
+                 "             ")
+        def exit_3d(b):
+            global break_flag_buttom
+            break_flag_buttom = True
+            print("3D Forced Stop")
+        exit_buttom = vp.button(canvas=scene, bind=exit_3d, text='   Finish    ',
+                                color=vp.vec(1,1,1), background=vp.vec(1,0,0))
+        vp.wtext(text="\n\n")
+
+        def slider_slow_mo_3d(s):
+            global slow_mo
+            slow_mo = s.value
+            slider_slow_mo_caption.text = ' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value)+"\n\n"
+        slider_slow_mo = vp.slider(canvas=scene, bind=slider_slow_mo_3d,
+                                   text='Slow Motion', min=1, max=10, value=slow_mo,
+                                   left=440, right=12)
+        slider_slow_mo_caption = vp.wtext(text=' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value)+"\n\n")
+
+        def slider_fov_3d(s):
+            global fov
+            fov = s.value
+            slider_fov_text.text = ' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    "
+            run_camera_3d(i,j)
+        slider_fov = vp.slider(canvas=scene, bind=slider_fov_3d,
+                                   text='Fov', min=0.05, max=1.2, value=fov,
+                                   left=440, right=12)
+        slider_fov_text = vp.wtext(text=' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    ")
+
+        def change_camera(m):
+            global camera_type
+            camera_type = camera_options[m.index]
+            run_camera_3d(i,j)
+
+        camera_options = ["Follow", "Fixed", "Follow Far"]
+        menu_camera = vp.menu(bind=change_camera, choices=camera_options,
+                              selected=camera_type)
+        vp.wtext(text="\n\n")
+
+
+
+
+        """Labels #########################################################"""
+        labels = vp.canvas(width=1280,height=200,center=vp.vector(0,0,0),background=vp.color.white)
 
         Setpoint_label = vp.label(canvas=labels, pos=vp.vector(-60,7,0),
                                   text="Setpoint = %.2f"+str(""),
@@ -1371,13 +1470,28 @@ def run_3d():
                               xoffset=0, zoffset=0, yoffset=0,
                               space=30, height=30, border=0,
                               font='sans',box=False,line=False,align ="left")
-        i=0
-        for i in range(len(theta_3d)-2):
-            vp.rate((1/average_T)/slow_mo) # For a smooth animation
 
+        def slider_time_3d(s):
+            s.value = t_3d[i]
+        slider_time = vp.slider(canvas=labels, bind=slider_time_3d,
+                                   text='t', min=t_3d[0], max=t_3d[-1], value=0,
+                                   pos=labels.title_anchor, length=1280)
+
+        t_total = t_3d[-3] - t_3d[0]
+        t_step = (t_3d[-1]-t_3d[0]) / len(t_3d)
+        coarse_step = 0.5 / t_step
+        fine_step = 0.01 / t_step
+
+        def run_3d_graphics(i,j):
             # How much to move each time-step , X and Z are the rocket's axes, not the world's
-            delta_pos_X=(position_3d[i+1][0]-position_3d[i][0])
-            delta_pos_Z=(position_3d[i+1][1]-position_3d[i][1])
+            delta_pos_X=(position_3d[j][0]-position_3d[i][0])
+            delta_pos_Z=(position_3d[j][1]-position_3d[i][1])
+
+            if rocket.use_fins_control is False:
+                Tmotor_pos.pos.y+=delta_pos_X
+                Tmotor_pos.pos.x+=delta_pos_Z
+                Tmotor_neg.pos.y+=delta_pos_X
+                Tmotor_neg.pos.x+=delta_pos_Z
 
             # Moving the rocket
             rocket_3d.pos.y+=delta_pos_X
@@ -1386,10 +1500,10 @@ def run_3d():
             # Creates a cg and cp vector with reference to the origin of the
             # 3d rocket (not the math model rocket)
             # Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
-            xcg_radius = loc2glob((L-xcg_3d[i+1]),0,theta_3d[i])
-            xa_radius = loc2glob(xa_3d[i+1]-xa_3d[i],0,theta_3d[i])
+            xcg_radius = loc2glob((L-xcg_3d[j]),0,theta_3d[i])
+            xa_radius = loc2glob(xa_3d[j]-xa_3d[i],0,theta_3d[i])
             if rocket.use_fins_control is True:
-                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg_3d[i+1]),0,theta_3d[i])
+                T_control_fin_radius = loc2glob((rkt.fin[1].cp-xcg_3d[j]),0,theta_3d[i])
 
             #CP and CG global vectors
             vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[0],
@@ -1400,32 +1514,30 @@ def run_3d():
                               0)
 
             # Rotate rocket from the CG
-            rocket_3d.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+            rocket_3d.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                              origin=vect_cg)
 
             # Move the motor together with the rocket
             motor.pos.y+=delta_pos_X
             motor.pos.x+=delta_pos_Z
-            motor.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+            motor.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                          origin=vect_cg)  # Rigid rotation with the rocket
             if rocket.use_fins_control is False:
                 # TVC mount rotation
-                motor.rotate((servo_3d[i+1]-servo_3d[i]),axis=vp.vector(0,0,-1))
+                motor.rotate((servo_3d[j]-servo_3d[i]),axis=vp.vector(0,0,-1))
 
             if rocket.use_fins_control is True:
                 control_fins.pos.y+=delta_pos_X
                 control_fins.pos.x+=delta_pos_Z
-                control_fins.rotate((theta_3d[i+1] - theta_3d[i]),
+                control_fins.rotate((theta_3d[j] - theta_3d[i]),
                                     axis=vp.vector(0,0,1),origin=vect_cg)
-                control_fins.rotate(servo_3d[i+1] - servo_3d[i],
+                control_fins.rotate(servo_3d[j] - servo_3d[i],
                                     axis=vp.vector(0,0,-1))
 
             # Motor Burnout, stops the red trail of the rocket
             if t_3d[i] > burnout_time + t_launch:
                 motor.visible=False
                 motor.make_trail=False
-                Tmotor_pos.visible=False
-                Tmotor_neg.visible=False
             else:
                 # Arrows are hit or miss, tried this to avoid them going in the
                 # wrong direction, didn't work
@@ -1439,20 +1551,18 @@ def run_3d():
                         Tmotor_pos.visible = True
                         Tmotor_neg.visible = False
                     # Displacements and rotations of the arrows
-                    Tmotor_pos.pos.y+=delta_pos_X
-                    Tmotor_pos.pos.x+=delta_pos_Z
-                    Tmotor_pos.rotate((theta_3d[i+1]-theta_3d[i]),
-                                      axis=vp.vector(0,0,1),
-                                      origin=vect_cg)
                     Tmotor_pos.axis=vp.vector(aux,0,0)
-                    Tmotor_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1))
-                    Tmotor_neg.pos.y+=delta_pos_X
-                    Tmotor_neg.pos.x+=delta_pos_Z
-                    Tmotor_neg.rotate((theta_3d[i+1]-theta_3d[i]),
-                                      axis=vp.vector(0,0,1),
-                                      origin=vect_cg)
+                    Tmotor_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
+                                     origin=Tmotor_pos.pos)
+                    Tmotor_pos.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
+                                     origin=vect_cg)
                     Tmotor_neg.axis=vp.vector(aux,0,0)
-                    Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1))
+                    Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
+                                     origin=Tmotor_neg.pos)
+                    Tmotor_neg.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
+                                     origin=vect_cg)
+                motor.visible=True
+                motor.make_trail=True
 
             #Normal force arrow
             # Same as before, makes the one active visible
@@ -1468,14 +1578,14 @@ def run_3d():
             Nforce_pos.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_pos.pos)
-            Nforce_pos.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+            Nforce_pos.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                               origin=vect_cg)
             Nforce_neg.pos.y+=delta_pos_X - xa_radius[0]
             Nforce_neg.pos.x+=delta_pos_Z - xa_radius[1]
             Nforce_neg.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_neg.pos)
-            Nforce_neg.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+            Nforce_neg.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                               origin=vect_cg)
 
             if rocket.use_fins_control is True:
@@ -1486,19 +1596,19 @@ def run_3d():
                     T_fin_pos.visible = True
                     T_fin_neg.visible = False
                 # Displacements and rotations
-                T_fin_pos.pos.y+=delta_pos_X - xa_radius[0]*0
-                T_fin_pos.pos.x+=delta_pos_Z - xa_radius[1]*0
+                T_fin_pos.pos.y+=delta_pos_X
+                T_fin_pos.pos.x+=delta_pos_Z
                 T_fin_pos.axis=vp.vector(fin_force_3d[i]*force_scale,0,0)
                 T_fin_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                                  origin=T_fin_pos.pos)
-                T_fin_pos.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+                T_fin_pos.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                                  origin=vect_cg)
-                T_fin_neg.pos.y+=delta_pos_X - xa_radius[0]*0
-                T_fin_neg.pos.x+=delta_pos_Z - xa_radius[1]*0
+                T_fin_neg.pos.y+=delta_pos_X
+                T_fin_neg.pos.x+=delta_pos_Z
                 T_fin_neg.axis=vp.vector(fin_force_3d[i]*force_scale,0,0)
                 T_fin_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                                  origin=T_fin_neg.pos)
-                T_fin_neg.rotate((theta_3d[i+1]-theta_3d[i]),axis=vp.vector(0,0,1),
+                T_fin_neg.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
                                  origin=vect_cg)
 
             if hide_forces is True:
@@ -1517,6 +1627,7 @@ def run_3d():
                 Tmotor_pos.visible = False
                 Tmotor_neg.visible = False
 
+        def run_camera_3d(i,j):
             #Camera
             if camera_shake_toggle is True:
                 camera_shake=loc2glob(v_glob_3d[i][0],v_glob_3d[i][1],theta_3d[i])
@@ -1524,16 +1635,17 @@ def run_3d():
                 camera_shake = [0,0]
 
             #Follows almost 45 deg up
-            if Camera_type=="Follow":
+            if camera_type=="Follow":
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
                                              rocket_3d.pos.y+1.2-camera_shake[0]/500,
                                              rocket_3d.pos.z-1)
                 scene.camera.axis=vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                             rocket_3d.pos.y-scene.camera.pos.y,
                                             rocket_3d.pos.z-scene.camera.pos.z)
+                scene.fov = fov*DEG2RAD*70
 
             # Simulates someone in the ground
-            elif Camera_type=="Fixed":
+            elif camera_type=="Fixed":
                 if variable_fov == True:
                     scene.fov=fov*DEG2RAD/(0.01/10 * np.sqrt(position_3d[i][0]**2
                                                              + position_3d[i][1]**2)
@@ -1546,7 +1658,7 @@ def run_3d():
                                               rocket_3d.pos.z-scene.camera.pos.z)
 
             # Lateral camera, like if it was 2D
-            elif Camera_type=="Follow Far":
+            elif camera_type=="Follow Far":
                 scene.fov=fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
                                              rocket_3d.pos.y+0.0-camera_shake[0]/200,
@@ -1568,5 +1680,49 @@ def run_3d():
             Position_label.text = ("Position => " + "Altitude = "
             + str(round(position_3d[i][0],2)) + "m , Distance Downrange = " + str(round(position_3d[i][1],2)) + "m")
             Time_label.text = "Time = " + str(round(t_3d[i],3))
+
+
+        i=0
+        j=1
+        list_length = len(theta_3d)-2
+        while True:
+            play_video = skip_flag is False and pause_resume_flag is False and i < list_length
+            slider_time_3d(slider_time)
+            if play_video is True:
+                vp.rate(len(t_3d)/t_total/slow_mo)
+                run_3d_graphics(i,j)
+                run_camera_3d(i,j)
+                i+=1
+                j+=1
+            if skip_flag is True:
+                if skip_ahead_flag is True:
+                    for t in range(skip_steps):
+                        if i >= list_length-10:
+                            break
+                        run_3d_graphics(i,j)
+                        run_camera_3d(i,j)
+                        i+=1
+                        j+=1
+                    skip_flag = False
+                    skip_ahead_flag = False
+                if skip_backwards_flag == True:
+                    for t in range(skip_steps):
+                        if i <= 5:
+                            break
+                        i-=1
+                        j-=1
+                        run_3d_graphics(j,i)
+                        run_camera_3d(j,i)
+                    motor.clear_trail()
+                    skip_flag = False
+                    skip_backwards_flag = False
+            if break_flag_buttom == True:
+                break
+
         plt.draw()
         plt.show()
+
+
+
+
+

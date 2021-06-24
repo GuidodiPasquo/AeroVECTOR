@@ -1,8 +1,8 @@
 Motor[N] = AeroTech_G12.csv
 Mass Liftoff [kg] = 1
-Mass Burnout [kg] = 0.91
-Iy Liftoff [kg*m] = 0.0662
-Iy Burnout [kg*m] = 0.0562
+Mass Burnout [kg] = 0.8
+Iy Liftoff [kg*m^2] = 0.0662
+Iy Burnout [kg*m^2] = 0.0562
 Xcg Liftoff [m] = 0.55
 Xcg Burnout [m] = 0.51
 Xt [m] = 0.85
@@ -45,6 +45,7 @@ Sim Delta T [s] = 0.0025
 Activate_SITL=True
 Use Sensor Noise=True
 Python SITL=True
+File=example_python_sitl
 Port=COM3
 Baudrate=1000000
 Gyroscope SD=1
@@ -78,6 +79,6 @@ Fins_s
 1,0.033
 Fins_c
 0.2,0.033
-0.23,0.08
-0.25,0.08
+0.24,0.07
+0.25,0.07
 0.255,0.033

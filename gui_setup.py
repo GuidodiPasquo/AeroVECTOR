@@ -96,6 +96,7 @@ def create_file_tab(notebook):
             fun.Tab.update_active_file_label(savefile.name)
             param_file_tab.depopulate()
             param_file_tab.populate(savefile.get_parameters())
+            draw_rocket_tab.depopulate()
             draw_rocket_tab.populate(savefile.get_rocket_dim())
             conf_3d_tab.depopulate()
             conf_3d_tab.change_state()
@@ -369,7 +370,7 @@ def create_draw_rocket_tab(notebook):
         # Populates the entries with a "0" area fin
         for i in range(len(draw_rocket_tab.entry)):
             draw_rocket_tab.entry[i].delete(0,15)
-            zero_fin = ["0.0001,0.0000","0.0001,0.0001","0.0002,0.0001","0.0002,0.0000"]
+            zero_fin = ["0.0001,0.0","0.0001,0.0001","0.0002,0.0001","0.0002,0.0"]
             draw_rocket_tab.entry[i].insert(0, zero_fin[i])
         draw_rocket_tab.draw_rocket()
 
@@ -430,6 +431,9 @@ def create_sitl_tab(notebook):
             fun.move_tk_object(conf_sitl_tab.entry[i+7], 7+i, 1)
 
     conf_sitl_tab.create_tab(notebook, "SITL")
+    combobox_options = [files.get_sitl_modules_names()]
+    names_combobox = [""]
+    conf_sitl_tab.create_combobox(combobox_options, names_combobox, 5, 0, s="EW")
     checkboxes = ["Activate Software in the Loop", "Use Simulated Sensor Noise", "Python SITL"]
     names_entry = ["Port", "Baudrate",
                      "Gyroscope SD [º] = ", "Accelerometer SD [g] = ","Altimeter SD [m] = ",
@@ -461,16 +465,12 @@ def create_sitl_tab(notebook):
         if conf_sitl_tab.checkbox[1].cget("state") == "disabled":
             for i in range(5):
                 conf_sitl_tab.entry[i+2].config(state="disable")
-
-
         if conf_sitl_tab.checkbox_status[2].get() == "False":
             for i in range(2):
                 conf_sitl_tab.entry[i+5].config(state="disable")
         if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
             for i in range(2):
                 conf_sitl_tab.entry[i+5].config(state="disable")
-
-
 
     def change_state_python_sitl():
         if conf_sitl_tab.checkbox_status[2].get() == "False":
@@ -478,18 +478,20 @@ def create_sitl_tab(notebook):
                 conf_sitl_tab.entry[i].config(state="normal")
             for i in range(4):
                 conf_sitl_tab.entry[i+7].config(state="disable")
+            conf_sitl_tab.combobox[0].config(state="disable")
         else:
             for i in range(2):
                 conf_sitl_tab.entry[i].config(state="disable")
             for i in range(4):
                 conf_sitl_tab.entry[i+7].config(state="normal")
+            conf_sitl_tab.combobox[0].config(state="normal")
         if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
             for i in range(2):
                 conf_sitl_tab.entry[i].config(state="disable")
             for i in range(4):
                 conf_sitl_tab.entry[i+7].config(state="disable")
+            conf_sitl_tab.combobox[0].config(state="disable")
         change_state_sensor_noise()
-
 
     conf_sitl_tab.checkbox[2].config(command=change_state_python_sitl)
     conf_sitl_tab.checkbox[1].config(command=change_state_sensor_noise)

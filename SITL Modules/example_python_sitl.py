@@ -6,6 +6,7 @@ Created on Sat Jun 19 15:17:35 2021
 """
 import python_sitl_functions as Sim
 import numpy as np
+import importlib
 class SITLProgram:
     def __init__(self):
         pass
@@ -15,15 +16,17 @@ class SITLProgram:
     gyro, accx, accz, alt, pos_gnss, vel_gnss = Sim.getSimData()
     Sim.sendCommand(servo, parachute)
     Sim.plot_variable(variable, number) (from 1 to 5 for diferent plots)
+    -->
+    -->
+    -->
+    -->
+    -->
+    -->
+    -->
+    -->
+    -->
+    -->
     """
-
-
-
-
-
-
-
-
     """!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"""
 
     def everything_that_is_outside_functions(self):
@@ -51,6 +54,9 @@ class SITLProgram:
         self.alt_prev = 0
         self.pos_corrected = [0,0]
         self.pos_gnss_prev = 0
+        module = "example_comp_module"
+        self.example_module = importlib.import_module("SITL Modules.Complemetary Modules."
+                                                      +module)
 
 
 
@@ -58,7 +64,8 @@ class SITLProgram:
 
 
     def void_setup(self):
-        pass
+        self.example_module.test_complementary_module_import()
+
 
 
 

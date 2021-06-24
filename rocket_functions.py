@@ -429,7 +429,7 @@ class Rocket:
         self.xcg = self.xcg_liftoff
         self._update_rocket_dim(l[5])
         # In case one fin is not set up
-        zero_fin = [[0.00001,0.0000],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0000]]
+        zero_fin = [[0.00001,0.0],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0]]
         fin[1].update(zero_fin) # In case there are no control fins
         if self.use_fins is True:
             fin[0].update(l[6], self.fins_attached[0])

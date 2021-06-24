@@ -36,7 +36,6 @@ def get_save_names():
         filenames[i] = filename[:-4]
     return copy.deepcopy(filenames)
 
-
 def get_motor_names():
     """
     Returns a list with the names of the motor files in the folder .\\motors.
@@ -47,6 +46,22 @@ def get_motor_names():
         Motor names.
     """
     return os.listdir(".\\motors")
+
+def get_sitl_modules_names():
+    """
+    Returns a list with the names of the motor files in the folder .\\motors.
+
+    Returns
+    -------
+    List of strings
+        SITL modules names.
+    """
+    filenames = os.listdir(".\\SITL Modules")
+    names = []
+    for i, filename in enumerate(filenames):
+        if filename[-1] == "y":
+            names.append(filename[:-3])
+    return copy.deepcopy(names)
 
 
 class SaveFile:
@@ -66,7 +81,7 @@ class SaveFile:
     """
 
     def __init__(self):
-        self.parameter_names = ["Motor[N] = ",
+        self.parameter_names = ["Motor = ",
                                 "Mass Liftoff [kg] = ", "Mass Burnout [kg] = ",
                                 "Iy Liftoff [kg*m] = ", "Iy Burnout [kg*m] = ",
                                 "Xcg Liftoff [m] = ","Xcg Burnout [m] = ",
@@ -84,11 +99,13 @@ class SaveFile:
                                       "Input = ", "Input time = ", "Launch Time = ",
                                       "Servo Sample Time [s] = ", "Controller Sample Time [s] = ",
                                       "Maximum Sim Duration [s] = ", "Sim Delta T [s] = "]
-        self.conf_sitl_names = ["###=#", "Activate_SITL=", "Use Sensor Noise=", "Python SITL=",
+        self.conf_sitl_names = ["###=#", "Activate_SITL=",
+                                "Use Sensor Noise=", "Python SITL=", "File=",
                                 "Port=", "Baudrate=", "Gyroscope SD=",
-                                "Accelerometer SD=", "Altimeter SD=", "GNSS Pos SD=", "GNSS Vel SD=",
-                                "Gyroscope ST=", "Accelerometer ST=", "Altimeter ST=",
-                                "GNSS ST="]
+                                "Accelerometer SD=", "Altimeter SD=",
+                                "GNSS Pos SD=", "GNSS Vel SD=",
+                                "Gyroscope ST=", "Accelerometer ST=",
+                                "Altimeter ST=", "GNSS ST="]
         self.conf_plot_names = ["###=#", "Frist_plot=", "Second_plot=", "Third_plot=",
                                 "Fourth_plot=", "Fifth_plot="]
         self.rocket_dim_names = ["###=#"]
@@ -217,7 +234,8 @@ class SaveFile:
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
                                 '0.136', '1', '0', '30','20',"0.5","0", '0.02',
                                 '0.01', "30", "0.001"]
-        self.conf_sitl = ["False","False","False","COM3","115200","0","0","0","0","0",
+        self.conf_sitl = ["False","False","False","example_python_sitl",
+                          "COM3","115200","0","0","0","0","0",
                           "0.0025", "0.0025", "0.005", "1"]
         self.conf_plots = ["Pitch Angle", "Setpoint", "Actuator deflection",
                            "Off", "Off"]
@@ -357,6 +375,7 @@ class SaveFile:
     def check_and_correct_v20_save(self):
         if self.check_file("Mass [kg]", "Iy"):
             for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
+
                 if line.startswith("Mass"):
                     print("Mass Liftoff [kg] = 1")
                     print("Mass Burnout [kg] = 0.8")
@@ -366,6 +385,9 @@ class SaveFile:
                     print("Xcg Burnout [m] = 0.51")
                 elif line.startswith("Iy") or line.startswith("Xcg"):
                     pass
+                elif line.startswith("Python SITL="):
+                    print(line, end ='')
+                    print("File=example_python_sitl")
                 else:
                     print(line, end ='')
 

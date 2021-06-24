@@ -577,7 +577,7 @@ class TabWithCanvas(Tab):
         self.scale_y = 1
         self.centering = 0
         self.choose_cg = 2
-        self.flight_time = 0
+        self.flight_time = 0.01
 
     def _sort(self, l):
         """
@@ -864,11 +864,18 @@ class TabWithCanvas(Tab):
         return v
 
     def _update_scale_limits(self):
-        max_actuator_angle = gui_setup.param_file_tab.get_configuration_destringed()[9]
+        data = gui_setup.param_file_tab.get_configuration_destringed()
+        max_actuator_angle = data[9]
+        servo_def = data[8]
+        reduction = data[10]
+        if reduction != 0:
+            definition = servo_def/reduction
+        else:
+            definition = 1
         if max_actuator_angle == "":
             max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
-                                    to=max_actuator_angle)
+                                    to=max_actuator_angle, resolution=definition)
         self.scale_time.config(to=self.rocket.t_burnout)
 
 
@@ -1093,6 +1100,9 @@ class TabWithCanvas(Tab):
             else:
                 self.tvc_angle = float(a)/57.295
                 self.aoa_ctrl_fin = 0
+            if float(gui_setup.param_file_tab.entry[8].get()) == 0:
+                self.tvc_angle = 0
+                self.aoa_ctrl_fin = 0
             self.draw_rocket()
 
         self.scale_act_angle = tk.Scale(self.tab, from_=-45, to=45,
@@ -1114,10 +1124,10 @@ class TabWithCanvas(Tab):
             self.flight_time = float(a)
             self.draw_rocket()
 
-        self.scale_time = tk.Scale(self.tab, from_=0.1, to=15,
+        self.scale_time = tk.Scale(self.tab, from_=0.01, to=15,
                              orient=tk.HORIZONTAL, command=slider_time, length=150,
-                             resolution = 0.1)
-        self.scale_time.set(0.1)
+                             resolution=0.01)
+        self.scale_time.set(0.01)
         self.scale_time.grid(row=18, column=3)
         tk.Label(self.tab, text="Time [s]").grid(row=19, column=3)
 
