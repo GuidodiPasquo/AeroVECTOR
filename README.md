@@ -83,6 +83,7 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 - *Camera Shake* moves the camera based on the accelerations of the rocket.
 - *Hide Forces* hides the force arrows.
 - *Variable fov* decreases the fov variably, maintaining the rocket of approximately the same size during the flight.
+- *Hide CG* hides a ball that represents the CG.
 - *Camera type*
   - *"Follow"* -> Follows the rocket.
   - *"Fixed"* -> Looks from the ground.
