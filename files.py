@@ -89,7 +89,7 @@ class SaveFile:
                                 "Max Actuator Angle [º] = ", "Actuator Reduction = ",
                                 "Initial Misalignment [º] = ", "Servo Compensation = ",
                                 "Wind [m/s] = ", "Wind Gust = ", "Launch Rod Length = ",
-                                "Launch Rod Angle = "]
+                                "Launch Rod Angle [º] = ","Motor Misalignment [º] = "]
         self.conf_3d_names = ["###=#", "toggle_3D=", "camera_shake_toggle=",
                               "hide_forces=", "variable_fov=", "Camera_type=",
                               "slow_mo=", "force_scale=", "fov="]
@@ -229,7 +229,7 @@ class SaveFile:
         self.update_name(n)
         self.parameters = ["Estes_D12.csv", '0.451', '0.351', '0.0662', '0.0601',
                            '0.55', "0.51","0.85", '1', '10', '5', '2',"2.1",
-                           '2', '0.1', "0", "0"]
+                           '2', '0.1', "0", "0", "0"]
         self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
                                 '0.136', '1', '0', '30','20',"0.5","0", '0.02',
@@ -237,7 +237,7 @@ class SaveFile:
         self.conf_sitl = ["False","False","False","example_python_sitl",
                           "COM3","115200","0","0","0","0","0",
                           "0.0025", "0.0025", "0.005", "1"]
-        self.conf_plots = ["Pitch Angle", "Setpoint", "Actuator deflection",
+        self.conf_plots = ["Pitch Angle [º]", "Setpoint [º]", "Actuator deflection [º]",
                            "Off", "Off"]
         self.rocket_dim = ["True","False","True","False","False",
                            "0,0","0.2,0.066","1,0.066",
@@ -356,7 +356,8 @@ class SaveFile:
 
     def check_and_correct_v11_save(self):
         if self.check_file("Wind Gust =", "###"):
-            for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
+            for line in fileinput.input(".\\saves\\"+self.name+".txt", 
+                                        inplace=1):
                 print(line, end ='')
                 if line.startswith("Wind Gust"):
                     print("Launch Rod Length = 0")
@@ -374,20 +375,24 @@ class SaveFile:
 
     def check_and_correct_v20_save(self):
         if self.check_file("Mass [kg]", "Iy"):
-            for line in fileinput.input(".\\saves\\"+self.name+".txt", inplace=1):
+            for line in fileinput.input(".\\saves\\"+self.name+".txt", 
+                                        inplace=1):
 
                 if line.startswith("Mass"):
-                    print("Mass Liftoff [kg] = 1")
-                    print("Mass Burnout [kg] = 0.8")
+                    print("Mass Liftoff [kg] = 0.452")
+                    print("Mass Burnout [kg] = 0.390")
                     print("Iy Liftoff [kg*m^2] = 0.0662")
-                    print("Iy Burnout [kg*m^2] = 0.0562")
+                    print("Iy Burnout [kg*m^2] = 0.0601")
                     print("Xcg Liftoff [m] = 0.55")
                     print("Xcg Burnout [m] = 0.51")
                 elif line.startswith("Iy") or line.startswith("Xcg"):
                     pass
+                elif line.startswith("Launch Rod Angle"): 
+                    print(line, end ='')
+                    print("Motor Misalignment = 0")
                 elif line.startswith("Python SITL="):
                     print(line, end ='')
-                    print("File=example_python_sitl")
+                    print("File=example_python_sitl")                    
                 else:
                     print(line, end ='')
 

@@ -14,7 +14,8 @@ Servo Compensation = 2.1
 Wind [m/s] = 2
 Wind Gust = 0.1
 Launch Rod Length = 0
-Launch Rod Angle = 0
+Launch Rod Angle [º] = 0
+Motor Misalignment [º] = 0.1
 ###=#
 toggle_3D=True
 camera_shake_toggle=False
@@ -58,11 +59,11 @@ Accelerometer ST=0.0025
 Altimeter ST=0.005
 GNSS ST=1
 ###=#
-Frist_plot=Pitch Angle
-Second_plot=Setpoint
-Third_plot=Actuator deflection
-Fourth_plot=Altitude
-Fifth_plot=Total Velocity
+Frist_plot=Pitch Angle [º]
+Second_plot=Setpoint [º]
+Third_plot=Actuator deflection [º]
+Fourth_plot=Altitude [m]
+Fifth_plot=Total Velocity [m/s]
 ###=#
 True
 True

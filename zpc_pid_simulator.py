@@ -256,7 +256,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global thrust, burnout_time, thrust_curve, max_thrust, average_thrust
     global m, m_liftoff, m_burnout, Iy, Iy_liftoff, Iy_burnout, d, xcg
     global xcg_liftoff, xcg_burnout, xt
-    global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset
+    global k1, k2, k3, Actuator_max, Actuator_reduction, u_initial_offset, motor_offset
     global wind, wind_distribution, launchrod_lenght, theta, wind_total
 
     m_liftoff = parameters[1]
@@ -275,6 +275,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     wind_distribution = parameters[14]
     launchrod_lenght = parameters[15]
     Q_d.f = parameters[16] * DEG2RAD
+    motor_offset = parameters[17] * DEG2RAD
     theta = Q_d.f
     wind_total = wind
     m = m_liftoff
@@ -367,6 +368,7 @@ def reset_variables():
     theta = 0
     ca = 0
     aoa = 0
+    xa = 0
     U = 0
     W = 0
     Q = 0
@@ -521,11 +523,10 @@ def update_parameters():
     v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
-        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q, position_global[0], actuator_angle)
+        fin_angle = actuator_angle + u_initial_offset
+        cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q, position_global[0], fin_angle)
     else:
         cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q, position_global[0])
-    if abs(xa) > 1.5 * rocket.length:
-        xa = 1.5 * rocket.length * np.sign(xa)
     # Computes the dynamic pressure
     rho = rocket.rho
     q = 0.5 * rho * v_modulus**2
@@ -590,25 +591,22 @@ def simulation():
         else:
             launchrod_lock = 1
         if rocket.use_fins_control is False:
+            motor_angle = actuator_angle + u_initial_offset + motor_offset
             # Longitudinal acceleration (local)
-            accx = ((thrust * np.cos(actuator_angle+u_initial_offset) + m*g_loc[0] - q*S*ca)
+            accx = ((thrust * np.cos(motor_angle) + m*g_loc[0] - q*S*ca)
                     / m - W*Q*v_d)
             # Transversal acceleration (local)
-            accz = ((thrust * np.sin(actuator_angle+u_initial_offset) + m*g_loc[1] + q*S*cn)
+            accz = ((thrust * np.sin(motor_angle) + m*g_loc[1] + q*S*cn)
                     / m + U*Q*v_d) * launchrod_lock
-            accQ = ((thrust * np.sin(actuator_angle+u_initial_offset) * (xt-xcg)
-                     + S * q * d * cm_xcg)
-                     / Iy) * launchrod_lock
+            accQ = ((thrust * np.sin(motor_angle) * (xt-xcg)
+                     + S*q*d*cm_xcg) / Iy) * launchrod_lock
         else:
+            motor_angle = motor_offset
             # Longitudinal acceleration (local)
-            accx = ((thrust * np.cos(u_initial_offset) + m*g_loc[0] - q*S*ca)
-                    / m - W*Q*v_d)
+            accx = (thrust * np.cos(motor_angle) + m*g_loc[0] - q*S*ca) / m - W*Q*v_d
             # Transversal acceleration (local)
-            accz = ((thrust * np.sin(u_initial_offset) + m*g_loc[1] + q*S*cn)
-                    / m + U*Q*v_d) * launchrod_lock
-            accQ = ((thrust * np.sin(u_initial_offset) * (rocket.length-xcg)
-                     + S * q * d * cm_xcg)
-                     / Iy) * launchrod_lock
+            accz = ((thrust * np.sin(motor_angle) + m*g_loc[1] + q*S*cn) / m + U*Q*v_d) * launchrod_lock
+            accQ = ((thrust * np.sin(motor_angle) * (xt-xcg) + S*q*d*cm_xcg) / Iy) * launchrod_lock
             fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle
 
     # Updates the variables
@@ -727,46 +725,66 @@ def set_setpoint(inp):
         setpoint = 0
     return setpoint
 
+def saturate_plot_xa_force_app(v):
+    if abs(v) > 3 * rocket.length:
+        v_plot = 3 * rocket.length * np.sign(v)
+    else:
+        v_plot = v
+    return v_plot
+
+def calculate_force_app_point():
+    global actuator_angle
+    aero_force = q * rocket.area_ref * cn
+    if rocket.use_fins_control is False:
+        normal_force = thrust*np.sin(actuator_angle) + aero_force
+        force_app_point = (aero_force*xa + thrust*np.sin(actuator_angle) * xt) / normal_force
+    else:
+        normal_force = aero_force
+        force_app_point = (aero_force*xa) / normal_force
+    force_app_point = saturate_plot_xa_force_app(force_app_point)
+    return force_app_point
+
 def check_which_plot(s):
     global okp, oki, okd, totError
     global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
     global actuator_angle
     global var_sitl_plot
-    if s == "Setpoint":
+    if s == "Setpoint [º]":
         return setpoint * RAD2DEG
-    if s == "Pitch Angle":
+    if s == "Pitch Angle [º]":
         return theta * RAD2DEG
-    if s == "Actuator deflection":
+    if s == "Actuator deflection [º]":
         return actuator_angle * RAD2DEG
-    if s == "Pitch Rate":
-        return Q*RAD2DEG
-    if s == "Local Velocity X":
+    if s == "Pitch Rate [º/s]":
+        return Q * RAD2DEG
+    if s == "Local Velocity X [m/s]":
         return v_loc[0]
-    if s == "Local Velocity Z":
+    if s == "Local Velocity Z [m/s]":
         return v_loc[1]
-    if s == "Global Velocity X":
+    if s == "Global Velocity X [m/s]":
         return v_glob[0]
-    if s == "Global Velocity Z":
+    if s == "Global Velocity Z [m/s]":
         return v_glob[1]
-    if s == "Total Velocity":
+    if s == "Total Velocity [m/s]":
         return np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
-    if s == "Local Acc X":
+    if s == "Local Acc X [m^2/s]":
         return accx
-    if s == "Local Acc Z":
+    if s == "Local Acc Z [m^2/s]":
         return accz
-    if s == "Global Acc X":
+    if s == "Global Acc X [m^2/s]":
         return acc_glob[0]
-    if s == "Global Acc Z":
+    if s == "Global Acc Z [m^2/s]":
         return acc_glob[1]
-    if s == "Angle of Atack":
+    if s == "Angle of Atack [º]":
         return aoa * RAD2DEG
-    if s == "CP Position":
-        return xa
-    if s == "Mass":
+    if s == "CP Position [m]":
+        xa_plot = saturate_plot_xa_force_app(xa)
+        return xa_plot
+    if s == "Mass [kg]":
         return m
-    if s == "Iy":
+    if s == "Iy [kg*m^2]":
         return Iy
-    if s == "CG Position":
+    if s == "CG Position [m]":
         return xcg
     if s == "Normal Force Coefficient":
         return cn
@@ -774,9 +792,12 @@ def check_which_plot(s):
         return ca
     if s == "Moment Coefficient":
         return cm_xcg
-    if s == "Altitude":
+    if s == "Force Application Point [m]":
+        force_app_point = calculate_force_app_point()
+        return force_app_point
+    if s == "Altitude [m]":
         return position_global[0]
-    if s == "Distance Downrange":
+    if s == "Distance Downrange [m]":
         return position_global[1]
     if s == "Proportional Contribution":
         return okp * RAD2DEG
@@ -786,17 +807,17 @@ def check_which_plot(s):
         return okd * RAD2DEG
     if s == "Total Error":
         return totError * RAD2DEG
-    if s == "Simulated Gyro":
+    if s == "Simulated Gyro [º/s]":
         return send_gyro
-    if s == "Simulated Acc X":
+    if s == "Simulated Acc X [m^2/s]":
         return send_accx
-    if s == "Simulated Acc Z":
+    if s == "Simulated Acc Z [m^2/s]":
         return send_accz
     if s == "Simulated Altimeter":
         return send_alt
-    if s == "Simulated GNSS Position":
+    if s == "Simulated GNSS Position [m]":
         return send_gnss_pos
-    if s == "Simulated GNSS Velocity":
+    if s == "Simulated GNSS Velocity [m/s]":
         return send_gnss_vel
     if s == "Variable SITL 1":
         return var_sitl_plot[0]
@@ -1296,7 +1317,10 @@ def run_3d():
         launchrod_3d.rotate(theta_3d[1],axis=vp.vector(0,0,1), origin=vect_cg)
 
         motor.trail_color=vp.color.red
-        # motor.rotate(u_initial_offset,axis=vp.vector(0,0,-1))
+        if rocket.use_fins_control is True:
+            motor.rotate(motor_offset,axis=vp.vector(0,0,-1))
+        else:
+            motor.rotate(motor_offset + u_initial_offset,axis=vp.vector(0,0,-1))
 
         if rocket.use_fins is True:
             sep = rkt.fin[0].dim[1][1] - rocket.rocket_dim[-1][1]/2
@@ -1369,8 +1393,16 @@ def run_3d():
 
 
         def pause_resume(b):
-            global pause_resume_flag
+            global pause_resume_flag            
+            if pause_resume_flag == False:
+                pause_resume_button.background=vp.vec(0.35,0.35,0.35)
+                pause_resume_button.color=vp.vec(1,1,1)
+            else:
+                pause_resume_button.color=vp.vec(0,0,0)
+                pause_resume_button.background=vp.vec(1,1,1)
             pause_resume_flag = not pause_resume_flag
+                
+            
         pause_resume_button = vp.button(canvas=scene, bind=pause_resume, text='  >||  ',
                                         color=vp.vec(0,0,0), background=vp.vec(1,1,1))
 
@@ -1477,21 +1509,17 @@ def run_3d():
                                    text='t', min=t_3d[0], max=t_3d[-1], value=0,
                                    pos=labels.title_anchor, length=1280)
 
-        t_total = t_3d[-3] - t_3d[0]
-        t_step = (t_3d[-1]-t_3d[0]) / len(t_3d)
-        coarse_step = 0.5 / t_step
-        fine_step = 0.01 / t_step
+        """Rotations and displacements #####################################"""
 
         def run_3d_graphics(i,j):
             # How much to move each time-step , X and Z are the rocket's axes, not the world's
             delta_pos_X=(position_3d[j][0]-position_3d[i][0])
             delta_pos_Z=(position_3d[j][1]-position_3d[i][1])
-
-            if rocket.use_fins_control is False:
-                Tmotor_pos.pos.y+=delta_pos_X
-                Tmotor_pos.pos.x+=delta_pos_Z
-                Tmotor_neg.pos.y+=delta_pos_X
-                Tmotor_neg.pos.x+=delta_pos_Z
+            
+            Tmotor_pos.pos.y+=delta_pos_X
+            Tmotor_pos.pos.x+=delta_pos_Z
+            Tmotor_neg.pos.y+=delta_pos_X
+            Tmotor_neg.pos.x+=delta_pos_Z
 
             # Moving the rocket
             rocket_3d.pos.y+=delta_pos_X
@@ -1541,26 +1569,29 @@ def run_3d():
             else:
                 # Arrows are hit or miss, tried this to avoid them going in the
                 # wrong direction, didn't work
-                aux=np.sin(servo_3d[i])*thrust_3d[i]*force_scale
+                
                 if rocket.use_fins_control is False:
-                    # Makes visible one arrow or the other, be it left or right
-                    if aux > 0:
-                        Tmotor_pos.visible = False
-                        Tmotor_neg.visible = True
-                    else:
-                        Tmotor_pos.visible = True
-                        Tmotor_neg.visible = False
-                    # Displacements and rotations of the arrows
-                    Tmotor_pos.axis=vp.vector(aux,0,0)
-                    Tmotor_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
-                                     origin=Tmotor_pos.pos)
-                    Tmotor_pos.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
-                                     origin=vect_cg)
-                    Tmotor_neg.axis=vp.vector(aux,0,0)
-                    Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
-                                     origin=Tmotor_neg.pos)
-                    Tmotor_neg.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
-                                     origin=vect_cg)
+                    aux=np.sin(servo_3d[i] + motor_offset)*thrust_3d[i]*force_scale
+                else:
+                    aux=np.sin(motor_offset)*thrust_3d[i]*force_scale
+                # Makes visible one arrow or the other, be it left or right
+                if aux > 0:
+                    Tmotor_pos.visible = False
+                    Tmotor_neg.visible = True
+                else:
+                    Tmotor_pos.visible = True
+                    Tmotor_neg.visible = False
+                # Displacements and rotations of the arrows
+                Tmotor_pos.axis=vp.vector(aux,0,0)
+                Tmotor_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
+                                 origin=Tmotor_pos.pos)
+                Tmotor_pos.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
+                                 origin=vect_cg)
+                Tmotor_neg.axis=vp.vector(aux,0,0)
+                Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
+                                 origin=Tmotor_neg.pos)
+                Tmotor_neg.rotate((theta_3d[j]-theta_3d[i]),axis=vp.vector(0,0,1),
+                                 origin=vect_cg)
                 motor.visible=True
                 motor.make_trail=True
 
@@ -1682,6 +1713,11 @@ def run_3d():
             Time_label.text = "Time = " + str(round(t_3d[i],3))
 
 
+        """ Simualtion Control #############################################"""
+        t_total = t_3d[-3] - t_3d[0]
+        t_step = (t_3d[-1]-t_3d[0]) / len(t_3d)
+        coarse_step = 0.5 / t_step
+        fine_step = 0.015 / t_step
         i=0
         j=1
         list_length = len(theta_3d)-2

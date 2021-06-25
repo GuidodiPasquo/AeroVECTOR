@@ -132,7 +132,9 @@ class Airfoil:
         self._sign = self.__sign_correction(aoa)
         # Data goes from 0º-180º, later it is corrected with
         # the self._sign variable in case the aoa is negative
+        #!!!
         self.x = abs(aoa)
+        # self.x = abs(aoa)
         # Obtain current cl, cd and use them to obtain the normal and
         # axial coefficients RELATED TO THE FIN
         self.cl = np.interp(self.x, self.aoa_list_interp, self.cl_list_interp)
@@ -160,6 +162,15 @@ class Airfoil:
         else:
             x = -1
         return x
+    
+    def _correct_aoa_greater_than_180(self, aoa):
+        if aoa < -np.pi:
+            aoa += np.pi
+            self._sign *= -1
+        elif aoa > np.pi:
+            aoa -= np.pi            
+            self._sign *= -1
+        return aoa
 
 class Fin:
     """Class that handles the fin geometry and its individual parameters
@@ -614,6 +625,10 @@ class Rocket:
             if i == 1:
                 self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
                 self.fin_aoa[i] -= self.actuator_angle # + delta gives -aoa
+                if self.fin_aoa[i] > np.pi:
+                    self.fin_aoa[i] -= 2*np.pi
+                elif self.fin_aoa[i] < -np.pi:
+                    self.fin_aoa[i] += 2*np.pi
             else:
                 self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
         self.aoa_total = self._calculate_aoa(0)

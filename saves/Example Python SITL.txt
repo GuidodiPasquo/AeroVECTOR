@@ -1,8 +1,8 @@
-Motor[N] = AeroTech_G12.csv
+Motor = AeroTech_G12.csv
 Mass Liftoff [kg] = 1
 Mass Burnout [kg] = 0.8
-Iy Liftoff [kg*m^2] = 0.0662
-Iy Burnout [kg*m^2] = 0.0562
+Iy Liftoff [kg*m] = 0.0662
+Iy Burnout [kg*m] = 0.0601
 Xcg Liftoff [m] = 0.55
 Xcg Burnout [m] = 0.51
 Xt [m] = 0.85
@@ -14,7 +14,8 @@ Servo Compensation = 2.1
 Wind [m/s] = 2
 Wind Gust = 0.1
 Launch Rod Length = 1.5
-Launch Rod Angle = 0
+Launch Rod Angle [º] = 0
+Motor Misalignment [º] = 0.5
 ###=#
 toggle_3D=True
 camera_shake_toggle=False
@@ -58,11 +59,11 @@ Accelerometer ST=0.0025
 Altimeter ST=0.005
 GNSS ST=1
 ###=#
-Frist_plot=Pitch Angle
+Frist_plot=Pitch Angle [º]
 Second_plot=Variable SITL 1
-Third_plot=Actuator deflection
-Fourth_plot=Distance Downrange
-Fifth_plot=Simulated GNSS Position
+Third_plot=Actuator deflection [º]
+Fourth_plot=Distance Downrange [m]
+Fifth_plot=Simulated GNSS Position [m]
 ###=#
 True
 True
@@ -78,7 +79,7 @@ Fins_s
 0.95,0.08
 1,0.033
 Fins_c
-0.2,0.033
-0.24,0.07
-0.25,0.07
-0.255,0.033
+0.18,0.033
+0.22,0.08
+0.24,0.08
+0.24,0.033

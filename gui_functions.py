@@ -278,7 +278,7 @@ class Tab:
         else:
             self.deactivate_all()
 
-    def create_combobox(self, options, names_combobox, r, c, s="E"):
+    def create_combobox(self, options, names_combobox, r, c, s="E", w=20):
         """
         Create the comboboxes starting at the row = r, column = c,
         using the list names_combobox to determine their order and names
@@ -306,7 +306,7 @@ class Tab:
         self.combobox = [0]*len(self.names_combobox)
         self.combobox_label = [0]*len(self.names_combobox)
         for i in range(len(self.names_combobox)):
-            self.combobox[i] = ttk.Combobox(self.tab, width=20, state='readonly')
+            self.combobox[i] = ttk.Combobox(self.tab, width=w, state='readonly')
             self.combobox[i].grid(row=r+i, column=c+1, sticky=s)
             self.combobox[i]["values"] = options[i]
             self.combobox_label[i] = tk.Label(self.tab, text=self.names_combobox[i])
@@ -1089,7 +1089,8 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.aoa_scale = tk.Scale(self.tab, from_=0, to=90,
-                             orient=tk.HORIZONTAL, command=slider_aoa, length=200)
+                             orient=tk.HORIZONTAL, command=slider_aoa, length=200,
+                             resolution=0.5)
         self.aoa_scale.grid(row=20, column=0)
         tk.Label(self.tab, text="Angle of Attack" + u' [\xb0]').grid(row=21, column=0)
 
@@ -1106,7 +1107,8 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.scale_act_angle = tk.Scale(self.tab, from_=-45, to=45,
-                             orient=tk.HORIZONTAL, command=slider_actuator_angle, length=150)
+                             orient=tk.HORIZONTAL, command=slider_actuator_angle,
+                             length=150)
         self.scale_act_angle.grid(row=20, column=1)
         tk.Label(self.tab, text="Actuator Deflection" + u' [\xb0]').grid(row=21, column=1)
 
@@ -1115,7 +1117,8 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.scale_velocity = tk.Scale(self.tab, from_=1, to=100,
-                             orient=tk.HORIZONTAL, command=slider_velocity, length=150)
+                             orient=tk.HORIZONTAL, command=slider_velocity,
+                             length=150)
         self.scale_velocity.set(10)
         self.scale_velocity.grid(row=20, column=3)
         tk.Label(self.tab, text="Speed [m/s]").grid(row=21, column=3)

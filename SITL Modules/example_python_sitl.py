@@ -84,7 +84,7 @@ class SITLProgram:
             self.integrate_accelerometer()
             self.compute_position_acc_and_gnss()
             inp = self.theta
-            setpoint = self.pos_gnss/40
+            setpoint = self.pos_corrected[1]/40
             servo = self.control(setpoint, inp, self.t) * self.RAD2DEG
             parachute = self.parachute_deployment()
             Sim.sendCommand(servo, parachute)

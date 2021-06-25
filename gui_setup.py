@@ -185,8 +185,9 @@ def create_parameters_tab(notebook):
                    "Xcg Liftoff [m] = ", "Xcg Burnout [m] = ","Xt [m] = ",
                    "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
                    "Actuator Reduction = ","Initial Misalignment [º] = ",
-                   "Servo Velocity Compensation", "Wind [m/s] = ","Wind Gust [m/s] = ",
-                   "Launch Rod Length [m] = ", "Launch Rod Angle [º] = "]
+                   "Servo Velocity Compensation = ", "Wind [m/s] = ","Wind Gust [m/s] = ",
+                   "Launch Rod Length [m] = ", "Launch Rod Angle [º] = ",
+                   "Motor Misalignment [º] = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
 
     def button_save_parameters():
@@ -197,8 +198,8 @@ def create_parameters_tab(notebook):
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
                                   command=button_save_parameters, width=20)
-    h = 34
-    save_file_button.grid(row=h, column=12)
+    h = 32
+    save_file_button.grid(row=h, column=9)
     param_file_tab.create_active_file_label(h, 0)
     param_file_tab.configure()
 
@@ -402,7 +403,7 @@ def create_conf_3d_tab(notebook):
 
     save_conf_3d_button = tk.Button(conf_3d_tab.tab, text="Save",
                                     command=button_save, width=20)
-    save_conf_3d_button.grid(row=87, column=4)
+    save_conf_3d_button.grid(row=87, column=12)
     conf_3d_tab.change_state()
     conf_3d_tab.create_active_file_label(87, 0)
     conf_3d_tab.configure(5)
@@ -503,7 +504,7 @@ def create_sitl_tab(notebook):
 
     save_conf_sitl_button = tk.Button(conf_sitl_tab.tab, text="Save",
                                       command=button_save_conf_sitl, width=20)
-    save_conf_sitl_button.grid(row=37, column=13)
+    save_conf_sitl_button.grid(row=37, column=12)
     conf_sitl_tab.create_active_file_label(37, 0)
     conf_sitl_tab.configure(10)
 
@@ -544,25 +545,48 @@ def create_run_sim_tab(notebook):
     combobox_options = []
     number_of_plots = 5
     for _ in range(number_of_plots):
-        combobox_options.append(["Off","Setpoint", "Pitch Angle", "Pitch Rate",
-                                 "Actuator deflection", "Local Velocity X",
-                                 "Local Velocity Z", "Global Velocity X",
-                                 "Global Velocity Z", "Total Velocity",
-                                 "Local Acc X",  "Local Acc Z", "Global Acc X",
-                                 "Global Acc Z", "Angle of Atack","CP Position",
-                                 "Mass", "Iy", "CG Position",
-                                 "Normal Force Coefficient", "Axial Force Coefficient",
+        combobox_options.append(["Setpoint [º]",
+                                 "Pitch Angle [º]",
+                                 "Pitch Rate [º/s]",
+                                 "Actuator deflection [º]",
+                                 "Total Velocity [m/s]",
+                                 "Altitude [m]",
+                                 "Distance Downrange [m]",
+                                 "Angle of Atack [º]",
+                                 "CP Position [m]",
+                                 "Mass [kg]",
+                                 "Iy [kg*m^2]",
+                                 "CG Position [m]",
+                                 "Force Application Point [m]",
+                                 "Normal Force Coefficient",
+                                 "Axial Force Coefficient",
                                  "Moment Coefficient",
-                                 "Altitude","Distance Downrange",
-                                 "Proportional Contribution", "Integral Contribution",
-                                 "Derivative Contribution","Total Error",
-                                 "Simulated Gyro", "Simulated Acc X", "Simulated Acc Z",
-                                 "Simulated Altimeter", "Simulated GNSS Position",
-                                 "Simulated GNSS Velocity", "Variable SITL 1",
-                                 "Variable SITL 2", "Variable SITL 3", "Variable SITL 4",
-                                 "Variable SITL 5"])
+                                 "Proportional Contribution",
+                                 "Integral Contribution",
+                                 "Derivative Contribution",
+                                 "Total Error",
+                                 "Local Velocity X [m/s]",
+                                 "Local Velocity Z [m/s]",
+                                 "Global Velocity X [m/s]",
+                                 "Global Velocity Z [m/s]",
+                                 "Local Acc X [m^2/s]",
+                                 "Local Acc Z [m^2/s]",
+                                 "Global Acc X [m^2/s]",
+                                 "Global Acc Z [m^2/s]",
+                                 "Simulated Gyro [º/s]",
+                                 "Simulated Acc X [m^2/s]",
+                                 "Simulated Acc Z [m^2/s]",
+                                 "Simulated Altimeter [m]",
+                                 "Simulated GNSS Position [m]",
+                                 "Simulated GNSS Velocity [m/s]",
+                                 "Variable SITL 1",
+                                 "Variable SITL 2",
+                                 "Variable SITL 3",
+                                 "Variable SITL 4",
+                                 "Variable SITL 5",
+                                 "Off"])
     names_combobox = ["First Plot","Second Plot", "Third Plot", "Fourth Plot", "Fifth Plot"]
-    run_sim_tab.create_combobox(combobox_options,names_combobox, 0, 0)
+    run_sim_tab.create_combobox(combobox_options,names_combobox, 0, 0, w=27)
 
     def button_run_sim():
         sim.run_simulation()
@@ -580,6 +604,6 @@ def create_run_sim_tab(notebook):
 
     save_file_button = tk.Button(run_sim_tab.tab, text="Save",
                                  command=button_save, width=20)
-    save_file_button.grid(row=47, column=10)
+    save_file_button.grid(row=47, column=6)
     run_sim_tab.create_active_file_label(47, 0)
     run_sim_tab.configure()
