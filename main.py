@@ -13,8 +13,6 @@ my first language.
 ###########################################
 known bugs-> Arrows are hit or miss, sometimes they aim in the right
 direction, sometimes they don't.
-When using fast forward/backwards, the rocket does not allways return to the same
-place
 
 ########### OVERALL CHARACTERISTICS OF THE PROGRAM
 Non-linear model integrates local accelerations into global velocities.
