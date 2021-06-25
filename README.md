@@ -39,11 +39,12 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The *Servo Definition* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
-- The *Initial Misalignment* only modifies the initial angle of the TVC mount (in case of using TVC stabilization).
+- The *Initial Misalignment* only modifies the initial angle of the TVC mount or Active Fin.
 - The *Servo Velocity Compensation* slows down the servo according  to the load, its value is 1.45 for an SG90 without load, and 2.1 with a TVC mount. The *servo* class found in *servo_lib.py* has a test method to modify this value to fit one's servo.
 - The wind is positive from right to left, and the gusts follow a Gaussian distribution.
 - The effective launch rod length is the length at which the rocket can pitch somewhat freely.
-- Angle of the launch rod.  
+- Angle of the launch rod.
+- The *Motor Misalignment* sets the motor at an angle (mainly for active fin control).  
 **Please do not leave blank entries**
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
