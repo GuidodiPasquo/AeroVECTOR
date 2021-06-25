@@ -13,20 +13,18 @@ my first language.
 ###########################################
 known bugs-> Arrows are hit or miss, sometimes they aim in the right
 direction, sometimes they don't.
+When using fast forward/backwards, the rocket does not allways return to the same
+place
 
 ########### OVERALL CHARACTERISTICS OF THE PROGRAM
 Non-linear model integrates local accelerations into global velocities.
-An alternate method of vector derivates
-is still in the program, results are better with the first method.
+An alternative method of vector derivates is still in the program,
+although results are better with the first method.
 
 No supersonic rockets!
 Subsonic/Compressible Aerodynamics are very similar to Open Rocket's,
 there are some differences, especially
 in drag calculations (not more than 20%)
-Fins aren't exactly accurate above 90º AoA Total, so be wary if you
-pretend to do some nice acrobatics. It
-should be fine even for hard manouvers tho, but the descent might not
-be realistic/accurate.
 
 Important, all angles are in RADIANS (Standard 1º*np.pi/180 = radian)
 
@@ -40,7 +38,8 @@ Remember that you must multiply the output of the controller times the
 TVC reduction in you flight computer!
 All in all, the overall structure of the function "control_theta" and
 "PID" should be copied in your code to
-ensure that the simulator and flight computer are doing the same thing.
+ensure that the simulator and flight computer are doing the same thing, 
+unless you are using SITL.
 """
 import matplotlib
 matplotlib.use('TkAgg')

@@ -180,13 +180,22 @@ def create_parameters_tab(notebook):
     combobox_options = [files.get_motor_names()]
     names_combobox = ["Motor = "]
     param_file_tab.create_combobox(combobox_options,names_combobox, 1, 1)
-    names_entry = ["Mass Liftoff [kg] = ", "Mass Burnout [kg] = ",
-                   "Iy Liftoff [kg*m^2] = ", "Iy Burnout [kg*m^2] = ",
-                   "Xcg Liftoff [m] = ", "Xcg Burnout [m] = ","Xt [m] = ",
-                   "Servo Definition [º] = ", "Max Actuator Angle [º] = ",
-                   "Actuator Reduction = ","Initial Misalignment [º] = ",
-                   "Servo Velocity Compensation = ", "Wind [m/s] = ","Wind Gust [m/s] = ",
-                   "Launch Rod Length [m] = ", "Launch Rod Angle [º] = ",
+    names_entry = ["Mass Liftoff [kg] = ",
+                   "Mass Burnout [kg] = ",
+                   "Iy Liftoff [kg*m^2] = ",
+                   "Iy Burnout [kg*m^2] = ",
+                   "Xcg Liftoff [m] = ",
+                   "Xcg Burnout [m] = ",
+                   "Xt [m] = ",
+                   "Servo Definition [º] = ",
+                   "Max Actuator Angle [º] = ",
+                   "Actuator Reduction = ",
+                   "Initial Misalignment [º] = ",
+                   "Servo Velocity Compensation = ",
+                   "Wind [m/s] = ",
+                   "Wind Gust [m/s] = ",
+                   "Launch Rod Length [m] = ",
+                   "Launch Rod Angle [º] = ",
                    "Motor Misalignment [º] = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
 
@@ -435,12 +444,20 @@ def create_sitl_tab(notebook):
     combobox_options = [files.get_sitl_modules_names()]
     names_combobox = [""]
     conf_sitl_tab.create_combobox(combobox_options, names_combobox, 5, 0, s="EW")
-    checkboxes = ["Activate Software in the Loop", "Use Simulated Sensor Noise", "Python SITL"]
-    names_entry = ["Port", "Baudrate",
-                     "Gyroscope SD [º] = ", "Accelerometer SD [g] = ","Altimeter SD [m] = ",
-                     "GNSS Position SD [m] = ", "GNSS Velocity SD [m/s] = ",
-                     "Gyroscope Sample Time [s] = ", "Accelerometer Sample Time [s] = ",
-                     "Altimeter Sample Time [s] = ", "GNSS Sample Time [s] = "]
+    checkboxes = ["Activate Software in the Loop",
+                  "Use Simulated Sensor Noise",
+                  "Python SITL"]
+    names_entry = ["Port",
+                   "Baudrate",
+                   "Gyroscope SD [º] = ",
+                   "Accelerometer SD [g] = ",
+                   "Altimeter SD [m] = ",
+                   "GNSS Position SD [m] = ",
+                   "GNSS Velocity SD [m/s] = ",
+                   "Gyroscope Sample Time [s] = ",
+                   "Accelerometer Sample Time [s] = ",
+                   "Altimeter Sample Time [s] = ",
+                   "GNSS Sample Time [s] = "]
     conf_sitl_tab.create_checkboxes(checkboxes,0,0,"W",True)
     conf_sitl_tab.create_entry(names_entry, 1, 0, "W")
     move_sitl_checkbox()
