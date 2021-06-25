@@ -91,7 +91,7 @@ class SaveFile:
                                 "Wind [m/s] = ", "Wind Gust = ", "Launch Rod Length = ",
                                 "Launch Rod Angle [º] = ","Motor Misalignment [º] = "]
         self.conf_3d_names = ["###=#", "toggle_3D=", "camera_shake_toggle=",
-                              "hide_forces=", "variable_fov=", "Camera_type=",
+                              "hide_forces=", "variable_fov=", "hide_cg=", "Camera_type=",
                               "slow_mo=", "force_scale=", "fov="]
         self.conf_controller_names = ["###=#", "Torque Controller = ", "Anti Windup = ",
                                       "Input Type = ", "Kp = ", "Ki = ", "Kd = ",
@@ -230,7 +230,7 @@ class SaveFile:
         self.parameters = ["Estes_D12.csv", '0.451', '0.351', '0.0662', '0.0601',
                            '0.55', "0.51","0.85", '1', '10', '5', '2',"2.1",
                            '2', '0.1', "0", "0", "0"]
-        self.conf_3d = ['True', 'False',"False","False","Fixed", '3', '0.2', "0.75"]
+        self.conf_3d = ['True', 'False',"False","False","True","Fixed", '3', '0.2', "0.75"]
         self.conf_controller = ['False', 'True', 'Step [º]', '0.4', '0',
                                 '0.136', '1', '0', '30','20',"0.5","0", '0.02',
                                 '0.01', "30", "0.001"]
@@ -390,6 +390,9 @@ class SaveFile:
                 elif line.startswith("Launch Rod Angle"): 
                     print(line, end ='')
                     print("Motor Misalignment = 0")
+                elif line.startswith("variable_fov"):
+                    print(line, end ='')
+                    print("hide_cg=True")
                 elif line.startswith("Python SITL="):
                     print(line, end ='')
                     print("File=example_python_sitl")                    

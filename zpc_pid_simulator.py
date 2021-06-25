@@ -163,6 +163,8 @@ acc_glob = [0.0001,0.0001]
 F_loc = [0.0000,0.0000]
 F_glob = [0.0000,0.0000]
 position_global = [0,0]
+force_app_point = 0
+normal_force = 0
 
 ####################################################### IGNORE UP TO PID GAINS
 
@@ -286,15 +288,16 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
-    global camera_type, variable_fov, fov
+    global hide_cg, camera_type, variable_fov, fov
     toggle_3d = conf_3d[0]
     camera_shake_toggle = conf_3d[1]
     hide_forces = conf_3d[2]
     variable_fov = conf_3d[3]
-    camera_type = conf_3d[4]
-    slow_mo = conf_3d[5]
-    force_scale = conf_3d[6]
-    fov = conf_3d[7]
+    hide_cg = conf_3d[4]
+    camera_type = conf_3d[5]
+    slow_mo = conf_3d[6]
+    force_scale = conf_3d[7]
+    fov = conf_3d[8]
 
     ## rocket Class
     global S, d
@@ -566,7 +569,7 @@ def simulation():
     global accx, accz, accQ, g_loc
     global t_launch
     
-    global force_app_point
+    global force_app_point, normal_force
 
     # SERVO SIMULATION
     servo_current_angle = servo.simulate(u_servos,t)
@@ -590,6 +593,7 @@ def simulation():
         accz = 0
         accQ = 0
         force_app_point = 0
+        normal_force = 0
     else:
         if position_global[0] <= launchrod_lenght:
             launchrod_lock = 0
@@ -606,8 +610,9 @@ def simulation():
         accx = x_force/m - W*Q*v_d
         accz = (z_force/m + U*Q*v_d) * launchrod_lock
         accQ = (Q_moment/Iy) * launchrod_lock    
-        normal_force = z_force - m*g_loc[0]
-        force_app_point = Q_moment / normal_force
+        normal_force = z_force - m*g_loc[1]
+        force_app_point = Q_moment / normal_force + xcg
+        force_app_point = saturate_plot_xa_force_app(force_app_point)
 
     # Updates the variables
     U_d.new_f_dd(accx)
@@ -732,22 +737,10 @@ def saturate_plot_xa_force_app(v):
         v_plot = v
     return v_plot
 
-def calculate_force_app_point():
-    global actuator_angle
-    aero_force = q * rocket.area_ref * cn
-    if rocket.use_fins_control is False:
-        normal_force = thrust*np.sin(actuator_angle) + aero_force
-        force_app_point = (aero_force*xa + thrust*np.sin(actuator_angle) * xt) / normal_force
-    else:
-        normal_force = aero_force
-        force_app_point = (aero_force*xa) / normal_force
-    force_app_point = saturate_plot_xa_force_app(force_app_point)
-    return force_app_point
-
 def check_which_plot(s):
     global okp, oki, okd, totError
     global send_gyro, send_accx, send_accz, send_alt, send_gnss_pos, send_gnss_vel
-    global actuator_angle
+    global actuator_angle, normal_force
     global var_sitl_plot
     if s == "Setpoint [º]":
         return setpoint * RAD2DEG
@@ -793,8 +786,9 @@ def check_which_plot(s):
     if s == "Moment Coefficient":
         return cm_xcg
     if s == "Force Application Point [m]":
-        force_app_point = calculate_force_app_point()
         return force_app_point
+    if s == "Normal Force [N]":
+        return normal_force
     if s == "Altitude [m]":
         return position_global[0]
     if s == "Distance Downrange [m]":
@@ -1087,11 +1081,10 @@ skip_flag = False
 skip_ahead_flag = False
 skip_backwards_flag = False
 skip_steps = 10
-show_cg = False
 
 def run_3d():
     global break_flag_button, pause_resume_flag, skip_flag, skip_ahead_flag
-    global skip_backwards_flag, skip_steps, show_cg
+    global skip_backwards_flag, skip_steps, hide_cg
 
     if toggle_3d is False:
         plt.draw()
@@ -1369,7 +1362,7 @@ def run_3d():
                             axis=vp.vector(1,0,0),radius=d/2*1.5,
                             color=vp.color.blue)
         
-        cg_ball.visilbe = show_cg
+        cg_ball.visilbe = not hide_cg
 
         """buttons & Sliders ##############################################"""
         break_flag_button = False
@@ -1505,22 +1498,22 @@ def run_3d():
         
         vp.wtext(text="                                  ")
         
-        def show_cg_3d(b):
-            global show_cg            
-            show_cg = not show_cg
-            if show_cg == True:
-                show_cg_button.color=vp.vec(0,0,0)
-                show_cg_button.background=vp.vec(1,1,1)
-                show_cg_button.text = " Hide CG "
+        def hide_cg_3d(b):
+            global hide_cg            
+            hide_cg = not hide_cg
+            if hide_cg == False:
+                hide_cg_button.color=vp.vec(0,0,0)
+                hide_cg_button.background=vp.vec(1,1,1)
+                hide_cg_button.text = " Hide CG "
             else:
-                show_cg_button.background=vp.vec(0.35,0.35,0.35)
-                show_cg_button.color=vp.vec(1,1,1)
-                show_cg_button.text = "Show CG "
+                hide_cg_button.background=vp.vec(0.35,0.35,0.35)
+                hide_cg_button.color=vp.vec(1,1,1)
+                hide_cg_button.text = "Show CG "
             
-        show_cg_button = vp.button(canvas=scene, bind=show_cg_3d, text='Hide/Show CG',
+        hide_cg_button = vp.button(canvas=scene, bind=hide_cg_3d, text='Hide/Show CG',
                                 color=vp.color.white, background=vp.vector(0,0.557,0.7))
-        show_cg_3d(show_cg_button)
-        show_cg_3d(show_cg_button)
+        hide_cg_3d(hide_cg_button)
+        hide_cg_3d(hide_cg_button)
         
         vp.wtext(text="\n\n")
 
@@ -1605,7 +1598,7 @@ def run_3d():
                               2000)
             
             # Put the ball in the cg
-            cg_ball.visible = show_cg
+            cg_ball.visible = not hide_cg
             cg_ball.pos = vect_cg
             
             # Rotate rocket from the CG
