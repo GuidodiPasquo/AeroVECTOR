@@ -1363,6 +1363,10 @@ def run_3d():
                             color=vp.color.blue)
         
         cg_ball.visilbe = not hide_cg
+        
+        velocity_arrow = vp.arrow(pos=(rocket_3d.pos+vp.vector(0,L/2,0)),
+                            axis=vp.vector(0,L*0.7,0),shaftwidth=d/3,
+                            color=vp.color.blue)
 
         """buttons & Sliders ##############################################"""
         break_flag_button = False
@@ -1496,7 +1500,7 @@ def run_3d():
         menu_camera = vp.menu(bind=change_camera, choices=camera_options,
                               selected=camera_type)
         
-        vp.wtext(text="                                  ")
+        vp.wtext(text="                          ")
         
         def hide_cg_3d(b):
             global hide_cg            
@@ -1504,11 +1508,11 @@ def run_3d():
             if hide_cg == False:
                 hide_cg_button.color=vp.vec(0,0,0)
                 hide_cg_button.background=vp.vec(1,1,1)
-                hide_cg_button.text = " Hide CG "
+                hide_cg_button.text = " Hide CG & AoA"
             else:
                 hide_cg_button.background=vp.vec(0.35,0.35,0.35)
                 hide_cg_button.color=vp.vec(1,1,1)
-                hide_cg_button.text = "Show CG "
+                hide_cg_button.text = "Show CG & AoA"
             
         hide_cg_button = vp.button(canvas=scene, bind=hide_cg_3d, text='Hide/Show CG',
                                 color=vp.color.white, background=vp.vector(0,0.557,0.7))
@@ -1574,6 +1578,7 @@ def run_3d():
             delta_pos_Z = position_3d[j][1] - position_3d[i][1]
             delta_theta = theta_3d[j] - theta_3d[i]
             delta_servo = servo_3d[j] - servo_3d[i]
+            delta_aoa = aoa_3d[j] - aoa_3d[i]
             
             # Moves the rocket
             rocket_3d.pos.y+=delta_pos_X
@@ -1599,11 +1604,18 @@ def run_3d():
             
             # Put the ball in the cg
             cg_ball.visible = not hide_cg
+            velocity_arrow.visible = not hide_cg
             cg_ball.pos = vect_cg
+            velocity_arrow.pos = vect_cg
             
             # Rotate rocket from the CG
             rocket_3d.rotate(delta_theta,axis=vp.vector(0,0,1),
                              origin=vect_cg)
+            velocity_arrow.rotate(delta_theta,axis=vp.vector(0,0,1),
+                             origin=vect_cg)
+            velocity_arrow.rotate(delta_aoa,axis=vp.vector(0,0,-1),
+                             origin=vect_cg)
+            
 
             # Move the motor together with the rocket
             motor.pos.y+=delta_pos_X
