@@ -834,7 +834,7 @@ class Rocket:
         self.cd_te = [0]*2
         for i in range(2):
             self.cd_le[i] = ((1-self.mach**2)**-0.417 - 1) * np.cos(fin[i].le_angle)**2
-            self.cd_te[i] = self.base_drag
+            self.cd_te[i] = self.base_drag / 2
 
     def _calculate_base_drag(self):
         self.base_drag = 0.12 + 0.13*self.mach**2
@@ -866,8 +866,8 @@ class Rocket:
                                              * self.cd_pressure_component[i])
         for i in range(2):
             frontal_area_fin = fin[i].wingspan * 0.003
-            self.total_pressure_drag += (self.cd_te[i]+self.cd_le[i]) * 2*frontal_area_fin/self.area_ref
-        # print(self.total_pressure_drag)
+            self.total_pressure_drag += (self.cd_te[i]+self.cd_le[i]) * 4*frontal_area_fin/self.area_ref
+        print(self.total_pressure_drag)
 
     def _calculate_total_base_drag(self):
         self.total_base_drag = (self.station_cross_area[-1]/self.area_ref) * self.base_drag
