@@ -280,9 +280,12 @@ class Fin:
 
     def _calculate_sweepback_angle(self):
         # 25% of the chord because
-        x_tip = self._dim[1][0] + 0.25*self.c_tip
-        x_root = self._dim[0][0] + 0.25*self.c_root
-        self.sb_angle = np.arctan((x_tip-x_root) / self.wingspan)
+        x_tip = self._dim[1][0]
+        x_root = self._dim[0][0]
+        x_tip_25 = x_tip + 0.25*self.c_tip
+        x_root_25 = x_root + 0.25*self.c_root
+        self.sb_angle = np.arctan((x_tip_25-x_root_25) / self.wingspan)
+        self.le_angle = np.arctan((x_tip-x_root) / self.wingspan)
 
     def calculate_cn_alpha(self, aoa, beta, mach):
         self.beta = beta
@@ -410,6 +413,7 @@ class Rocket:
         self.cp_w_o_ctrl_fin = 0
         self.passive_cn = 0
         self.t_burnout = 5
+        self.is_supersonic = False
 
     def update_rocket(self, l0, mass_param):
         """
@@ -605,8 +609,11 @@ class Rocket:
         mach = self.v_modulus / self.spd_sound
         if mach < 0.001:
             self.mach = 0.001
+        elif mach >=0.9:
+            self.is_supersonic = True
         else:
             self.mach = mach
+        
 
     def _calculate_aoa_components(self):
         self.component_aoa = [0] * len(self.component_centroid)
@@ -789,8 +796,9 @@ class Rocket:
         """
         self._calculate_reynolds()
         self._calculate_cf()
-        self._calculate_pressure_drag()
+        self._calculate_pressure_drag()        
         self._calculate_base_drag()
+        self._calculate_pressure_drag_fins()
         self._calculate_cd(aoa)
         self._calculate_ca(aoa)
 
@@ -820,6 +828,13 @@ class Rocket:
             self.cd_pressure_component[i] = 0.8 * np.sin(phi)**2
         if self.ogive is True:
             self.cd_pressure_component[0] = 0
+            
+    def _calculate_pressure_drag_fins(self):
+        self.cd_le = [0]*2
+        self.cd_te = [0]*2
+        for i in range(2):
+            self.cd_le[i] = ((1-self.mach**2)**-0.417 - 1) * np.cos(fin[i].le_angle)**2
+            self.cd_te[i] = self.base_drag
 
     def _calculate_base_drag(self):
         self.base_drag = 0.12 + 0.13*self.mach**2
@@ -849,6 +864,10 @@ class Rocket:
                 area_ref_component = abs(self.station_cross_area[i+1] - self.station_cross_area[i])
                 self.total_pressure_drag += ((area_ref_component/self.area_ref)
                                              * self.cd_pressure_component[i])
+        for i in range(2):
+            frontal_area_fin = fin[i].wingspan * 0.003
+            self.total_pressure_drag += (self.cd_te[i]+self.cd_le[i]) * 2*frontal_area_fin/self.area_ref
+        # print(self.total_pressure_drag)
 
     def _calculate_total_base_drag(self):
         self.total_base_drag = (self.station_cross_area[-1]/self.area_ref) * self.base_drag
@@ -856,15 +875,9 @@ class Rocket:
     def _calculate_ca(self, aoa):
         # First order interpolation
         cd2ca = np.interp(aoa, self.aoa_list_ca, self.ca_scale)
-        self.ca = self.cd0 * cd2ca
+        self.ca = self.cd0 * cd2ca * 1.1
         if self.use_fins is True:
-            self._add_fin_ca()
             self._add_control_fin_ca()
-
-    def _add_fin_ca(self):
-        for i in range(2):
-            # Asumes control fin parallel to the body
-            self.ca += fin[i].ca * (2*fin[i].area/self.area_ref)
 
     def _add_control_fin_ca(self):
         self.ca += self.ctrl_fin_ca

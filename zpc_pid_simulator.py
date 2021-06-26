@@ -162,6 +162,7 @@ acc_glob = [0.0001,0.0001]
 F_loc = [0.0000,0.0000]
 F_glob = [0.0000,0.0000]
 position_global = [0,0]
+position_local = [0,0]
 force_app_point = 0
 normal_force = 0
 
@@ -366,7 +367,7 @@ def reset_variables():
 
     ##
     global theta, ca, aoa, U, W, Q, U_d, W_d, Q_d, x_d, z_d, v_loc, v_loc_tot
-    global v_glob, g_loc, F_loc, F_glob, position_global, acc_glob
+    global v_glob, g_loc, F_loc, F_glob, position_global, acc_glob, position_local
     theta = 0
     ca = 0
     aoa = 0
@@ -387,6 +388,7 @@ def reset_variables():
     F_loc = [0.0000,0.0000]
     F_glob = [0.0000,0.0000]
     position_global = [0,0]
+    position_local = [0,0]
 
     ##
     global t_3d, theta_3d, servo_3d, v_loc_3d, v_glob_3d, position_3d, xa_3d
@@ -495,7 +497,7 @@ def update_parameters():
     global i
     global aoa
     global wind
-    global thrust,t_launch, xcg, m, Iy
+    global thrust, t_launch, xcg, m, Iy
     global out,timer_disturbance,timer_U,U2,q_wind
     global cm_xcg, ca, S
     global actuator_angle
@@ -560,11 +562,10 @@ def simulation():
     global theta, aoa, g
     global F_loc , F_glob
     global cn, thrust, rho, fin_force
-    global cm_xcg, ca, xcg
+    global cm_xcg, ca, xcg, m, Iy
     global t_timer_3d
-    global position_global
+    global position_global, position_local
     global i_turns
-
     global accx, accz, accQ, g_loc
     global t_launch
     
@@ -594,8 +595,9 @@ def simulation():
         accQ = 0
         force_app_point = 0
         normal_force = 0
+        launchrod_lock = 0
     else:
-        if position_global[0] <= launchrod_lenght:
+        if position_local[0] <= launchrod_lenght:
             launchrod_lock = 0
         else:
             launchrod_lock = 1
@@ -658,7 +660,6 @@ def simulation():
 
     # Integrates the velocities to get the position, be it local or global
     position_local = [U_d.integrate_f_d() , W_d.integrate_f_d()]
-
     position_global = [x_d.integrate_f_d() , z_d.integrate_f_d()]
 
     """
@@ -1107,7 +1108,7 @@ def run_3d():
         for i in range(n):
             for j in range(n):
                 vp.box(pos=vp.vector(dim_x_floor * (i - n/2 + 1) - 100,
-                                     dim_z_floor * (j + 0.5),
+                                     dim_z_floor * (j + 0.5)-30,
                                      dim_x_floor),
                        size=vp.vector(dim_x_floor,dim_z_floor,1),
                        texture={'file':'sky_texture.jpg'})
@@ -1301,12 +1302,7 @@ def run_3d():
         launchrod_3d = vp.cylinder(pos=vp.vector(dim_x_floor/2, 0, launchrod_3d_pos_z),
                                    axis=vp.vector(0, 1, 0), radius=d/10,
                                    color=vp.color.gray(0.5), length=launchrod_lenght)
-        xcg_radius = loc2glob((L/2-xcg_3d[1]),0,theta_3d[0])
-        vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
-                            rocket_3d.pos.y + xcg_radius[0],
-                            2000)
-        launchrod_3d.rotate(theta_3d[1],axis=vp.vector(0,0,1), origin=vect_cg)
-
+        
         motor.trail_color=vp.color.red
         motor.rotate(motor_offset,axis=vp.vector(0,0,-1))
 
@@ -1595,9 +1591,13 @@ def run_3d():
             xa_radius = loc2glob(xa_3d[j]-xa_3d[i],0,theta_3d[i])
 
             #CP and CG global vectors
-            vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
-                                rocket_3d.pos.y + xcg_radius[0],
-                                2000)
+            if i == 0:
+                vect_cg = rocket_3d.pos-vp.vector(0,L/2,0)
+                launchrod_3d.rotate(theta_3d[1],axis=vp.vector(0,0,1), origin=vect_cg)
+            else:
+                vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
+                                    rocket_3d.pos.y + xcg_radius[0],
+                                    2000)
             
             # Put the ball in the cg
             cg_ball.visible = not hide_cg

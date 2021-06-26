@@ -398,7 +398,7 @@ def create_draw_rocket_tab(notebook):
 def create_conf_3d_tab(notebook):
     conf_3d_tab.create_tab(notebook, "3D Configuration")
     checkboxes = ["Activate 3D Graphics","Camera Shake",
-                  "Hide Forces","Variable Fov", "Hide CG"]
+                  "Hide Forces","Variable Fov", "Hide CG & AoA"]
     conf_3d_tab.create_checkboxes(checkboxes, 0, 0, "W", True)
     combobox_options = [["Follow", "Fixed", "Follow Far"]]
     names_combobox = ["Camera Type"]
