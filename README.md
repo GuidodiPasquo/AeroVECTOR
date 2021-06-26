@@ -166,4 +166,13 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
   
 There are five plots in total, one can choose between a variety of variables.
 
+### 3D Representation
+![](/Images/Readme/Screenshot_15.png)
+If the 3D Graphics were enabled, once the simulation finishes a new tab in your default web browser should open.
+- One can seek backward/forward 2, 0.5 or 0.015 seconds using the first row of buttons, the center one pauses and resumes the animation.
+- The first slider controls the *Slow Motion* and the second one the *FOV* (zoom).
+- The menu enables the change of camera angle on the fly.
+- One can enable and disable the *Forces* and the *CG & AoA* (velocity vector) with the buttons on the right.
+- To see the plots, one must click the *Finish* button. This disables the animation.
 
+NOTE: If the animation is paused, some of the features might require you to seek forward/backward to update the frame.
