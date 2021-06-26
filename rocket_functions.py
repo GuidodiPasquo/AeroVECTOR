@@ -16,6 +16,7 @@ Classes:
 import copy
 import numpy as np
 import ISA_calculator as atm
+from scipy.interpolate import interp1d
 
 DEG2RAD = np.pi / 180
 RAD2DEG = 1 / DEG2RAD
@@ -132,9 +133,7 @@ class Airfoil:
         self._sign = self.__sign_correction(aoa)
         # Data goes from 0º-180º, later it is corrected with
         # the self._sign variable in case the aoa is negative
-        #!!!
         self.x = abs(aoa)
-        # self.x = abs(aoa)
         # Obtain current cl, cd and use them to obtain the normal and
         # axial coefficients RELATED TO THE FIN
         self.cl = np.interp(self.x, self.aoa_list_interp, self.cl_list_interp)
@@ -253,6 +252,8 @@ class Fin:
         return self._dim[0][0] + self.c_root/2
 
     def _calculate_mac_xf_ar(self):
+        self.mac = 2/3 * (self.c_root + self.c_tip -
+                          ((self.c_root*self.c_tip)/(self.c_root+self.c_tip)))
         k1 = self.c_root + 2*self.c_tip
         k2 = self.c_root + self.c_tip
         k3 = self.c_root**2 + self.c_tip**2 + self.c_root*self.c_tip
@@ -340,15 +341,16 @@ class Rocket:
         self.reynolds_crit = 1
         self.relative_rough = 150e-6
         # Empirical method to calculate the ca from the cd, it should use a
-        # fitted third order polinomial but linear interpolations are easier
+        # fitted third order polinomial but interpolations are easier
         self.aoa_list_ca = [-180 * DEG2RAD,-(180 - 17) * DEG2RAD,
                             -(180 - 70) * DEG2RAD, -90 * DEG2RAD,
-                            -70 * DEG2RAD, -17 * DEG2RAD, 0,
-                            17 * DEG2RAD, 70 * DEG2RAD, 90 * DEG2RAD,
+                            -70 * DEG2RAD, -18 * DEG2RAD,-16 * DEG2RAD, 0,
+                            16 * DEG2RAD,18 * DEG2RAD, 70 * DEG2RAD, 90 * DEG2RAD,
                             (180 - 70) * DEG2RAD, (180 - 17) * DEG2RAD,
                             180 * DEG2RAD]
-        self.ca_scale = [-1, -1.3 , -0.097777 , 0 , 0.097777, 1.3,
-                         1 , 1.3, 0.097777 , 0 , -0.097777 , -1.3, -1]
+        self.ca_scale = [-1, -1.3 , -0.097777 , 0 , 0.097777, 1.295, 1.295,
+                         1 , 1.3, 1.3, 0.097777 , 0 , -0.097777 , -1.3, -1]
+        self.f_ca_interp = interp1d(self.aoa_list_ca, self.ca_scale, kind='quadratic')
         self.use_fins = False
         self.fins_attached = True
         self.use_fins_control = False
@@ -445,11 +447,15 @@ class Rocket:
         self._update_rocket_dim(l[5])
         # In case one fin is not set up
         zero_fin = [[0.00001,0.0],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0]]
-        fin[1].update(zero_fin) # In case there are no control fins
         if self.use_fins is True:
             fin[0].update(l[6], self.fins_attached[0])
             if self.use_fins_control is True:
                 fin[1].update(l[7], self.fins_attached[1])
+            else:                
+                fin[1].update(zero_fin) # In case there are no control fins
+        else:
+            for i in range(2):
+                fin[i].update(zero_fin)
         self._calculate_reynolds_crit()
 
     def _update_rocket_dim(self, l):
@@ -795,9 +801,9 @@ class Rocket:
         Open Rocket's documentation.
         """
         self._calculate_reynolds()
-        self._calculate_cf()
-        self._calculate_pressure_drag()        
+        self._calculate_cf()               
         self._calculate_base_drag()
+        self._calculate_pressure_drag() 
         self._calculate_pressure_drag_fins()
         self._calculate_cd(aoa)
         self._calculate_ca(aoa)
@@ -812,7 +818,10 @@ class Rocket:
             self.Cf = 1 / ((1.5*np.log(self.reynolds)-5.6)**2)
         else:
             self.Cf = 0.032 * np.power((self.relative_rough/self.length), 0.2)
-        self.Cf = self.Cf * (1 - 0.1*self.mach**2)
+        self.Cf = self.Cf * (1 - 0.1*self.mach**2)        
+
+    def _calculate_base_drag(self):
+        self.base_drag = 0.12 + 0.13*self.mach**2
 
     def _calculate_pressure_drag(self):
         n = (len(self.rocket_dim)-1)
@@ -825,29 +834,45 @@ class Rocket:
                 phi = np.arctan((r2-r1) / l)
             except ZeroDivisionError:
                 print("Component length is zero")
-            self.cd_pressure_component[i] = 0.8 * np.sin(phi)**2
+            if self.component_is_boattail(phi):                
+                gamma = l / ((r1-r2) * 2)
+                if gamma > 3:
+                    self.cd_pressure_component[i] = 0
+                elif gamma < 1:
+                    self.cd_pressure_component[i] = self.base_drag
+                else:                   
+                    self.cd_pressure_component[i] = (3-gamma) / 2 * self.base_drag
+            else:
+                self.cd_pressure_component[i] = 0.8 * np.sin(phi)**2
         if self.ogive is True:
             self.cd_pressure_component[0] = 0
-            
+     
+    def component_is_boattail(self, phi):
+        if phi>=0:
+            return False
+        else:
+            return True
+        
     def _calculate_pressure_drag_fins(self):
         self.cd_le = [0]*2
         self.cd_te = [0]*2
         for i in range(2):
             self.cd_le[i] = ((1-self.mach**2)**-0.417 - 1) * np.cos(fin[i].le_angle)**2
             self.cd_te[i] = self.base_drag / 2
-
-    def _calculate_base_drag(self):
-        self.base_drag = 0.12 + 0.13*self.mach**2
-
+            
     def _calculate_cd(self, aoa):
         self._calculate_cd0_friction()
         self._calculate_total_pressure_drag(aoa)
         self._calculate_total_base_drag()
         self.cd0 = self.cd0_friction + self.total_pressure_drag + self.total_base_drag
 
-    def _calculate_cd0_friction(self):
-        self.cd0_friction = ((self.Cf * ((1+1/(2*self.fineness))*self.area_wet_body))
-                             /self.area_ref)
+    def _calculate_cd0_friction(self):        
+        cd0_fin = 0
+        t = 0.003
+        cd0_body = (1 + 1/(2*self.fineness)) * self.area_wet_body
+        for i in range(2):            
+            cd0_fin += (1 + 2*t/fin[i].mac) * 4*fin[i].area        
+        self.cd0_friction = self.Cf * (cd0_body + cd0_fin) / self.area_ref
 
     def _calculate_total_pressure_drag(self, aoa):
         n = (len(self.station_cross_area)-1)
@@ -867,15 +892,15 @@ class Rocket:
         for i in range(2):
             frontal_area_fin = fin[i].wingspan * 0.003
             self.total_pressure_drag += (self.cd_te[i]+self.cd_le[i]) * 4*frontal_area_fin/self.area_ref
-        print(self.total_pressure_drag)
 
     def _calculate_total_base_drag(self):
         self.total_base_drag = (self.station_cross_area[-1]/self.area_ref) * self.base_drag
 
     def _calculate_ca(self, aoa):
         # First order interpolation
-        cd2ca = np.interp(aoa, self.aoa_list_ca, self.ca_scale)
-        self.ca = self.cd0 * cd2ca * 1.1
+        # cd2ca = np.interp(aoa, self.aoa_list_ca, self.ca_scale)
+        self.cd2ca = self.f_ca_interp(aoa)
+        self.ca = self.cd0 * self.cd2ca
         if self.use_fins is True:
             self._add_control_fin_ca()
 
