@@ -78,7 +78,6 @@ q = 0 #dynamic pressure
 U_prev = 0.
 U2 = 0.
 wind_rand = 0
-i_turns = 0
 actuator_angle = 0
 CA0 = 0
 wind_total = 0
@@ -586,8 +585,9 @@ def simulation():
     v_glob = global velocity
     x_d = global X speed (Y in Vpython)
     z_d = global Z speed (-X in Vpython)
-    """
+    """    
     v_d = 0 # 0 uses Local and Global Velocities, 1 uses vector derivatives.
+    
     if rocket.is_in_the_pad(position_global[0]) and thrust < m*g or t < t_launch:
         accx = 0
         accz = 0
@@ -613,27 +613,24 @@ def simulation():
         normal_force = z_force - m*g_loc[1]
         force_app_point = Q_moment / normal_force + xcg
         force_app_point = saturate_plot_xa_force_app(force_app_point)
-
+        
     # Updates the variables
     U_d.new_f_dd(accx)
     W_d.new_f_dd(accz)
-    Q_d.new_f_dd(accQ)
-
+    Q_d.new_f_dd(accQ)  
+    
     # Integrates the angular acceleration and velocity
     Q = Q_d.integrate_f_dd()
     theta = Q_d.integrate_f_d()
-
 
     # In case theta is greater than 180º, to keep it between -180 and 180
     # It's alright to do this as long as theta is not integrated
     if theta > np.pi:
         theta -= 2*np.pi
         Q_d.new_f(theta)
-        i_turns += 1
     if theta < -np.pi:
         theta += 2*np.pi
         Q_d.new_f(theta)
-        i_turns += 1
 
 
     # New acceleration in global coordinates
@@ -664,7 +661,6 @@ def simulation():
 
     position_global = [x_d.integrate_f_d() , z_d.integrate_f_d()]
 
-
     """
     Adding -W*Q to U_d and +U*Q to W_d but eliminating the global to
     local transfer of velocity accounts for the vector rotation.
@@ -680,6 +676,7 @@ def simulation():
         again
     Still have to see how it scales with more DOF
     """
+    
     """
     Only saves the points used in the animation.
     (500) is the rate of the animation, when you use slow_mo it drops.
@@ -869,15 +866,15 @@ def run_sim_local():
         simulation()
         if t > burnout_time * 10:
             print("Nice Coast")
-            break
-        if i_turns >= 5:
-            print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
-            break
+            break       
         if position_global[0] < -0.1:
             print("CRASH")
             break
         if t >= sim_duration:
             print("Simulation Ended")
+            break
+        if rocket.is_supersonic:                
+            print("Transonic and supersonic flow, abort!")
             break
         """
         *.999 corrects the error in t produced by adding t=t+T for sample times smaller than 0.001
@@ -934,9 +931,6 @@ def run_sim_sitl():
                 print("Time is ",round(t,0)," seconds")
             if t > burnout_time * 10:
                 break
-            if i_turns >= 5:
-                print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
-                break
             if position_global[0] < -0.1:
                 print("CRASH")
                 break
@@ -945,6 +939,9 @@ def run_sim_sitl():
                 break
             if t >= sim_duration:
                 print("Simulation Ended")
+                break
+            if rocket.is_supersonic:                
+                print("Transonic and supersonic flow, abort!")
                 break
             if t >= timer_run_sim + T_glob*0.999:
                 timer_run_sim = t
@@ -1004,9 +1001,6 @@ def run_sim_python_sitl():
         if t > burnout_time * 10:
             print("Nice Coast")
             break
-        if i_turns >= 5:
-            print("Pitch angle greater than 180\xb0, the rocket is flying pointy end down.")
-            break
         if position_global[0] < -0.1:
             print("CRASH")
             break
@@ -1015,6 +1009,9 @@ def run_sim_python_sitl():
             break
         if t >= sim_duration:
             print("Simulation Ended")
+            break
+        if rocket.is_supersonic:                
+            print("Transonic and supersonic flow, abort!")
             break
 
         python_sitl_program.void_loop()
@@ -1092,6 +1089,9 @@ def run_3d():
     if toggle_3d is True:
 
         rocket_dim = gui.draw_rocket_tab.get_points_float(0)
+        L = rocket_dim[-1][0]
+        nosecone_length = rocket_dim[1][0]
+        d = rocket_dim[1][1]
 
         #Creates the window
         scene = vp.canvas(width=1280, height=720, center=vp.vector(0,0,0),
@@ -1111,20 +1111,17 @@ def run_3d():
                                      dim_x_floor),
                        size=vp.vector(dim_x_floor,dim_z_floor,1),
                        texture={'file':'sky_texture.jpg'})
-        n = 3
+        n = 7
         #Floor (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_floor/2*(i-n/2+1), -0.5, dim_z_floor*(j+0.5)),
-                       size=vp.vector(dim_x_floor, 1, dim_z_floor),
+                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2), -L/2, dim_z_floor/3+1000),
+                       size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
                        texture={'file':'grass_texture.jpg'})
 
 
         ## rocket
-        n_c = 20 #how many pieces have each non standard component
-        L = rocket_dim[-1][0]
-        nosecone_length = rocket_dim[1][0]
-        d = rocket_dim[1][1]
+        n_c = 20 #how many pieces have each non standard component        
         R_ogive = rocket_dim[1][1]
         L_ogive = rocket_dim[1][0]
         rho_radius = (R_ogive**2 + L_ogive**2)/(2 * R_ogive)
