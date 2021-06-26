@@ -1487,7 +1487,7 @@ def run_3d():
             slider_fov_text.text = ' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    "
             run_camera_3d(i,j)
         slider_fov = vp.slider(canvas=scene, bind=slider_fov_3d,
-                                   text='Fov', min=0.05, max=1.2, value=fov,
+                                   text='Fov', min=0.01, max=2*fov, value=fov,
                                    left=440, right=12)
         slider_fov_text = vp.wtext(text=' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    ")
 
@@ -1738,10 +1738,10 @@ def run_3d():
 
             #Follows almost 45 deg up
             if camera_type=="Follow":
-                scene.fov = fov*DEG2RAD*70
+                scene.fov = fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
-                                             rocket_3d.pos.y+1.2-camera_shake[0]/500,
-                                             rocket_3d.pos.z-1)
+                                             rocket_3d.pos.y+L*70-camera_shake[0]/500,
+                                             rocket_3d.pos.z-L*70)
                 scene.camera.axis=vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                             rocket_3d.pos.y-scene.camera.pos.y,
                                             rocket_3d.pos.z-scene.camera.pos.z)
@@ -1749,12 +1749,12 @@ def run_3d():
             # Simulates someone in the ground
             elif camera_type=="Fixed":
                 if variable_fov == True:
-                    scene.fov=fov*DEG2RAD/(0.01/10 * np.sqrt(position_3d[i][0]**2
+                    scene.fov=fov*DEG2RAD/(0.035/10 * np.sqrt(position_3d[i][0]**2
                                                              + position_3d[i][1]**2)
                                            + 1)
                 else:
                     scene.fov=fov*DEG2RAD
-                scene.camera.pos = vp.vector(dim_x_floor/2,1,dim_z_floor/2-70*5)
+                scene.camera.pos = vp.vector(dim_x_floor/2,1,dim_z_floor/2-70*2)
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                               rocket_3d.pos.y-scene.camera.pos.y,
                                               rocket_3d.pos.z-scene.camera.pos.z)
@@ -1764,7 +1764,7 @@ def run_3d():
                 scene.fov=fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
                                              rocket_3d.pos.y+0.0-camera_shake[0]/200,
-                                             rocket_3d.pos.z-70*5)
+                                             rocket_3d.pos.z-70*2)
                 scene.camera.axis=vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                             rocket_3d.pos.y-scene.camera.pos.y,
                                             rocket_3d.pos.z-scene.camera.pos.z)
