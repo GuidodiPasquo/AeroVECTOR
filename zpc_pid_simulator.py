@@ -1599,8 +1599,8 @@ def run_3d():
 
             #CP and CG global vectors
             vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
-                              rocket_3d.pos.y + xcg_radius[0],
-                              2000)
+                                rocket_3d.pos.y + xcg_radius[0],
+                                2000)
             
             # Put the ball in the cg
             cg_ball.visible = not hide_cg
@@ -1614,8 +1614,7 @@ def run_3d():
             velocity_arrow.rotate(delta_theta,axis=vp.vector(0,0,1),
                              origin=vect_cg)
             velocity_arrow.rotate(delta_aoa,axis=vp.vector(0,0,-1),
-                             origin=vect_cg)
-            
+                             origin=vect_cg)            
 
             # Move the motor together with the rocket
             motor.pos.y+=delta_pos_X
@@ -1655,14 +1654,14 @@ def run_3d():
                     Tmotor_neg.visible = False
                 Tmotor_pos.axis=vp.vector(aux,0,0)
                 Tmotor_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
-                                 origin=Tmotor_pos.pos)
+                                  origin=Tmotor_pos.pos)
                 Tmotor_pos.rotate((delta_theta),axis=vp.vector(0,0,1),
                                  origin=vect_cg)
                 Tmotor_neg.axis=vp.vector(aux,0,0)
                 Tmotor_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
-                                 origin=Tmotor_neg.pos)
+                                  origin=Tmotor_neg.pos)
                 Tmotor_neg.rotate((delta_theta),axis=vp.vector(0,0,1),
-                                 origin=vect_cg)
+                                   origin=vect_cg)
                 motor.visible=True
                 motor.make_trail=True
 
@@ -1680,14 +1679,14 @@ def run_3d():
             Nforce_pos.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_pos.pos)
-            Nforce_pos.rotate((delta_theta),axis=vp.vector(0,0,1),
+            Nforce_pos.rotate(delta_theta,axis=vp.vector(0,0,1),
                               origin=vect_cg)
             Nforce_neg.pos.y+=delta_pos_X - xa_radius[0]
             Nforce_neg.pos.x+=delta_pos_Z - xa_radius[1]
             Nforce_neg.axis=vp.vector(cn_3d[i]*force_scale,0,0)
             Nforce_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                               origin=Nforce_neg.pos)
-            Nforce_neg.rotate((delta_theta),axis=vp.vector(0,0,1),
+            Nforce_neg.rotate(delta_theta,axis=vp.vector(0,0,1),
                               origin=vect_cg)
 
             if rocket.use_fins_control is True:
@@ -1703,14 +1702,14 @@ def run_3d():
                 T_fin_pos.axis=vp.vector(fin_force_3d[i]*force_scale,0,0)
                 T_fin_pos.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                                  origin=T_fin_pos.pos)
-                T_fin_pos.rotate((delta_theta),axis=vp.vector(0,0,1),
+                T_fin_pos.rotate(delta_theta,axis=vp.vector(0,0,1),
                                  origin=vect_cg)
                 T_fin_neg.pos.y+=delta_pos_X
                 T_fin_neg.pos.x+=delta_pos_Z
                 T_fin_neg.axis=vp.vector(fin_force_3d[i]*force_scale,0,0)
                 T_fin_neg.rotate(theta_3d[i],axis=vp.vector(0,0,1),
                                  origin=T_fin_neg.pos)
-                T_fin_neg.rotate((delta_theta),axis=vp.vector(0,0,1),
+                T_fin_neg.rotate(delta_theta,axis=vp.vector(0,0,1),
                                  origin=vect_cg)
 
             if hide_forces is True:
@@ -1776,9 +1775,9 @@ def run_3d():
             servo_label.text = ("Actuator deflection = " +
                                 str(round((servo_3d[i])*RAD2DEG,2))
                                 + u'\xb0')
-            V.text = ("Local Velocity => " + " X = "+
-                      str(round(v_loc_3d[i][0],2)) + " m/s , Z = "
-                      + str(round(v_loc_3d[i][1],2)) + " m/s")
+            V.text = ("Global Velocity => " + " Up = "+
+                      str(round(v_glob_3d[i][0],2)) + " m/s , Left = "
+                      + str(round(v_glob_3d[i][1],2)) + " m/s")
             aoa_plot.text = "AoA = " + str(round(aoa_3d[i]*RAD2DEG,2)) + u'\xb0'
             Position_label.text = ("Position => " + "Altitude = "
             + str(round(position_3d[i][0],2)) + "m , Distance Downrange = " + str(round(position_3d[i][1],2)) + "m")
