@@ -30,15 +30,18 @@ class SITLProgram:
     """!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"""
 
     def everything_that_is_outside_functions(self):
+        module = "pid_module"
+        self.pid_module = importlib.import_module("SITL Modules.Complemetary Modules."
+                                                      +module)        
+        
         self.DEG2RAD = np.pi / 180
         self.RAD2DEG = 1 / self.DEG2RAD
-        self.kp = 3
-        self.ki = 0.5
-        self.kd = 0.3
+        self.fin_max = 30 / 57.3
+        self.pid_pitch = self.pid_module.PID(3, 0.5, 0.3, True, self.fin_max)
+        self.pid_pos = self.pid_module.PID(1/20, 0.01, 0.005, False, 5)     
         self.k_all = -5
         self.actuator_reduction = 1
-        self.fin_max = 30 / 57.3
-        self.anti_windup = True
+        
         self.u_controller = 0
         self.u_prev = 0
         self.u_servos = 0
@@ -54,9 +57,7 @@ class SITLProgram:
         self.alt_prev = 0
         self.pos_corrected = [0,0]
         self.pos_gnss_prev = 0
-        module = "example_comp_module"
-        self.example_module = importlib.import_module("SITL Modules.Complemetary Modules."
-                                                      +module)
+        
 
 
 
@@ -64,7 +65,7 @@ class SITLProgram:
 
 
     def void_setup(self):
-        self.example_module.test_complementary_module_import()
+        pass
 
 
 
@@ -82,10 +83,11 @@ class SITLProgram:
             self.convert_measurement_system()
             self.integrate_gyro()
             self.integrate_accelerometer()
-            self.compute_position_acc_and_gnss()
-            inp = self.theta
-            setpoint = self.pos_corrected[1]/40
-            servo = self.control(setpoint, inp, self.t) * self.RAD2DEG
+            self.compute_position_acc_and_gnss()            
+            inp_pos = 0-self.pos_corrected[1]
+            setpoint = self.pid_pos.compute_output(-inp_pos, self.t)
+            inp_pitch = self.theta
+            servo = self.control(setpoint, inp_pitch, self.t) * self.RAD2DEG
             parachute = self.parachute_deployment()
             Sim.sendCommand(servo, parachute)
             Sim.plot_variable(self.pos_corrected[1], 1)
@@ -102,7 +104,7 @@ class SITLProgram:
         self.u_prev = self.u_controller
         error = setpoint - inp
         error = error * self.k_all
-        self.u_controller = self.pid(error, t)
+        self.u_controller = self.pid_pitch.compute_output(error, t)
         # Saturation
         if self.u_controller > self.fin_max:
             self.u_controller = self.fin_max
@@ -111,38 +113,7 @@ class SITLProgram:
         # u_controller=u_controller-u_prev*0.05;  #filter, increasing the
         # number makes it stronger and slower
         self.u_servos = self.u_controller * self.actuator_reduction
-        return self.u_servos
-
-    def pid(self, inp, t):
-        T_program = self.delta_t
-        # Determine the error
-        error_pid = inp
-        # Compute its derivative
-        rate_error = (error_pid-self.last_error) / T_program
-        if self.anti_windup is True:
-            # PID output
-            out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
-            # Anti windup by clamping
-            if -self.fin_max < out_pid < self.fin_max:
-                # Compute integral (trapezoidal) only if the TVC is not staurated
-                self.cum_error = (((((self.last_error) + ((error_pid-self.last_error)/2)))
-                                  * T_program) + self.cum_error)
-                # Recalculate the output
-                out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
-            # Saturation, prevents the TVC from deflecting more that it can
-            if out_pid > self.fin_max:
-                out_pid = self.fin_max
-            elif out_pid < -self.fin_max:
-                out_pid = -self.fin_max
-        else:
-            self.cum_error = ((((self.last_error + ((error_pid-self.last_error)/2)))
-                             * T_program) + self.cum_error)
-            out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
-        # Remember current error
-        self.last_error = error_pid
-        self.t_prev = t
-        # Have function return the PID output
-        return out_pid
+        return self.u_servos    
 
     def parachute_deployment(self):
         if self.alt < self.alt_prev and self.alt > 10:

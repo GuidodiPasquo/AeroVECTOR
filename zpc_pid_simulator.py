@@ -1026,11 +1026,11 @@ def run_sim_python_sitl():
                 send_accz = round(random.gauss((accz-g_loc[1])/9.81, acc_sd),6)
                 timer_acc = t
             if t >= timer_alt + alt_st*0.999:
-                send_alt = round(random.gauss(position_global[0], alt_sd),2)
+                send_alt = round(random.gauss(position_global[0], alt_sd),6)
                 timer_alt = t
             if t >= timer_gnss + gnss_st*0.999:
-                send_gnss_pos = round(random.gauss(position_global[1], gnss_pos_sd),1)
-                send_gnss_vel = round(random.gauss(v_glob[1], gnss_vel_sd),2)
+                send_gnss_pos = round(random.gauss(position_global[1], gnss_pos_sd),6)
+                send_gnss_vel = round(random.gauss(v_glob[1], gnss_vel_sd),6)
                 timer_gnss = t
         else:
             if t >= timer_gyro + gyro_st*0.999:
@@ -1041,11 +1041,11 @@ def run_sim_python_sitl():
                 send_accz = round((accz-g_loc[1])/9.81,6)
                 timer_acc = t
             if t >= timer_alt + alt_st*0.999:
-                send_alt = round(position_global[0],2)
+                send_alt = round(position_global[0],6)
                 timer_alt = t
             if t >= timer_gnss + gnss_st*0.999:
-                send_gnss_pos = round(position_global[1],1)
-                send_gnss_vel = round(v_glob[1],1)
+                send_gnss_pos = round(position_global[1],6)
+                send_gnss_vel = round(v_glob[1],6)
                 timer_gnss = t
         timer()
         plot_data()
