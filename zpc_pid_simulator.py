@@ -568,7 +568,7 @@ def simulation():
     global i_turns
     global accx, accz, accQ, g_loc
     global t_launch
-    
+
     global force_app_point, normal_force
 
     # SERVO SIMULATION
@@ -586,9 +586,9 @@ def simulation():
     v_glob = global velocity
     x_d = global X speed (Y in Vpython)
     z_d = global Z speed (-X in Vpython)
-    """    
+    """
     v_d = 0 # 0 uses Local and Global Velocities, 1 uses vector derivatives.
-    
+
     if rocket.is_in_the_pad(position_global[0]) and thrust < m*g or t < t_launch:
         accx = 0
         accz = 0
@@ -605,22 +605,22 @@ def simulation():
             motor_angle = actuator_angle + motor_offset
         else:
             motor_angle = motor_offset
-            fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle            
+            fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle
         x_force = thrust * np.cos(motor_angle) - q*S*ca + m*g_loc[0]
         z_force = thrust * np.sin(motor_angle) + m*g_loc[1] + q*S*cn
         Q_moment = (thrust * np.sin(motor_angle) * (xt-xcg) + S*q*d*cm_xcg)
         accx = x_force/m - W*Q*v_d
         accz = (z_force/m + U*Q*v_d) * launchrod_lock
-        accQ = (Q_moment/Iy) * launchrod_lock    
+        accQ = (Q_moment/Iy) * launchrod_lock
         normal_force = z_force - m*g_loc[1]
         force_app_point = Q_moment / normal_force + xcg
         force_app_point = saturate_plot_xa_force_app(force_app_point)
-        
+
     # Updates the variables
     U_d.new_f_dd(accx)
     W_d.new_f_dd(accz)
-    Q_d.new_f_dd(accQ)  
-    
+    Q_d.new_f_dd(accQ)
+
     # Integrates the angular acceleration and velocity
     Q = Q_d.integrate_f_dd()
     theta = Q_d.integrate_f_d()
@@ -677,7 +677,7 @@ def simulation():
         again
     Still have to see how it scales with more DOF
     """
-    
+
     """
     Only saves the points used in the animation.
     (500) is the rate of the animation, when you use slow_mo it drops.
@@ -703,7 +703,7 @@ def simulation():
 
 
 def timer():
-    global t    
+    global t
     t = round(t + T,12) #Trying to avoid error, not sure it works
 
 def timer_SITL():
@@ -867,14 +867,14 @@ def run_sim_local():
         simulation()
         if t > burnout_time * 10:
             print("Nice Coast")
-            break       
+            break
         if position_global[0] < -0.1:
             print("CRASH")
             break
         if t >= sim_duration:
             print("Simulation Ended")
             break
-        if rocket.is_supersonic:                
+        if rocket.is_supersonic:
             print("Transonic and supersonic flow, abort!")
             break
         """
@@ -941,7 +941,7 @@ def run_sim_sitl():
             if t >= sim_duration:
                 print("Simulation Ended")
                 break
-            if rocket.is_supersonic:                
+            if rocket.is_supersonic:
                 print("Transonic and supersonic flow, abort!")
                 break
             if t >= timer_run_sim + T_glob*0.999:
@@ -1011,7 +1011,7 @@ def run_sim_python_sitl():
         if t >= sim_duration:
             print("Simulation Ended")
             break
-        if rocket.is_supersonic:                
+        if rocket.is_supersonic:
             print("Transonic and supersonic flow, abort!")
             break
 
@@ -1079,27 +1079,38 @@ skip_flag = False
 skip_ahead_flag = False
 skip_backwards_flag = False
 skip_steps = 10
+widgets = []
+widgets_text = []
 
 def run_3d():
     global break_flag_button, pause_resume_flag, skip_flag, skip_ahead_flag
-    global skip_backwards_flag, skip_steps, hide_cg
+    global skip_backwards_flag, skip_steps, hide_cg, widgets, labels, scene, widgets_text
 
     if toggle_3d is False:
         plt.draw()
         plt.show()
     if toggle_3d is True:
+        try:
+            labels.delete()
+            scene.delete()
+            for i in range(len(widgets)):
+                widgets[i].delete()
+            for i in range(len(widgets_text)):
+                widgets_text[i].text = ""
+        except:
+            pass
 
         rocket_dim = gui.draw_rocket_tab.get_points_float(0)
         L = rocket_dim[-1][0]
         nosecone_length = rocket_dim[1][0]
         d = rocket_dim[1][1]
 
-        #Creates the window
         scene = vp.canvas(width=1280, height=720, center=vp.vector(0,0,0),
                           background=vp.color.white)
         scene.lights = []
         vp.distant_light(direction=vp.vector(1, 1, -1), color=vp.color.gray(0.9))
         i = 0
+
         #floor
         dim_x_floor = 3000
         dim_z_floor = 4000
@@ -1120,9 +1131,8 @@ def run_3d():
                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
                        texture={'file':'grass_texture.jpg'})
 
-
         ## rocket
-        n_c = 20 #how many pieces have each non standard component        
+        n_c = 20 #how many pieces have each non standard component
         R_ogive = rocket_dim[1][1]
         L_ogive = rocket_dim[1][0]
         rho_radius = (R_ogive**2 + L_ogive**2)/(2 * R_ogive)
@@ -1171,6 +1181,7 @@ def run_3d():
                                     axis=vp.vector(0,1,0),radius=d/2,
                                     color=vp.color.black, length=l_partial)
                     compound_list.append(rod)
+
         # Fins
         throwaway_box = vp.box(pos=vp.vector(dim_x_floor/2,0.1,dim_z_floor/2),
                                axis=vp.vector(1,0,0),
@@ -1302,7 +1313,7 @@ def run_3d():
         launchrod_3d = vp.cylinder(pos=vp.vector(dim_x_floor/2, 0, launchrod_3d_pos_z),
                                    axis=vp.vector(0, 1, 0), radius=d/10,
                                    color=vp.color.gray(0.5), length=launchrod_lenght)
-        
+
         motor.trail_color=vp.color.red
         motor.rotate(motor_offset,axis=vp.vector(0,0,-1))
 
@@ -1310,6 +1321,7 @@ def run_3d():
             sep = rkt.fin[0].dim[1][1] - rocket.rocket_dim[-1][1]/2
         else:
             sep = 0
+
         #Torque motor
         Tmotor_pos=vp.arrow(pos=vp.vector(motor.pos.x-(d/2+0.015+sep),
                                           motor.pos.y,motor.pos.z),
@@ -1350,13 +1362,13 @@ def run_3d():
         if rocket.use_fins_control is True:
             T_fin_pos.visible=False
             T_fin_neg.visible=False
-            
+
         cg_ball = vp.sphere(pos=vp.vector(dim_x_floor/2,0,dim_z_floor/2),
                             axis=vp.vector(1,0,0),radius=d/2*1.5,
                             color=vp.color.blue)
-        
+
         cg_ball.visilbe = not hide_cg
-        
+
         velocity_arrow = vp.arrow(pos=(rocket_3d.pos+vp.vector(0,L/2,0)),
                             axis=vp.vector(0,L*0.7,0),shaftwidth=d/3,
                             color=vp.color.blue)
@@ -1365,18 +1377,21 @@ def run_3d():
         break_flag_button = False
         pause_resume_flag = False
 
-        vp.wtext(text="\n")
-        vp.wtext(text="                                                 "+
-                     "       ")
-        
+        widgets = []
+        widgets_text = []
+        widgets_text.append(vp.wtext(text="\n"))
+        widgets_text.append(vp.wtext(text="                                                 "+
+                     "       "))
+
         def skip_back_super_coarse(b):
             global skip_flag, skip_backwards_flag, skip_steps
             skip_flag = True
             skip_backwards_flag = True
             skip_steps = int(super_coarse_step)
         skip_back_super_coarse_button = vp.button(canvas=scene, bind=skip_back_super_coarse, text=' <<<<<<<<< ',
-                                            color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
-        
+                                                  color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
+        widgets.append(skip_back_super_coarse_button)
+
         def skip_back_coarse(b):
             global skip_flag, skip_backwards_flag, skip_steps
             skip_flag = True
@@ -1384,6 +1399,7 @@ def run_3d():
             skip_steps = int(coarse_step)
         skip_back_coarse_button = vp.button(canvas=scene, bind=skip_back_coarse, text='   <<<<<   ',
                                             color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
+        widgets.append(skip_back_coarse_button)
 
         def skip_back_fine(b):
             global skip_flag, skip_backwards_flag, skip_steps
@@ -1392,21 +1408,20 @@ def run_3d():
             skip_steps = int(fine_step)
         skip_back_fine_button = vp.button(canvas=scene, bind=skip_back_fine, text='    <<<    ',
                                           color=vp.vec(1,1,1), background=vp.vec(0.333,0.465,0.561))
-
+        widgets.append(skip_back_fine_button)
 
         def pause_resume(b):
-            global pause_resume_flag            
+            global pause_resume_flag
             pause_resume_flag = not pause_resume_flag
-            if pause_resume_flag == True:                
+            if pause_resume_flag == True:
                 pause_resume_button.background=vp.vec(0.35,0.35,0.35)
                 pause_resume_button.color=vp.vec(1,1,1)
             else:
                 pause_resume_button.color=vp.vec(0,0,0)
                 pause_resume_button.background=vp.vec(1,1,1)
-
-
         pause_resume_button = vp.button(canvas=scene, bind=pause_resume, text='  >||  ',
                                         color=vp.vec(0,0,0), background=vp.vec(1,1,1))
+        widgets.append(pause_resume_button)
 
         def skip_ahead_fine(b):
             global skip_flag, skip_ahead_flag, skip_steps
@@ -1414,7 +1429,8 @@ def run_3d():
             skip_ahead_flag = True
             skip_steps = int(fine_step)
         skip_ahead_fine_button = vp.button(canvas=scene, bind=skip_ahead_fine, text='    >>>    ',
-                                        color=vp.vec(1,1,1), background=vp.vec(0.273,0.588,0))
+                                           color=vp.vec(1,1,1), background=vp.vec(0.273,0.588,0))
+        widgets.append(skip_ahead_fine_button)
 
         def skip_ahead_coarse(b):
             global skip_flag, skip_ahead_flag, skip_steps
@@ -1422,67 +1438,74 @@ def run_3d():
             skip_ahead_flag = True
             skip_steps = int(coarse_step)
         skip_ahead_coarse_button = vp.button(canvas=scene, bind=skip_ahead_coarse,
-                                        text='   >>>>>   ',color=vp.vec(1,1,1),
-                                        background=vp.vec(0.273,0.588,0))
-        
+                                             text='   >>>>>   ',color=vp.vec(1,1,1),
+                                             background=vp.vec(0.273,0.588,0))
+        widgets.append(skip_ahead_coarse_button)
+
         def skip_ahead_super_coarse(b):
             global skip_flag, skip_ahead_flag, skip_steps
             skip_flag = True
             skip_ahead_flag = True
             skip_steps = int(super_coarse_step)
         skip_ahead_coarse_button = vp.button(canvas=scene, bind=skip_ahead_super_coarse,
-                                        text=' >>>>>>>>> ',color=vp.vec(1,1,1),
-                                        background=vp.vec(0.273,0.588,0))
-        
-        vp.wtext(text="                                            ")
-        
+                                             text=' >>>>>>>>> ',color=vp.vec(1,1,1),
+                                             background=vp.vec(0.273,0.588,0))
+        widgets.append(skip_ahead_coarse_button)
+        widgets_text.append(vp.wtext(text="                                            "))
+
         def exit_3d(b):
             global break_flag_button
             break_flag_button = True
             print("3D Forced Stop")
         exit_button = vp.button(canvas=scene, bind=exit_3d, text='   Finish    ',
                                 color=vp.vec(1,1,1), background=vp.vec(1,0,0))
+        widgets.append(exit_button)
 
-        vp.wtext(text="\n\n")
+        widgets_text.append(vp.wtext(text="\n\n"))
 
         def slider_slow_mo_3d(s):
             global slow_mo
-            slow_mo = s.value
-            slider_slow_mo_caption.text = ' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value)
+            if break_flag_button == False:
+                slow_mo = s.value
+                slider_slow_mo_caption.text = ' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value)
         slider_slow_mo = vp.slider(canvas=scene, bind=slider_slow_mo_3d,
                                    text='Slow Motion', min=1, max=10, value=slow_mo,
                                    left=440, right=12)
-        slider_slow_mo_caption = vp.wtext(text=' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value)) 
-        
-        vp.wtext(text="                                               ")
-        
+        slider_slow_mo_caption = vp.wtext(text=' Slow Mo = '+'{:1.2f}'.format(slider_slow_mo.value))
+        widgets.append(slider_slow_mo)
+        widgets_text.append(slider_slow_mo_caption)
+        widgets_text.append(vp.wtext(text="                                               "))
+
         def hide_forces_3d(b):
             global hide_forces
             hide_forces = not hide_forces
-            if hide_forces == True:                
-                hide_forces_button.background=vp.vec(0.35,0.35,0.35)
-                hide_forces_button.color=vp.vec(1,1,1)
-                hide_forces_button.text = "Show Forces "
-            else:
+            if hide_forces == True:
                 hide_forces_button.color=vp.vec(0,0,0)
                 hide_forces_button.background=vp.vec(1,1,1)
+                hide_forces_button.text = "Show Forces "
+            else:
+                hide_forces_button.background=vp.vec(0.35,0.35,0.35)
+                hide_forces_button.color=vp.vec(1,1,1)
                 hide_forces_button.text = " Hide Forces "
         hide_forces_button = vp.button(canvas=scene, bind=hide_forces_3d, text='Hide/Show Forces',
                                 color=vp.color.white, background=vp.vector(0,0.557,0.7))
         hide_forces_3d(hide_forces_button)
         hide_forces_3d(hide_forces_button)
-        
-        vp.wtext(text="\n\n")
+        widgets.append(hide_forces_button)
+        widgets_text.append(vp.wtext(text="\n\n"))
 
         def slider_fov_3d(s):
             global fov
-            fov = s.value
-            slider_fov_text.text = ' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    "
-            run_camera_3d(i,j)
+            if break_flag_button == False:
+                fov = s.value
+                slider_fov_text.text = ' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    "
+                run_camera_3d(i,j)
         slider_fov = vp.slider(canvas=scene, bind=slider_fov_3d,
-                                   text='Fov', min=0.01, max=2*fov, value=fov,
-                                   left=440, right=12)
+                               text='Fov', min=0.01, max=2*fov, value=fov,
+                               left=440, right=12)
         slider_fov_text = vp.wtext(text=' Fov = '+'{:1.2f}'.format(slider_fov.value)+"    ")
+        widgets.append(slider_fov)
+        widgets_text.append(slider_fov_text)
 
         def change_camera(m):
             global camera_type
@@ -1492,29 +1515,27 @@ def run_3d():
         camera_options = ["Follow", "Fixed", "Follow Far"]
         menu_camera = vp.menu(bind=change_camera, choices=camera_options,
                               selected=camera_type)
-        
-        vp.wtext(text="                          ")
-        
+        widgets.append(menu_camera)
+        widgets_text.append(vp.wtext(text="                          "))
+
         def hide_cg_3d(b):
-            global hide_cg            
+            global hide_cg
             hide_cg = not hide_cg
             if hide_cg == False:
-                hide_cg_button.color=vp.vec(0,0,0)
-                hide_cg_button.background=vp.vec(1,1,1)
-                hide_cg_button.text = " Hide CG & AoA"
-            else:
                 hide_cg_button.background=vp.vec(0.35,0.35,0.35)
                 hide_cg_button.color=vp.vec(1,1,1)
+                hide_cg_button.text = " Hide CG & AoA"
+            else:
+                hide_cg_button.color=vp.vec(0,0,0)
+                hide_cg_button.background=vp.vec(1,1,1)
                 hide_cg_button.text = "Show CG & AoA"
-            
+
         hide_cg_button = vp.button(canvas=scene, bind=hide_cg_3d, text='Hide/Show CG',
                                 color=vp.color.white, background=vp.vector(0,0.557,0.7))
         hide_cg_3d(hide_cg_button)
         hide_cg_3d(hide_cg_button)
-        
-        vp.wtext(text="\n\n")
-
-
+        widgets.append(hide_cg_button)
+        widgets_text.append(vp.wtext(text="\n\n"))
 
 
         """Labels #########################################################"""
@@ -1557,14 +1578,16 @@ def run_3d():
                               font='sans',box=False,line=False,align ="left")
 
         def slider_time_3d(s):
-            s.value = t_3d[i]
+            if break_flag_button == False:
+                s.value = t_3d[i]
         slider_time = vp.slider(canvas=labels, bind=slider_time_3d,
-                                   text='t', min=t_3d[0], max=t_3d[-1], value=0,
-                                   pos=labels.title_anchor, length=1280)
+                                text='t', min=t_3d[0], max=t_3d[-1], value=0,
+                                pos=labels.title_anchor, length=1280)
+        widgets.append(slider_time)
+
 
         """Rotations and displacements #####################################"""
-
-        def run_3d_graphics(i,j):  
+        def run_3d_graphics(i,j):
             global vect_cg
             # How much to move each time-step , X and Z are the rocket's axes, not the world's
             delta_pos_X = position_3d[j][0] - position_3d[i][0]
@@ -1572,18 +1595,17 @@ def run_3d():
             delta_theta = theta_3d[j] - theta_3d[i]
             delta_servo = servo_3d[j] - servo_3d[i]
             delta_aoa = aoa_3d[j] - aoa_3d[i]
-            
+
             # Moves the rocket
             rocket_3d.pos.y+=delta_pos_X
             rocket_3d.pos.x+=delta_pos_Z
-            
-            # Displacements and rotations of the arrows            
+
+            # Displacements and rotations of the arrows
             Tmotor_pos.pos.y+=delta_pos_X
             Tmotor_pos.pos.x+=delta_pos_Z
             Tmotor_neg.pos.y+=delta_pos_X
             Tmotor_neg.pos.x+=delta_pos_Z
-            
-            
+
             # Creates a cg and cp vector with reference to the origin of the
             # 3d rocket (its centroid)
             # Delta xa_radius, this is then integrated when you move the Aerodynamic Force arrow
@@ -1598,20 +1620,20 @@ def run_3d():
                 vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
                                     rocket_3d.pos.y + xcg_radius[0],
                                     2000)
-            
+
             # Put the ball in the cg
             cg_ball.visible = not hide_cg
             velocity_arrow.visible = not hide_cg
             cg_ball.pos = vect_cg
             velocity_arrow.pos = vect_cg
-            
+
             # Rotate rocket from the CG
             rocket_3d.rotate(delta_theta,axis=vp.vector(0,0,1),
                              origin=vect_cg)
             velocity_arrow.rotate(delta_theta,axis=vp.vector(0,0,1),
                              origin=vect_cg)
             velocity_arrow.rotate(delta_aoa,axis=vp.vector(0,0,-1),
-                             origin=vect_cg)            
+                             origin=vect_cg)
 
             # Move the motor together with the rocket
             motor.pos.y+=delta_pos_X
@@ -1790,7 +1812,7 @@ def run_3d():
         i=0
         j=1
         list_length = len(theta_3d)-2
-        while True:            
+        while True:
             vp.rate(len(t_3d)/t_total/slow_mo)
             play_video = skip_flag is False and pause_resume_flag is False and i < list_length
             slider_time_3d(slider_time)
@@ -1799,8 +1821,8 @@ def run_3d():
                 run_camera_3d(i,j)
                 i+=1
                 j+=1
-            if skip_flag is True:                
-                if skip_ahead_flag is True:                    
+            if skip_flag is True:
+                if skip_ahead_flag is True:
                     for t in range(skip_steps):
                         if i >= list_length-10:
                             break
@@ -1823,11 +1845,5 @@ def run_3d():
                     skip_backwards_flag = False
             if break_flag_button == True:
                 break
-
         plt.draw()
         plt.show()
-
-
-
-
-
