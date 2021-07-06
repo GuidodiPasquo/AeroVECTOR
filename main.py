@@ -36,16 +36,16 @@ Remember that you must multiply the output of the controller times the
 TVC reduction in you flight computer!
 All in all, the overall structure of the function "control_theta" and
 "PID" should be copied in your code to
-ensure that the simulator and flight computer are doing the same thing, 
+ensure that the simulator and flight computer are doing the same thing,
 unless you are using SITL.
 """
 import matplotlib
-matplotlib.use('TkAgg')
 import tkinter as tk
 from tkinter import ttk
 import gui_setup as gui
+matplotlib.use('TkAgg')
 
-#### Main
+# Main
 root = tk.Tk()
 root.title("ZPC Actively Stabilized Model Rocket Tuner / Simulator")
 root.geometry("600x600")
@@ -57,5 +57,5 @@ gui.create_conf_3d_tab(notebook)
 gui.create_sitl_tab(notebook)
 gui.create_simulation_setup_tab(notebook)
 gui.create_run_sim_tab(notebook)
-gui.configure_root(root,notebook)
+gui.configure_root(root, notebook)
 root.mainloop()

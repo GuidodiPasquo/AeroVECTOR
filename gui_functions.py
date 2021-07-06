@@ -33,7 +33,7 @@ import rocket_functions
 
 def move_tk_object(obj, r=0, c=0, columnspan=1):
     """
-    Moves a tk object to the selected position.
+    Move a tk object to the selected position.
 
     Parameters
     ----------
@@ -53,11 +53,30 @@ def move_tk_object(obj, r=0, c=0, columnspan=1):
     obj.grid(row=r, column=c, columnspan=columnspan)
 
 
+def points_2_param_fins(s):
+    p_string = [0]*4
+    s_float = []
+    for element in s:
+        a = element.split(",")
+        s_float.append([float(a[0]), float(a[1])])
+    pos_root = s_float[0][0]
+    pos_tip = s_float[1][0] - s_float[0][0]
+    c_root = s_float[3][0] - s_float[0][0]
+    c_tip = s_float[2][0] - s_float[1][0]
+    wingspan = s_float[1][1] - s_float[0][1]
+    p_string[0] = str(pos_root) + ", " + str(c_root)
+    p_string[1] = str(pos_tip) + ", " + str(c_tip)
+    p_string[2] = str(wingspan)
+    p_string[3] = "0.003"
+    return p_string
+
+
 class ActiveFileLabel:
     """
     Creates a label with the active file name.
 
-    Methods:
+    Methods
+    -------
         create_label -- Creates the label.
         update -- Updates the label.
 
@@ -69,7 +88,7 @@ class ActiveFileLabel:
 
     def create_label(self, root, r, c):
         """
-        Creates the label in the canvas root, in the row = r and column = c
+        Create the label in the canvas root, in the row = r and column = c.
 
         Parameters
         ----------
@@ -89,11 +108,11 @@ class ActiveFileLabel:
         self.canvas = root
         self.text = tk.StringVar()
         self.active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        self.active_file_label.grid(row=r,column=c,sticky="W", columnspan=2)
+        self.active_file_label.grid(row=r, column=c, sticky="W", columnspan=2)
 
     def update(self, active_file):
         """
-        Update the label with the new file name
+        Update the label with the new file name.
 
         Parameters
         ----------
@@ -106,14 +125,16 @@ class ActiveFileLabel:
         """
         self.text.set("Active File is " + active_file)
         active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        active_file_label.grid(row=self.r, column=self.c, sticky="W", columnspan=2)
+        active_file_label.grid(row=self.r, column=self.c,
+                               sticky="W", columnspan=2)
 
 
 class Tab:
     """
     Basic tab template with checkboxes, combobox and entries.
 
-    Methods:
+    Methods
+    -------
         create_tab -- Creates the tab in the notebook.
         create_checkboxes -- Creates them in the tab.
         activate_all -- Activates everything in the tab.
@@ -162,7 +183,7 @@ class Tab:
 
     def create_tab(self, nb, name):
         """
-        Create the new tab in the notebook nb and call it name
+        Create the new tab in the notebook nb and call it name.
 
         Parameters
         ----------
@@ -195,7 +216,7 @@ class Tab:
         s : tk position ("S", "W", etc), optional
             where the labels are aligned. The default is "W".
         disables_all : bool, optional
-            The first item will enable or disable the tab. The default is False.
+            The first item will enable or disable the tab. Default is False.
 
         Returns
         -------
@@ -211,26 +232,26 @@ class Tab:
                 if disables_all is True:
                     self.checkbox_status[i] = tk.StringVar()
                     self.checkbox[i] = tk.Checkbutton(self.tab,
-                                                       text=self.names_checkbox[i],
-                                                       variable=self.checkbox_status[i],
-                                                       onvalue="True", offvalue="False",
-                                                       command=self.change_state)
+                                                      text=self.names_checkbox[i],
+                                                      variable=self.checkbox_status[i],
+                                                      onvalue="True", offvalue="False",
+                                                      command=self.change_state)
                     self.checkbox[i].deselect()
                     self.checkbox[i].grid(row=r+i, column=c, sticky=s)
                 else:
                     self.checkbox_status[i] = tk.StringVar()
                     self.checkbox[i] = tk.Checkbutton(self.tab,
-                                                       text=self.names_checkbox[i],
-                                                       variable=self.checkbox_status[i],
-                                                       onvalue="True", offvalue="False")
+                                                      text=self.names_checkbox[i],
+                                                      variable=self.checkbox_status[i],
+                                                      onvalue="True", offvalue="False")
                     self.checkbox[i].deselect()
                     self.checkbox[i].grid(row=r+i, column=c, sticky=s)
                 continue
             self.checkbox_status[i] = tk.StringVar()
             self.checkbox[i] = tk.Checkbutton(self.tab,
-                                               text=self.names_checkbox[i],
-                                               variable=self.checkbox_status[i],
-                                               onvalue="True", offvalue="False")
+                                              text=self.names_checkbox[i],
+                                              variable=self.checkbox_status[i],
+                                              onvalue="True", offvalue="False")
             self.checkbox[i].deselect()
             self.checkbox[i].grid(row=r+i, column=c, sticky=s)
 
@@ -282,7 +303,7 @@ class Tab:
         """
         Create the comboboxes starting at the row = r, column = c,
         using the list names_combobox to determine their order and names
-        and the nested list options as options of each combobox
+        and the nested list options as options of each combobox.
 
         Parameters
         ----------
@@ -306,7 +327,7 @@ class Tab:
         self.combobox = [0]*len(self.names_combobox)
         self.combobox_label = [0]*len(self.names_combobox)
         for i in range(len(self.names_combobox)):
-            self.combobox[i] = ttk.Combobox(self.tab, width=w, state='readonly')
+            self.combobox[i] = ttk.Combobox(self.tab, width=w, state="readonly")
             self.combobox[i].grid(row=r+i, column=c+1, sticky=s)
             self.combobox[i]["values"] = options[i]
             self.combobox_label[i] = tk.Label(self.tab, text=self.names_combobox[i])
@@ -359,7 +380,7 @@ class Tab:
         None.
         """
         # Fills the widgets with the data of the save file
-        l = copy.deepcopy(l0)
+        data = copy.deepcopy(l0)
         # Can't write to a disable widget
         self.activate_all()
         # Checkbox, combobox, entry
@@ -367,18 +388,18 @@ class Tab:
         n_comb = len(self.names_combobox)
         n_ent = len(self.entry)
         for i in range(n_check):
-            if l[i] == "True":
+            if data[i] == "True":
                 self.checkbox[i].select()
-            elif l[i] == "False":
+            elif data[i] == "False":
                 self.checkbox[i].deselect()
         for i in range(n_comb):
-            self.combobox[i].set(l[i+n_check])
+            self.combobox[i].set(data[i+n_check])
         for i in range(n_ent):
-            self.entry[i].insert(0,l[i+n_check+n_comb])
+            self.entry[i].insert(0, data[i+n_check+n_comb])
 
     def depopulate(self):
         """
-        Clears all the widgets.
+        Clear all the widgets.
 
         Returns
         -------
@@ -390,11 +411,11 @@ class Tab:
         for i in range(len(self.names_combobox)):
             self.combobox[i].set(self.combobox_options[i][0])
         for i in range(len(self.entry)):
-            self.entry[i].delete(0,15)
+            self.entry[i].delete(0, 150)
 
     def get_configuration(self):
         """
-        Gets the status and information of all the tab's widgets.
+        Get the status and information of all the tab's widgets.
 
         Returns
         -------
@@ -428,7 +449,7 @@ class Tab:
         """
 
         def is_number(s):
-            """ Returns True is string is a number. """
+            """Return True is string is a number."""
             try:
                 float(s)
                 return True
@@ -436,7 +457,7 @@ class Tab:
                 return False
 
         def string_or_bool(s):
-            """Returns True if string == True"""
+            """Return True if string == True."""
             if s == "True":
                 return True
             if s == "False":
@@ -444,7 +465,7 @@ class Tab:
             return s
 
         def is_baudrate(f):
-            """If f > 9000 almost certainly it's a baudrate"""
+            """If f > 9000 almost certainly it's a baudrate."""
             return bool(f > 9000)
         for i, elem in enumerate(data):
             if is_number(data[i]):
@@ -457,7 +478,7 @@ class Tab:
 
     def get_configuration_destringed(self):
         """
-        Gets the status and information of all the tab's widgets (in variable
+        Get the status and information of all the tab's widgets (in variable
         format).
 
         Returns
@@ -471,7 +492,7 @@ class Tab:
 
     def configure(self, n=10):
         """
-        Configurates the tab with a minimum row and columns size of n.
+        Configure the tab with a minimum row and columns size of n.
 
         Parameters
         ----------
@@ -532,7 +553,8 @@ class TabWithCanvas(Tab):
     """
     For tabs with canvases.
 
-    Methods:
+    Methods
+    -------
         set_points -- Sets the rocket component points.
         add_point -- Adds a point to the rocket component.
         delete_point -- Delets a point of the rocket components.
@@ -559,9 +581,17 @@ class TabWithCanvas(Tab):
         #     | \[1]
         #     | |
         #  [3]|_|[2]
-        self.points = [["0,0","0,0"],
-                       ["0.001,0.001","0.001,0.001","0.001,0.001","0.001,0.001"],
-                       ["0.001,0.001","0.001,0.001","0.001,0.001","0.001,0.001"]]
+        self.points = [["0,0", "0,0"],
+                       ["0.001,0.001",
+                        "0.001,0.001",
+                        "0.001,0.001",
+                        "0.001,0.001"],
+                       ["0.001,0.001",
+                        "0.001,0.001",
+                        "0.001,0.001",
+                        "0.001,0.001"]]
+        self.param_fin = [["0, 0", "0, 0", "0", "0"],
+                          ["0, 0", "0, 0", "0", "0"]]
         self.rocket = rocket_functions.Rocket()
         self.active_point = 0
         self.active_point_fins = 0
@@ -593,7 +623,7 @@ class TabWithCanvas(Tab):
         list of floats.
             data sorted.
         """
-        def _l2j_is_greater_than(l2,j):
+        def _l2j_is_greater_than(l2, j):
             if float(l2[j].split(",")[0]) > float(l2[j+1].split(",")[0]):
                 return True
             return False
@@ -608,7 +638,7 @@ class TabWithCanvas(Tab):
 
     def set_points(self, n, l):
         """
-        Recieves a list and sets the points of the rocket body to it.
+        Recieve a list and sets the points of the rocket body to it.
 
         Parameters
         ----------
@@ -621,13 +651,11 @@ class TabWithCanvas(Tab):
         -------
         None.
         """
-
-        #
         self.points[n] = copy.deepcopy(l)
 
     def add_point(self, n, s):
         """
-        Adds the point "s" to the rocket part "n".
+        Add the point "s" to the rocket part "n".
 
         Parameters
         ----------
@@ -650,12 +678,12 @@ class TabWithCanvas(Tab):
             for i in range(len(self.entry)):
                 # else you delete the entries and populates them
                 # with the points, it is not used
-                self.entry[i].delete(0, 15)
+                self.entry[i].delete(0, 150)
                 self.entry[i].insert(0, s)
 
     def delete_point(self, n, s):
         """
-        Deletes the point "s" form the rocket part "n".
+        Delete the point "s" form the rocket part "n".
 
         Parameters
         ----------
@@ -713,6 +741,46 @@ class TabWithCanvas(Tab):
             l2.append([float(a[0]), float(a[1])])
         return copy.deepcopy(l2)
 
+    def get_param_fin(self, n):
+        """
+        Get the points of the rocket part "n" as strings.
+
+        Parameters
+        ----------
+        n : int
+            n = 0 = body, 1 = stabilization fin, 2 = control fin..
+
+        Returns
+        -------
+        Nested list of strings.
+            points of the part "n".
+        """
+        return copy.deepcopy(self.param_fin[n])
+
+    def get_param_fin_float(self, n):
+        """
+        Get the points of the rocket part "n" as floats.
+
+        Parameters
+        ----------
+        n : int
+            n = 0 = body, 1 = stabilization fin, 2 = control fin.
+
+        Returns
+        -------
+        Nested list of floats.
+            points of the part "n".
+        """
+        l = copy.deepcopy(self.param_fin[n])
+        l2 = []
+        for i in range(2):
+            a = l[i].split(",")
+            l2.append([float(a[0]), float(a[1])])
+        for i in range(2):
+            a = l[i+2]
+            l2.append(float(a))
+        return copy.deepcopy(l2)
+
     def create_canvas(self, canvas_width, canvas_height):
         """
         Create a canvas of determined width and height
@@ -732,7 +800,7 @@ class TabWithCanvas(Tab):
         self.canvas_height = canvas_height
         self.canvas = (tk.Canvas(self.tab, width=self.canvas_width,
                                  heigh=self.canvas_height, bg="white"))
-        self.canvas.grid(row=0, column=0, rowspan = 20)
+        self.canvas.grid(row=0, column=0, rowspan=20)
         self._create_n_f_app_m_labels()
 
     def _create_n_f_app_m_labels(self):
@@ -777,7 +845,7 @@ class TabWithCanvas(Tab):
             fin_stab_points = self.get_points_float(1)
             attached = self.checkbox_status[2].get()
             separate = "False"
-            self._draw_fins(fin_stab_points,"black", attached, separate)
+            self._draw_fins(fin_stab_points, "black", attached, separate)
             if self.checkbox_status[3].get() == "True":
                 fin_control_points = self.get_points_float(2)
                 attached = self.checkbox_status[4].get()
@@ -841,16 +909,19 @@ class TabWithCanvas(Tab):
         mass_parameters = [0]*6
         for i in range(6):
             mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
-        self._update_scale_limits()
         self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
+        self._update_scale_limits()
         v = self.transform_AoA_2_v(self.aoa) * self.velocity
         cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
                                                                actuator_angle=self.aoa_ctrl_fin)
         self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
         self._set_f_app_point_color(self.normal_force)
-        self.canvas.create_oval(self.canvas_width/2-f, self.force_app_point*self.scale_y - f,
-                                self.canvas_width/2+f, self.force_app_point*self.scale_y + f,
-                                fill=self.f_app_colour, outline=self.f_app_colour)
+        self.canvas.create_oval(self.canvas_width/2-f,
+                                self.force_app_point*self.scale_y - f,
+                                self.canvas_width/2+f,
+                                self.force_app_point*self.scale_y + f,
+                                fill=self.f_app_colour,
+                                outline=self.f_app_colour)
 
     def transform_AoA_2_v(self, aoa):
         if aoa <= -np.pi/2:
@@ -875,9 +946,9 @@ class TabWithCanvas(Tab):
         if max_actuator_angle == "":
             max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
-                                    to=max_actuator_angle, resolution=definition)
+                                    to=max_actuator_angle,
+                                    resolution=definition)
         self.scale_time.config(to=self.rocket.t_burnout)
-
 
     def _calculate_total_cn_cp(self, cn, cp_point):
         q = 0.5 * 1.225 * self.velocity**2
@@ -909,22 +980,24 @@ class TabWithCanvas(Tab):
     def _create_point_xcg(self, point_diameter):
         f = point_diameter / 2
         self.xcg_point = self.rocket.get_xcg(self.flight_time, 0)
-        self.canvas.create_oval(self.canvas_width/2 - f, self.xcg_point*self.scale_y - f,
-                                self.canvas_width/2 + f, self.xcg_point*self.scale_y + f,
+        self.canvas.create_oval(self.canvas_width/2 - f,
+                                self.xcg_point*self.scale_y - f,
+                                self.canvas_width/2 + f,
+                                self.xcg_point*self.scale_y + f,
                                 fill="blue", outline="blue")
 
     def _update_n_f_app_m_labels(self):
-        n_force = "N Force = " + str(round(self.normal_force,3)) + " N"
-        f_point = "Force App point = " + str(round(self.force_app_point,3)) + " m"
+        n_force = "N Force = " + str(round(self.normal_force, 3)) + " N"
+        f_point = "Force App point = " + str(round(self.force_app_point, 3)) + " m"
         moment = self.normal_force * (self.force_app_point-self.xcg_point)
-        moment_text = "Moment = " + str(round(moment,3)) + " N.m"
-        thrust_text = "T = " + str(round(self.rocket.get_thrust(self.flight_time, 0),3)) + " N"
+        moment_text = "Moment = " + str(round(moment, 3)) + " N.m"
+        thrust_text = "T = " + str(round(self.rocket.get_thrust(self.flight_time, 0), 3)) + " N"
         self.n_force_label.config(text=n_force)
         self.f_point_label.config(text=f_point)
         self.moment_label.config(text=moment_text)
         self.thrust_label.config(text=thrust_text)
 
-    def _draw_base_component(self,l2):
+    def _draw_base_component(self, l2):
         # Draws the horizontal line that separates each component
         for element in l2:
             x1 = (element[1]*self.scale_y + self.canvas_width) / 2
@@ -944,7 +1017,7 @@ class TabWithCanvas(Tab):
             sep = 0.01
         else:
             sep = 0
-        #Draws the fin
+        # Draws the fin
         for i in range(len(l2)-1):
             x1 = (l2[i][1]+sep) * self.scale_y + self.canvas_width/2
             y1 = l2[i][0]*self.scale_y + self.centering
@@ -971,16 +1044,16 @@ class TabWithCanvas(Tab):
             y2 = l2[3][0]*self.scale_y + self.centering
             x1_m = -(l2[0][1]+sep) * self.scale_y + self.canvas_width/2
             y1_m = l2[0][0]*self.scale_y + self.centering
-            x2_m =  -(l2[0][1]+sep) * self.scale_y + self.canvas_width/2
+            x2_m = -(l2[0][1]+sep) * self.scale_y + self.canvas_width/2
             y2_m = l2[3][0]*self.scale_y + self.centering
             self.canvas.create_line(x1, y1, x2, y2, fill=s)
             self.canvas.create_line(x1_m, y1_m, x2_m, y2_m, fill=s)
 
-    def populate(self,l0):
+    def populate(self, l0):
         # Populates the entries and more importantly, the points[i]
         # the savefile separates the body from the sabilization fins
         # with "Fins_s", and these from the control ones with "Fins_c"
-        l = copy.deepcopy(l0)[:(len(self.checkbox)+len(self.combobox))]
+        l = copy.deepcopy(l0)[:(len(self.checkbox) + len(self.combobox))]
         l1 = copy.deepcopy(l0)[(len(self.checkbox)):]
         l2 = []
         l3 = []
@@ -1004,9 +1077,12 @@ class TabWithCanvas(Tab):
         super().populate((l+l3))
         # Updates the points of the components
         self.combobox[0]["values"] = l2
+        self.param_fin[0] = copy.deepcopy(l3)
+        self.param_fin[1] = copy.deepcopy(l4)
         self.points[0] = copy.deepcopy(l2)
-        self.points[1] = copy.deepcopy(l3)
-        self.points[2] = copy.deepcopy(l4)
+        self.rocket._update_rocket_dim(self.get_points_float(0))
+        self.points[1] = copy.deepcopy(self.param_2_points_fins(l3))
+        self.points[2] = copy.deepcopy(self.param_2_points_fins(l4))
         self.draw_rocket()
         self.change_state_fins()
 
@@ -1016,8 +1092,8 @@ class TabWithCanvas(Tab):
         # between fins
         d = []
         d0 = self.get_points(0)
-        d1 = self.get_points(1)
-        d2 = self.get_points(2)
+        d1 = self.get_param_fin(0)
+        d2 = self.get_param_fin(1)
         for i in range(len(self.checkbox)):
             d.append(self.checkbox_status[i].get())
         d += d0
@@ -1031,8 +1107,8 @@ class TabWithCanvas(Tab):
         # Format [che,ck,box, [body], [fin_s], [fin_c]]
         d = []
         d0 = self.get_points_float(0)
-        d1 = self.get_points_float(1)
-        d2 = self.get_points_float(2)
+        d1 = self.get_param_fin_float(0)
+        d2 = self.get_param_fin_float(1)
         for i in range(len(self.checkbox)):
             if self.checkbox_status[i].get() == "True":
                 d.append(True)
@@ -1089,10 +1165,13 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.aoa_scale = tk.Scale(self.tab, from_=0, to=90,
-                             orient=tk.HORIZONTAL, command=slider_aoa, length=200,
-                             resolution=0.5)
+                                  orient=tk.HORIZONTAL,
+                                  command=slider_aoa,
+                                  length=200,
+                                  resolution=0.5)
         self.aoa_scale.grid(row=20, column=0)
-        tk.Label(self.tab, text="Angle of Attack" + u' [\xb0]').grid(row=21, column=0)
+        tk.Label(self.tab, text="Angle of Attack" + u' [\xb0]'
+                 ).grid(row=21, column=0)
 
         def slider_actuator_angle(a):
             if self.checkbox_status[3].get() == "True":
@@ -1107,18 +1186,21 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.scale_act_angle = tk.Scale(self.tab, from_=-45, to=45,
-                             orient=tk.HORIZONTAL, command=slider_actuator_angle,
-                             length=150)
+                                        orient=tk.HORIZONTAL,
+                                        command=slider_actuator_angle,
+                                        length=150)
         self.scale_act_angle.grid(row=20, column=1)
-        tk.Label(self.tab, text="Actuator Deflection" + u' [\xb0]').grid(row=21, column=1)
+        tk.Label(self.tab, text="Actuator Deflection" + u' [\xb0]'
+                 ).grid(row=21, column=1)
 
         def slider_velocity(a):
             self.velocity = float(a)
             self.draw_rocket()
 
         self.scale_velocity = tk.Scale(self.tab, from_=1, to=100,
-                             orient=tk.HORIZONTAL, command=slider_velocity,
-                             length=150)
+                                       orient=tk.HORIZONTAL,
+                                       command=slider_velocity,
+                                       length=150)
         self.scale_velocity.set(10)
         self.scale_velocity.grid(row=20, column=3)
         tk.Label(self.tab, text="Speed [m/s]").grid(row=21, column=3)
@@ -1128,9 +1210,32 @@ class TabWithCanvas(Tab):
             self.draw_rocket()
 
         self.scale_time = tk.Scale(self.tab, from_=0.01, to=15,
-                             orient=tk.HORIZONTAL, command=slider_time, length=150,
-                             resolution=0.01)
+                                   orient=tk.HORIZONTAL,
+                                   command=slider_time,
+                                   length=150,
+                                   resolution=0.01)
         self.scale_time.set(0.01)
         self.scale_time.grid(row=18, column=3)
         tk.Label(self.tab, text="Time [s]").grid(row=19, column=3)
 
+    def param_2_points_fins(self, s):
+        p = [[0, 0]]*4
+        p_string = [[0, 0]]*4
+        wingspan = float(s[2])
+        for i in range(2):
+            position = float(s[i].split(",")[0])
+            chord = float(s[i].split(",")[1])
+            if i == 0:
+                radius = self.rocket.diam_interp(position) / 2
+                p[0] = [position, radius]
+                p[3] = [position+chord, radius]
+            else:
+                pos_root = p[0][0]
+                position += pos_root
+                radius = self.rocket.diam_interp(position) / 2
+                radius += wingspan
+                p[1] = [position, radius]
+                p[2] = [position+chord, radius]
+        for i in range(4):
+            p_string[i] = str(p[i][0]) + "," + str(p[i][1])
+        return p_string

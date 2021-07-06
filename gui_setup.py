@@ -24,32 +24,33 @@ import files
 import gui_functions as fun
 import zpc_pid_simulator as sim
 
-DEG2RAD =  3.14159265 / 180
+DEG2RAD = 3.14159265 / 180
 RAD2DEG = 1 / DEG2RAD
 
 
-## Global Variables
+# Global Variables
 active_file_name = ""
 savefile = files.SaveFile()
-## File
+# File
 file_tab = fun.Tab()
-## Parameters
+# Parameters
 param_file_tab = fun.Tab()
-## Draw Rocket
+# Draw Rocket
 draw_rocket_tab = fun.TabWithCanvas()
-## Conf 3d
+# Conf 3d
 conf_3d_tab = fun.Tab()
-## Sim Setup
+# Sim Setup
 sim_setup_tab = fun.Tab()
-## sitl
+# sitl
 conf_sitl_tab = fun.Tab()
-## Sim Run
+# Sim Run
 run_sim_tab = fun.Tab()
 
-## Global Functions
+
+# Global Functions
 def configure_root(root, notebook):
     """
-    Configurates the root notebook with a minimum row and columns size of n.
+    Configure the root notebook with a minimum row and columns size of n.
 
     Parameters
     ----------
@@ -68,11 +69,11 @@ def configure_root(root, notebook):
         root.rowconfigure(rows, weight=1)
         root.columnconfigure(rows, weight=1)
         rows += 1
-    notebook.grid(row=1, column=0, columnspan=50, rowspan=49, sticky='NESW')
+    notebook.grid(row=1, column=0, columnspan=50, rowspan=49, sticky="NESW")
     return notebook
 
-######## Tabs
-## CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
+# Tabs
+# CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
 def create_file_tab(notebook):
     file_tab.create_tab(notebook, "File")
     combobox_options = [files.get_save_names()]
@@ -87,7 +88,7 @@ def create_file_tab(notebook):
         file_tab.combobox[i].grid(padx=x, pady=5)
 
     def create_new_file_b():
-        global  active_file_name
+        global active_file_name
         name = file_tab.entry[0].get()
         if savefile.check_if_file_exists2overwrite(name) is True:
             savefile.create_file(name)
@@ -110,7 +111,7 @@ def create_file_tab(notebook):
     new_file_button.grid(row=0, column=2, padx=10)
 
     def read_file():
-        global  active_file_name
+        global active_file_name
         if file_tab.combobox[0].get() != "":
             savefile.update_name(file_tab.combobox[0].get())
             savefile.read_file()
@@ -118,7 +119,6 @@ def create_file_tab(notebook):
             param_file_tab.populate(savefile.get_parameters())
             draw_rocket_tab.depopulate()
             draw_rocket_tab.populate(savefile.get_rocket_dim())
-            fun.Tab.update_active_file_label(savefile.name)
             conf_3d_tab.depopulate()
             conf_3d_tab.populate(savefile.get_conf_3d())
             conf_3d_tab.change_state()
@@ -131,6 +131,7 @@ def create_file_tab(notebook):
             run_sim_tab.depopulate()
             run_sim_tab.populate(savefile.get_conf_plots())
             savefile.read_motor_data(param_file_tab.combobox[0].get())
+            fun.Tab.update_active_file_label(savefile.name)
         else:
             print("Select valid file")
 
@@ -165,21 +166,22 @@ def create_file_tab(notebook):
         else:
             print("Select file")
 
-    save_as_button = tk.Button(file_tab.tab, text="Save As", command=save_as, width=30)
+    save_as_button = tk.Button(file_tab.tab, text="Save As",
+                               command=save_as, width=30)
     save_as_button.grid(row=2, column=2)
     fun.move_tk_object(file_tab.entry[1], 2, 1)
     file_tab.create_active_file_label(32, 0)
     file_tab.configure()
 
 
-## PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB
+# PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB - PARAMETERS TAB
 def create_parameters_tab(notebook):
     param_file_tab.create_tab(notebook, "Parameters")
     tk.Label(param_file_tab.tab, text="Parameters", fg="black", bg="#CCFFCC",
-              padx=0).grid(row=0, column=0, sticky="NESW", columnspan=3)
+             padx=0).grid(row=0, column=0, sticky="NESW", columnspan=3)
     combobox_options = [files.get_motor_names()]
     names_combobox = ["Motor = "]
-    param_file_tab.create_combobox(combobox_options,names_combobox, 1, 1)
+    param_file_tab.create_combobox(combobox_options, names_combobox, 1, 1)
     names_entry = ["Mass Liftoff [kg] = ",
                    "Mass Burnout [kg] = ",
                    "Iy Liftoff [kg*m^2] = ",
@@ -206,14 +208,14 @@ def create_parameters_tab(notebook):
         savefile.read_motor_data(param_file_tab.combobox[0].get())
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
-                                  command=button_save_parameters, width=20)
+                                 command=button_save_parameters, width=20)
     h = 32
     save_file_button.grid(row=h, column=9)
     param_file_tab.create_active_file_label(h, 0)
     param_file_tab.configure()
 
 
-## DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB
+# DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB - DRAW ROCKET TAB
 def create_draw_rocket_tab(notebook):
     r"""
         Rocket points go from the tip down to the tail
@@ -247,32 +249,39 @@ def create_draw_rocket_tab(notebook):
     # Moves the checkbox from where they were created to it's final
     # position a little bit lower
     for i in range(2):
-        fun.move_tk_object(draw_rocket_tab.checkbox[i+1], r=8+i, c=1, columnspan=1)
+        fun.move_tk_object(draw_rocket_tab.checkbox[i+1],
+                           r=8+i, c=1, columnspan=1)
     for i in range(2):
-        fun.move_tk_object(draw_rocket_tab.checkbox[i+3], r=8+i, c=3, columnspan=1)
+        fun.move_tk_object(draw_rocket_tab.checkbox[i+3],
+                           r=8+i, c=3, columnspan=1)
     # create combobox
     combobox_options = [["0,0"]]
     names_combobox = [""]
-    draw_rocket_tab.create_combobox(combobox_options, names_combobox, 3, 0, s="EW")
+    draw_rocket_tab.create_combobox(combobox_options,
+                                    names_combobox, 3, 0, s="EW")
     draw_rocket_tab.combobox[0].config(state="readonly")
     draw_rocket_tab.combobox_label[0].destroy()
-    tk.Label(draw_rocket_tab.tab, text="Insert Point").grid(row=1, column=1, sticky="WE")
+    tk.Label(draw_rocket_tab.tab, text="Insert Point"
+             ).grid(row=1, column=1, sticky="WE")
     # Creates the entry for the rocket body points
     entry_rocket = tk.Entry(draw_rocket_tab.tab, width=20)
     entry_rocket.grid(row=2, column=1, sticky="EW")
     # Entries for the fins
-    names_entry = ["1", "2", "3", "4"]
-    draw_rocket_tab.create_entry(names_entry, 14, 0, s="EW")
+    names_entry = ["Root (pos, c)", "Tip (pos, c)", "Wingspan", "Thickness"]
+    draw_rocket_tab.create_entry(names_entry, 14, 0, s="E")
     for i in range(4):
-        fun.move_tk_object(draw_rocket_tab.entry_label[i], 14+i, 2)
+        fun.move_tk_object(draw_rocket_tab.entry_label[i], 14+i, 1, 1)
+        draw_rocket_tab.entry_label[i].grid(sticky="W")
+        fun.move_tk_object(draw_rocket_tab.entry[i], 14+i, 1, 1)
+        draw_rocket_tab.entry[i].config(width=13)
 
     def button_add_point():
         draw_rocket_tab.add_point(0, entry_rocket.get())
         draw_rocket_tab.draw_rocket()
 
     add_point_button = tk.Button(draw_rocket_tab.tab, text="Add Point",
-                                  command=button_add_point, width=10,
-                                  fg="white", bg="green")
+                                 command=button_add_point, width=10,
+                                 fg="white", bg="green")
     add_point_button.grid(row=2, column=3, sticky="N")
 
     def button_delete_point():
@@ -303,7 +312,7 @@ def create_draw_rocket_tab(notebook):
     def button_modify_point():
         p = entry_rocket.get()
         if draw_rocket_tab.active_point != "0,0":
-            draw_rocket_tab.delete_point(0 , draw_rocket_tab.active_point)
+            draw_rocket_tab.delete_point(0, draw_rocket_tab.active_point)
             draw_rocket_tab.combobox[0].set(p)
             button_add_point()
             select_point_button.config(bg="blue")
@@ -325,12 +334,13 @@ def create_draw_rocket_tab(notebook):
                                  command=button_save, width=20)
     save_file_button.grid(row=24, column=3)
 
-    ## Fins
+    # Fins
     def load_fins_stabi():
         # populates the entries with the fin data
+        parameters = draw_rocket_tab.param_fin[0]
         for i in range(len(draw_rocket_tab.entry)):
-            draw_rocket_tab.entry[i].delete(0, 15)
-            draw_rocket_tab.entry[i].insert(0, draw_rocket_tab.points[1][i])
+            draw_rocket_tab.entry[i].delete(0, 150)
+            draw_rocket_tab.entry[i].insert(0, parameters[i])
         draw_rocket_tab.draw_rocket()
 
     update_fins_stabi_button = tk.Button(draw_rocket_tab.tab,
@@ -341,52 +351,61 @@ def create_draw_rocket_tab(notebook):
 
     def update_fins_stabi():
         # updates the fin data with the entries
+        s = [0]*4
         for i in range(len(draw_rocket_tab.entry)):
-            draw_rocket_tab.points[1][i] = draw_rocket_tab.entry[i].get()
+            s[i] = draw_rocket_tab.entry[i].get()
+        draw_rocket_tab.param_fin[0] = s
+        draw_rocket_tab.points[1] = draw_rocket_tab.param_2_points_fins(s)
         draw_rocket_tab.draw_rocket()
 
     update_fins_stabi_button = tk.Button(draw_rocket_tab.tab,
                                          text="Update Stabilization Fins",
                                          command=update_fins_stabi, width=20,
-                                         fg="black", bg = "#C8FFC4")
+                                         fg="black", bg="#C8FFC4")
     update_fins_stabi_button.grid(row=12, column=1, sticky="N", columnspan=1)
 
     def load_fins_control():
         # Same as prev
+        parameters = draw_rocket_tab.param_fin[1]
         for i in range(len(draw_rocket_tab.entry)):
-            draw_rocket_tab.entry[i].delete(0, 15)
-            draw_rocket_tab.entry[i].insert(0, draw_rocket_tab.points[2][i])
+            draw_rocket_tab.entry[i].delete(0, 150)
+            draw_rocket_tab.entry[i].insert(0, parameters[i])
         draw_rocket_tab.draw_rocket()
 
     update_fins_stabi_button = tk.Button(draw_rocket_tab.tab,
                                          text="Load Control Fins",
                                          command=load_fins_control, width=20,
-                                         fg="white", bg = "#B20000")
+                                         fg="white", bg="#B20000")
     update_fins_stabi_button.grid(row=10, column=3, sticky="N")
 
     def update_fins_control():
         # Same as prev
+        s = [0]*4
         for i in range(len(draw_rocket_tab.entry)):
-            draw_rocket_tab.points[2][i] = draw_rocket_tab.entry[i].get()
+            s[i] = draw_rocket_tab.entry[i].get()
+        draw_rocket_tab.param_fin[1] = s
+        draw_rocket_tab.points[2] = draw_rocket_tab.param_2_points_fins(s)
         draw_rocket_tab.draw_rocket()
 
     update_fins_control_button = tk.Button(draw_rocket_tab.tab,
                                            text="Update Control Fins",
-                                           command=update_fins_control, width=20,
-                                           fg="black", bg = "#FFACAC")
+                                           command=update_fins_control,
+                                           width=20,
+                                           fg="black", bg="#FFACAC")
     update_fins_control_button.grid(row=12, column=3, sticky="N")
 
     def reset_fin():
         # Populates the entries with a "0" area fin
         for i in range(len(draw_rocket_tab.entry)):
-            draw_rocket_tab.entry[i].delete(0,15)
-            zero_fin = ["0.0001,0.0","0.0001,0.0001","0.0002,0.0001","0.0002,0.0"]
+            draw_rocket_tab.entry[i].delete(0, 150)
+            zero_fin = ["0,0", "0,0",
+                        "0", "0"]
             draw_rocket_tab.entry[i].insert(0, zero_fin[i])
         draw_rocket_tab.draw_rocket()
 
     update_fins_control_button = tk.Button(draw_rocket_tab.tab, text="Reset Fin",
                                            command=reset_fin, width=12,
-                                           fg="black", bg = "yellow")
+                                           fg="black", bg="yellow")
     update_fins_control_button.grid(row=18, column=1, sticky="S")
 
     draw_rocket_tab.create_sliders()
@@ -394,11 +413,11 @@ def create_draw_rocket_tab(notebook):
     draw_rocket_tab.configure()
 
 
-## 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB
+# 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB - 3d TAB
 def create_conf_3d_tab(notebook):
     conf_3d_tab.create_tab(notebook, "3D Configuration")
-    checkboxes = ["Activate 3D Graphics","Camera Shake",
-                  "Hide Forces","Variable Fov", "Hide CG & AoA"]
+    checkboxes = ["Activate 3D Graphics", "Camera Shake",
+                  "Hide Forces", "Variable Fov", "Hide CG & AoA"]
     conf_3d_tab.create_checkboxes(checkboxes, 0, 0, "W", True)
     combobox_options = [["Follow", "Fixed", "Follow Far"]]
     names_combobox = ["Camera Type"]
@@ -419,7 +438,7 @@ def create_conf_3d_tab(notebook):
     conf_3d_tab.configure(5)
 
 
-## SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB
+# SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB - SITL TAB
 def create_sitl_tab(notebook):
 
     def move_sitl_checkbox():
@@ -438,7 +457,7 @@ def create_sitl_tab(notebook):
 
     def move_python_sitl_entries():
         for i in range(4):
-            fun.move_tk_object(conf_sitl_tab.entry_label[i+7], 7+i,0)
+            fun.move_tk_object(conf_sitl_tab.entry_label[i+7], 7+i, 0)
             fun.move_tk_object(conf_sitl_tab.entry[i+7], 7+i, 1)
 
     conf_sitl_tab.create_tab(notebook, "SITL")
@@ -459,7 +478,7 @@ def create_sitl_tab(notebook):
                    "Accelerometer Sample Time [s] = ",
                    "Altimeter Sample Time [s] = ",
                    "GNSS Sample Time [s] = "]
-    conf_sitl_tab.create_checkboxes(checkboxes,0,0,"W",True)
+    conf_sitl_tab.create_checkboxes(checkboxes, 0, 0, "W", True)
     conf_sitl_tab.create_entry(names_entry, 1, 0, "W")
     move_sitl_checkbox()
     move_sensor_noise_checkbox()
@@ -487,7 +506,7 @@ def create_sitl_tab(notebook):
         if conf_sitl_tab.checkbox_status[2].get() == "False":
             for i in range(2):
                 conf_sitl_tab.entry[i+5].config(state="disable")
-        if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
+        if conf_sitl_tab.checkbox[2].cget("state") == "disabled":
             for i in range(2):
                 conf_sitl_tab.entry[i+5].config(state="disable")
 
@@ -504,7 +523,7 @@ def create_sitl_tab(notebook):
             for i in range(4):
                 conf_sitl_tab.entry[i+7].config(state="normal")
             conf_sitl_tab.combobox[0].config(state="normal")
-        if  conf_sitl_tab.checkbox[2].cget("state") == "disabled":
+        if conf_sitl_tab.checkbox[2].cget("state") == "disabled":
             for i in range(2):
                 conf_sitl_tab.entry[i].config(state="disable")
             for i in range(4):
@@ -527,23 +546,25 @@ def create_sitl_tab(notebook):
     conf_sitl_tab.configure(10)
 
 
-
-
-
-## SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB
+# SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB - SIM SETUP TAB
 def create_simulation_setup_tab(notebook):
     sim_setup_tab.create_tab(notebook, "Sim Setup")
-    checkboxes = ["Torque Controller","Anti Windup"]
-    sim_setup_tab.create_checkboxes(checkboxes,0,2,"W")
+    checkboxes = ["Torque Controller", "Anti Windup"]
+    sim_setup_tab.create_checkboxes(checkboxes, 0, 2, "W")
     combobox_options = [["Step [º]", "Ramp [º/s]", "Up"]]
     names_combobox = [""]
-    sim_setup_tab.create_combobox(combobox_options,names_combobox,6,1)
-    names_entry = ["Kp =", "Ki =", "Kd =", "K All =", "K Damping =",
-                   "Reference Thrust [N] =", "Input =","Input Time =",
-                   "Launch Time =", "Servo Sample Time [s] =",
-                   "Controller Sample Time [s] =", "Maximum Sim Duration [s] =",
+    sim_setup_tab.create_combobox(combobox_options, names_combobox, 6, 1)
+    names_entry = ["Kp =", "Ki =", "Kd =",
+                   "K All =", "K Damping =",
+                   "Reference Thrust [N] =",
+                   "Input =", "Input Time =",
+                   "Launch Time =",
+                   "Servo Sample Time [s] =",
+                   "Controller Sample Time [s] =",
+                   "Maximum Sim Duration [s] =",
                    "Sim Delta T [s] ="]
     sim_setup_tab.create_entry(names_entry, 0, 0, "W")
+
     def button_save():
         d = sim_setup_tab.get_configuration()
         savefile.set_conf_controller(d)
@@ -557,7 +578,7 @@ def create_simulation_setup_tab(notebook):
     sim_setup_tab.configure(10)
 
 
-## RUN SIM TAB - RUN SIM TAB - RUN SIM TAB - RUN SIM TAB - RUN SIM TAB
+# RUN SIM TAB - RUN SIM TAB - RUN SIM TAB - RUN SIM TAB - RUN SIM TAB
 def create_run_sim_tab(notebook):
     run_sim_tab.create_tab(notebook, "Run Simulation")
     combobox_options = []
@@ -604,14 +625,19 @@ def create_run_sim_tab(notebook):
                                  "Variable SITL 4",
                                  "Variable SITL 5",
                                  "Off"])
-    names_combobox = ["First Plot","Second Plot", "Third Plot", "Fourth Plot", "Fifth Plot"]
-    run_sim_tab.create_combobox(combobox_options,names_combobox, 0, 0, w=27)
+    names_combobox = ["First Plot",
+                      "Second Plot",
+                      "Third Plot",
+                      "Fourth Plot",
+                      "Fifth Plot"]
+    run_sim_tab.create_combobox(combobox_options, names_combobox, 0, 0, w=27)
 
     def button_run_sim():
         sim.run_simulation()
         sim.run_3d()
 
-    save_conf_controller_button = tk.Button(run_sim_tab.tab, text="Run Simulation",
+    save_conf_controller_button = tk.Button(run_sim_tab.tab,
+                                            text="Run Simulation",
                                             command=button_run_sim, width=20,
                                             bg="red", fg="white")
     save_conf_controller_button.grid(row=2, column=5)

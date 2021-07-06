@@ -25,9 +25,10 @@ atmosphere = atm.get_atmosphere()
 
 class Airfoil:
     """
-    Airfoil class with wind tunnel data
+    Airfoil class with wind tunnel data.
 
-    Methods:
+    Methods
+    -------
         get_aero_coef -- Returns the CN, CA, and CN slope.
     """
 
@@ -58,41 +59,104 @@ class Airfoil:
         Aerodynamic Analysis of Vertical Axis
         Wind Turbines
         """
-        self.aoa_cl = [0.0, 0.08386924860853417, 0.1620549165120595,
-                0.25889438775510176, 0.4498044063079776, 0.62461094619666,
-                0.7766831632653057, 0.9458061224489793, 1.1321255565862705,
-                1.3189550556586267, 1.595045918367347, 1.846872263450835,
-                2.0253221243042674, 2.2514994897959184, 2.4605532467532463,
-                2.6914669294990725, 2.83479517625232, 2.98810612244898,
-                3.105202458256029, np.pi]
-        self.cl_list = [0.0, 0.5363636363636364, 0.781818181818182, 0.7,
-                0.8818181818181818, 1.0727272727272728, 1.1, 1.0,
-                0.7545454545454546, 0.44545454545454555, 0.0,
-                -0.418181818181818, -0.6818181818181817, -0.9000000000000004,
-                -0.9818181818181819, -0.790909090909091, -0.6727272727272728,
-                -0.8000000000000003, -0.40909090909090917, 0.0]
+        self.aoa_cl = [0.0,
+                       0.08386924860853417,
+                       0.1620549165120595,
+                       0.25889438775510176,
+                       0.4498044063079776,
+                       0.62461094619666,
+                       0.7766831632653057,
+                       0.9458061224489793,
+                       1.1321255565862705,
+                       1.3189550556586267,
+                       1.595045918367347,
+                       1.846872263450835,
+                       2.0253221243042674,
+                       2.2514994897959184,
+                       2.4605532467532463,
+                       2.6914669294990725,
+                       2.83479517625232,
+                       2.98810612244898,
+                       3.105202458256029,
+                       np.pi]
+        self.cl_list = [0.0,
+                        0.5363636363636364,
+                        0.781818181818182,
+                        0.7,
+                        0.8818181818181818,
+                        1.0727272727272728,
+                        1.1,
+                        1.0,
+                        0.7545454545454546,
+                        0.44545454545454555,
+                        0.0,
+                        -0.418181818181818,
+                        -0.6818181818181817,
+                        -0.9000000000000004,
+                        -0.9818181818181819,
+                        -0.790909090909091,
+                        -0.6727272727272728,
+                        -0.8000000000000003,
+                        -0.40909090909090917,
+                        0.0]
 
-        self.aoa_cl_modified = [0.0, 0.13658937500000003, 0.7249800000000002,
-                0.9137768750000002, 1.0950218750000003, 1.57079,
-                2.0239025, 2.4166, 2.937679375, np.pi]
-        self.cl_list_modified = [0.0, 0.7739130434782606, 1.1043478260869564,
-                1.026086956521739, 0.8086956521739128, 0.0,
-                -0.7217391304347824, -0.991304347826087,
-                -0.8086956521739128, -0.008695652173913215]
+        self.aoa_cl_modified = [0.0,
+                                0.13658937500000003,
+                                0.7249800000000002,
+                                0.9137768750000002,
+                                1.0950218750000003,
+                                1.57079,
+                                2.0239025,
+                                2.4166,
+                                2.937679375,
+                                np.pi]
+        self.cl_list_modified = [0.0,
+                                 0.7739130434782606,
+                                 1.1043478260869564,
+                                 1.026086956521739,
+                                 0.8086956521739128,
+                                 0.0,
+                                 -0.7217391304347824,
+                                 -0.991304347826087,
+                                 -0.8086956521739128,
+                                 -0.008695652173913215]
 
-        self.aoa_cd = [0, 0.18521494914149783, 0.3982734933252401,
-                0.7643841635684416, 1.10988734808282, 1.3509577689207464,
-                1.5468165300174515, 1.7918205335344766, 1.960067086805354,
-                2.1704261134642255, 2.359869138105717, 2.4862486286726804,
-                2.668785095490799, 2.819614501925884, 2.9527883625749265,
-                3.040406988525037, 3.1349532075000113, np.pi]
-        self.cd_list = [0.001, 0.11315179890472304, 0.3266637804448056,
-                1.053982763006967, 1.5607557140498007, 1.7623865781756995,
-                1.8074741244259172, 1.7606280656808881, 1.5891418548289915,
-                1.3457262344177494, 1.0581157136927424, 0.8182796034866748,
-                0.47852963361347545, 0.262866375366543, 0.13929739838341826,
-                0.05557613600353495, 0.011970382007828295,
-                0.0009187156610269724]
+        self.aoa_cd = [0,
+                       0.18521494914149783,
+                       0.3982734933252401,
+                       0.7643841635684416,
+                       1.10988734808282,
+                       1.3509577689207464,
+                       1.5468165300174515,
+                       1.7918205335344766,
+                       1.960067086805354,
+                       2.1704261134642255,
+                       2.359869138105717,
+                       2.4862486286726804,
+                       2.668785095490799,
+                       2.819614501925884,
+                       2.9527883625749265,
+                       3.040406988525037,
+                       3.1349532075000113,
+                       np.pi]
+        self.cd_list = [0.001,
+                        0.11315179890472304,
+                        0.3266637804448056,
+                        1.053982763006967,
+                        1.5607557140498007,
+                        1.7623865781756995,
+                        1.8074741244259172,
+                        1.7606280656808881,
+                        1.5891418548289915,
+                        1.3457262344177494,
+                        1.0581157136927424,
+                        0.8182796034866748,
+                        0.47852963361347545,
+                        0.262866375366543,
+                        0.13929739838341826,
+                        0.05557613600353495,
+                        0.011970382007828295,
+                        0.0009187156610269724]
         self._sign = 1
         self.x = 0
         self.cl = 0
@@ -109,7 +173,7 @@ class Airfoil:
 
     def get_aero_coef(self, aoa):
         """
-        Calculate the CN, CA, and CN slope of the fin at a certain AoA
+        Calculate the CN, CA, and CN slope of the fin at a certain AoA.
 
         Parameters
         ----------
@@ -140,7 +204,7 @@ class Airfoil:
         self.cd = np.interp(self.x, self.aoa_cd, self.cd_list)
         # Sign correction
         self.cn = (self._sign *
-                  (self.cl*np.cos(self.x) + self.cd*np.sin(self.x)))
+                   (self.cl*np.cos(self.x) + self.cd*np.sin(self.x)))
         # ca always against the fin, independent of aoa
         self.ca = -self.cl*np.sin(self.x) + self.cd*np.cos(self.x)
         return self.cn
@@ -161,21 +225,23 @@ class Airfoil:
         else:
             x = -1
         return x
-    
+
     def _correct_aoa_greater_than_180(self, aoa):
         if aoa < -np.pi:
             aoa += np.pi
             self._sign *= -1
         elif aoa > np.pi:
-            aoa -= np.pi            
+            aoa -= np.pi
             self._sign *= -1
         return aoa
+
 
 class Fin:
     """Class that handles the fin geometry and its individual parameters
     (i.e. no body interference)
 
-    Methods:
+    Methods
+    -------
         update -- Update the fin characteristics
         calculate_cn_alpha -- Calculate the real CN_alpha of the fin.
     """
@@ -201,9 +267,9 @@ class Fin:
         self.cn_alpha_0 = 0
         self.cn_alpha = 0
 
-    def update(self, l, fin_attached=True):
+    def update(self, l, fin_attached=True, which_fin=0):
         """
-        Update the rocket with the data in l
+        Update the rocket with the data in l.
 
         Parameters
         ----------
@@ -218,28 +284,35 @@ class Fin:
         """
         self.fin_attached = fin_attached
         self._dim = copy.deepcopy(l)
+        self._check_which_fin(which_fin)
         self._calculate_real_dimension()
         self._calculate_area()
         self._calculate_mac_xf_ar()
         self._calculate_force_application_point()
         self._calculate_sweepback_angle()
 
+    def _check_which_fin(self, which_fin):
+        self.which_fin = which_fin
+        if which_fin == 0:
+            self.type_of_fin = "Stabilization"
+        else:
+            self.type_of_fin = "Control"
+
     def _calculate_real_dimension(self):
         r"""
         Rocket points go from the tip down to the tail
-
-        Fin[n][x position (longitudinal), z position (span)]
-
-         [0]|\
-            | \[1]
-            | |
-         [3]|_|[2]
          """
-        self.c_root = self._dim[3][0] - self._dim[0][0]
-        self.c_tip = self._dim[2][0] - self._dim[1][0]
+        self.c_root = self._dim[0][1]
+        self.c_tip = self._dim[1][1]
         # sweep length
-        self.x_tail = self._dim[1][0] - self._dim[0][0]
-        self.wingspan = self._dim[1][1] - self._dim[0][1]
+        self.x_tail = self._dim[1][0]
+        self.wingspan = self._dim[2]
+        self.thickness = self._dim[3]
+        if self.wingspan == 0 or self.c_root == 0 and self.which_fin != 3:
+            print("WARNING: " + self.type_of_fin + " fin has incorrect dimensions.")
+        if self.thickness == 0 and self.which_fin != 3:
+            print("CAUTION: " + self.type_of_fin + " fin has zero thickness," +
+                  " drag calculations will be inaccurate.")
 
     def _calculate_area(self):
         self.area = (self.c_root+self.c_tip) * self.wingspan / 2
@@ -252,25 +325,30 @@ class Fin:
         return self._dim[0][0] + self.c_root/2
 
     def _calculate_mac_xf_ar(self):
-        self.mac = 2/3 * (self.c_root + self.c_tip -
-                          ((self.c_root*self.c_tip)/(self.c_root+self.c_tip)))
-        k1 = self.c_root + 2*self.c_tip
-        k2 = self.c_root + self.c_tip
-        k3 = self.c_root**2 + self.c_tip**2 + self.c_root*self.c_tip
-        if k2 != 0 :
-            # Position of the MAC along the wingspan (from c_root)
-            self.y_mac = (self.wingspan/3) * (k1/k2)
-            # Position of the CP in relation to the LE of c_root
-            self.x_force_fin = (self.x_tail/3) * (k1/k2) + (1/6) * (k3/k2)
-        else:
-            self.x_force_fin = 0
-        if self.area != 0:
-            self.aspect_ratio = 2 * self.wingspan**2 / self.area
-        if self.fin_attached is True:
-            # aspect_ratio = aspect_ratio calculated before (2*aspect_ratio fin alone)
+        try:
+            self.mac = 2/3 * (self.c_root + self.c_tip -
+                              ((self.c_root * self.c_tip) /
+                               (self.c_root + self.c_tip)))
+            k1 = self.c_root + 2*self.c_tip
+            k2 = self.c_root + self.c_tip
+            k3 = self.c_root**2 + self.c_tip**2 + self.c_root*self.c_tip
+            if k2 != 0:
+                # Position of the MAC along the wingspan (from c_root)
+                self.y_mac = (self.wingspan/3) * (k1/k2)
+                # Position of the CP in relation to the LE of c_root
+                self.x_force_fin = (self.x_tail/3) * (k1/k2) + (1/6) * (k3/k2)
+            else:
+                self.x_force_fin = 0
+            if self.area != 0:
+                self.aspect_ratio = 2 * self.wingspan**2 / self.area
+            if self.fin_attached is True:
+                # aspect_ratio = aspect_ratio calculated before (2*aspect_ratio fin alone)
+                pass
+            else:
+                self.aspect_ratio *= 0.625
+        except ZeroDivisionError:
             pass
-        else:
-            self.aspect_ratio *= 0.625
+
 
     def _calculate_force_application_point(self):
         self.cp_total = self._dim[0][0] + self.x_force_fin
@@ -280,36 +358,43 @@ class Fin:
         return self.cp_total
 
     def _calculate_sweepback_angle(self):
-        # 25% of the chord because
-        x_tip = self._dim[1][0]
-        x_root = self._dim[0][0]
-        x_tip_25 = x_tip + 0.25*self.c_tip
-        x_root_25 = x_root + 0.25*self.c_root
-        self.sb_angle = np.arctan((x_tip_25-x_root_25) / self.wingspan)
-        self.le_angle = np.arctan((x_tip-x_root) / self.wingspan)
+        try:
+            # 25% of the chord because
+            x_root = self._dim[0][0]
+            x_tip = self._dim[1][0] + x_root
+            x_tip_25 = x_tip + 0.25*self.c_tip
+            x_root_25 = x_root + 0.25*self.c_root
+            self.sb_angle = np.arctan((x_tip_25-x_root_25) / self.wingspan)
+            self.le_angle = np.arctan((x_tip-x_root) / self.wingspan)
+        except ZeroDivisionError:
+            pass
 
     def calculate_cn_alpha(self, aoa, beta, mach):
         self.beta = beta
         self.mach = mach
-        self.cn0, self.ca, self.cn_alpha_0 = self.flat_plate.get_aero_coef(aoa) # 2D coefficients
+        self.cn0, self.ca, self.cn_alpha_0 = self.flat_plate.get_aero_coef(aoa)
         self._correct_cna_diederich()
         return self.cn_alpha
 
     def _correct_cna_diederich(self):
         # Plantform modification as in the original paper.
-        cn_alpha_comp = self.cn_alpha_0 / (np.sqrt(1 - self.mach**2*np.cos(self.sb_angle)**2))
+        cn_alpha_comp = (self.cn_alpha_0 /
+                         (np.sqrt(1 - self.mach**2*np.cos(self.sb_angle)**2)))
         eff_factor = cn_alpha_comp / (2*np.pi)
         F = self.aspect_ratio / (eff_factor * np.cos(self.sb_angle))
-        self.cn_alpha = F / (F * np.sqrt(1+(4/F**2)) + 2) * (cn_alpha_comp * np.cos(self.sb_angle))
+        self.cn_alpha = (F / (F * np.sqrt(1+(4/F**2)) + 2)
+                         * (cn_alpha_comp * np.cos(self.sb_angle)))
 
 
 fin = [Fin(), Fin()]
 
+
 class Rocket:
     """
-    Handles the rocket's body and aerodynamics
+    Handles the rocket's body and aerodynamics.
 
-    Methods:
+    Methods
+    -------
         update_rocket -- Update the rocket characteristics.
         calculate_aero_coef -- Compute the aerodynamics of the rocket.
         set_motor -- Set the rocket's motor.
@@ -328,7 +413,7 @@ class Rocket:
         self.cp = 0
         self.cm_xcg = 0
         self.xcg = 1
-        self.motor=[[],[]]
+        self.motor=[[], []]
         self.is_in_the_pad_flag = True
         self.component_cn = []
         self.component_cn_alpha = []
@@ -342,15 +427,38 @@ class Rocket:
         self.relative_rough = 150e-6
         # Empirical method to calculate the ca from the cd, it should use a
         # fitted third order polinomial but interpolations are easier
-        self.aoa_list_ca = [-180 * DEG2RAD,-(180 - 17) * DEG2RAD,
-                            -(180 - 70) * DEG2RAD, -90 * DEG2RAD,
-                            -70 * DEG2RAD, -18 * DEG2RAD,-16 * DEG2RAD, 0,
-                            16 * DEG2RAD,18 * DEG2RAD, 70 * DEG2RAD, 90 * DEG2RAD,
-                            (180 - 70) * DEG2RAD, (180 - 17) * DEG2RAD,
+        self.aoa_list_ca = [-180 * DEG2RAD,
+                            -(180 - 17) * DEG2RAD,
+                            -(180 - 70) * DEG2RAD,
+                            -90 * DEG2RAD,
+                            -70 * DEG2RAD,
+                            -18 * DEG2RAD,
+                            -16 * DEG2RAD,
+                            0,
+                            16 * DEG2RAD,
+                            18 * DEG2RAD,
+                            70 * DEG2RAD,
+                            90 * DEG2RAD,
+                            (180 - 70) * DEG2RAD,
+                            (180 - 17) * DEG2RAD,
                             180 * DEG2RAD]
-        self.ca_scale = [-1, -1.3 , -0.097777 , 0 , 0.097777, 1.295, 1.295,
-                         1 , 1.3, 1.3, 0.097777 , 0 , -0.097777 , -1.3, -1]
-        self.f_ca_interp = interp1d(self.aoa_list_ca, self.ca_scale, kind='quadratic')
+        self.ca_scale = [-1,
+                         -1.3,
+                         -0.097777,
+                         0,
+                         0.097777,
+                         1.295,
+                         1.295,
+                         1,
+                         1.3,
+                         1.3,
+                         0.097777,
+                         0,
+                         -0.097777,
+                         -1.3,
+                         -1]
+        self.f_ca_interp = interp1d(self.aoa_list_ca, self.ca_scale,
+                                    kind='quadratic')
         self.use_fins = False
         self.fins_attached = True
         self.use_fins_control = False
@@ -366,7 +474,7 @@ class Rocket:
         self._body_cn_const = [0]
         self.avg_rad_aft = 1
         self.avg_rad_fore = 1
-        self.v_loc_tot = [10,0]
+        self.v_loc_tot = [10, 0]
         self.v_modulus = 1
         self.v_modulus_sq = 1
         self.T = 273
@@ -403,14 +511,14 @@ class Rocket:
         self.component_centroid_pos = [0]*(1)
         self.component_aoa = [0]
         self.component_tan_vel = [0]
-        self.fin_aoa = [0,0]
-        self.fin_tan_vel = [0,0]
+        self.fin_aoa = [0, 0]
+        self.fin_tan_vel = [0, 0]
         self.aoa_total = 0
         self.v_sq_over_v_tot_sq_body = [0]
-        self.v_sq_over_v_tot_sq_fin = [0,0]
+        self.v_sq_over_v_tot_sq_fin = [0, 0]
         self._sign_correction = [0]
-        self._sign_correction_fin = [0,0]
-        self.fin_cn = [0,0]
+        self._sign_correction_fin = [0, 0]
+        self.fin_cn = [0, 0]
         self.cn_alpha_ctrl_fin_3d_arrow = 0
         self.cp_w_o_ctrl_fin = 0
         self.passive_cn = 0
@@ -433,6 +541,7 @@ class Rocket:
         None.
         """
         l = copy.deepcopy(l0)
+        self.reset_variables()
         self.ogive = l[0]
         self.use_fins = l[1]
         self.fins_attached = [l[2], l[4]]
@@ -446,16 +555,17 @@ class Rocket:
         self.xcg = self.xcg_liftoff
         self._update_rocket_dim(l[5])
         # In case one fin is not set up
-        zero_fin = [[0.00001,0.0],[0.0001,0.0001],[0.0002,0.0001],[0.0002,0.0]]
+        zero_fin = [[0, 0.0000000001], [0, 0], 0.0000000001, 0]
         if self.use_fins is True:
-            fin[0].update(l[6], self.fins_attached[0])
+            fin[0].update(l[6], self.fins_attached[0], 0)
             if self.use_fins_control is True:
-                fin[1].update(l[7], self.fins_attached[1])
-            else:                
-                fin[1].update(zero_fin) # In case there are no control fins
+                fin[1].update(l[7], self.fins_attached[1], 1)
+            else:
+                # In case there are no control fins
+                fin[1].update(zero_fin, which_fin=3)
         else:
             for i in range(2):
-                fin[i].update(zero_fin)
+                fin[i].update(zero_fin, which_fin=3)
         self._calculate_reynolds_crit()
 
     def _update_rocket_dim(self, l):
@@ -484,21 +594,22 @@ class Rocket:
             centroid = (l * (2*r2 + r1)) / (3 * (r1+r2))
             self.component_centroid[i] = centroid
             self.component_centroid_pos[i] = centroid + self.rocket_dim[i][0]
-            if self.ogive is True:
-                # Ogive instead of cone
-                l = self.rocket_dim[1][0] - self.rocket_dim[0][0]
-                self.component_centroid[0] = 0.4625 * l
-                d = self.rocket_dim[1][1]
-                self.component_plan_area[0] = 2/3 * l * d
+        if self.ogive is True:
+            l = self.rocket_dim[1][0]
+            self.component_centroid[0] = 0.463 * l
+            self.component_centroid_pos[0] = self.component_centroid[0]
+            d = self.rocket_dim[1][1]
+            self.component_plan_area[0] = 2/3 * l * d
         self._compute_total_rocket_plan_area()
         self._calculate_wet_area_body()
         self._calculate_barrowman_constants()
         self._calculate_body_cn_constants()
+        self._update_rocket_diam_interpolation()
 
     def _separate_xcg_component(self):
         index = 1
         if self.xcg <= self.length:
-            for i,elem in enumerate(self.rocket_dim):
+            for i, elem in enumerate(self.rocket_dim):
                 if elem[0] > self.xcg:
                     index = i
                     break
@@ -520,6 +631,7 @@ class Rocket:
         self.component_volume = [0]*(n-1)
         self.component_centroid = [0]*(n-1)
         self.component_centroid_pos = [0]*(n-1)
+
 
     def _maximum_diameter(self):
         d = 0
@@ -549,7 +661,7 @@ class Rocket:
         for i in range(len(self._barrowman_const)):
             k1 = (2 / self.area_ref)
             self._barrowman_const[i] = k1 * (self.station_cross_area[i+1]
-                                             -self.station_cross_area[i])
+                                             - self.station_cross_area[i])
 
     def _calculate_body_cn_constants(self):
         K = 1.1
@@ -557,6 +669,15 @@ class Rocket:
         for i in range(len(self.component_plan_area)):
             k1 = self.component_plan_area[i] / self.area_ref
             self._body_cn_const[i] = K * k1
+
+    def _update_rocket_diam_interpolation(self):
+        pos = []
+        diam = []
+        for i in range(len(self.rocket_dim)):
+            pos.append(self.rocket_dim[i][0])
+            diam.append(self.rocket_dim[i][1])
+        self.diam_interp = interp1d(pos, diam, bounds_error=False,
+                                    fill_value=diam[-1])
 
     @property
     def reference_area(self):
@@ -566,8 +687,8 @@ class Rocket:
         self.relative_rough = 60e-6
         self.reynolds_crit = 51 * (self.relative_rough/self.length)**-1.039
 
-    ## AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS -
-    def calculate_aero_coef(self, v_loc_tot=[10,0], q=0, h=0, actuator_angle=0):
+    # AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS - AERODYNAMICS
+    def calculate_aero_coef(self, v_loc_tot=[10, 0], q=0, h=0, actuator_angle=0):
         """
         Calculate the CN, CP position and the CA for a certain AoA, velocity
         density, viscosity, mach, and actuator angle.
@@ -615,17 +736,17 @@ class Rocket:
         mach = self.v_modulus / self.spd_sound
         if mach < 0.001:
             self.mach = 0.001
-        elif mach >=0.9:
+        elif mach >= 0.9:
             self.is_supersonic = True
         else:
             self.mach = mach
-        
+
 
     def _calculate_aoa_components(self):
         self.component_aoa = [0] * len(self.component_centroid)
         self.component_tan_vel = [0] * len(self.component_centroid)
-        self.fin_aoa = [0,0]
-        self.fin_tan_vel = [0,0]
+        self.fin_aoa = [0, 0]
+        self.fin_tan_vel = [0, 0]
         for i in range(len(self.component_tan_vel)):
             r = self.component_centroid_pos[i] - self.xcg
             self.component_tan_vel[i] = self.q * r
@@ -637,7 +758,7 @@ class Rocket:
         for i in range(2):
             if i == 1:
                 self.fin_aoa[i] = self._calculate_aoa(self.fin_tan_vel[i])
-                self.fin_aoa[i] -= self.actuator_angle # + delta gives -aoa
+                self.fin_aoa[i] -= self.actuator_angle  # + delta gives -aoa
                 if self.fin_aoa[i] > np.pi:
                     self.fin_aoa[i] -= 2*np.pi
                 elif self.fin_aoa[i] < -np.pi:
@@ -676,7 +797,7 @@ class Rocket:
                 self._sign_correction[i] = -1
             else:
                 self._sign_correction[i] = 1
-        self._sign_correction_fin = [0,0]
+        self._sign_correction_fin = [0, 0]
         for i in range(2):
             if self.fin_aoa[i] >= 0:
                 self._sign_correction_fin[i] = -1
@@ -701,7 +822,7 @@ class Rocket:
 
     def _fin_cn(self):
         # Since the control fin rotates, its normal force is no
-		# longer normal to the rocket, the cn is corrected with the
+        # longer normal to the rocket, the cn is corrected with the
         # cos(actuator_angle) to compensate.
         # Induces extra drag that is added in self.ca due to the
         # normal force beign rotated backwards
@@ -737,7 +858,7 @@ class Rocket:
     def _compute_body_interference(self):
         for i in range(2):
             if self.fins_attached[i] is True:
-                r_body_at_fin = fin[i].dim[0][1]
+                r_body_at_fin = self.diam_interp(fin[i].cp_total) / 2
                 KT = 1 + (r_body_at_fin / (fin[i].wingspan+r_body_at_fin))
                 self.cn_alpha_fin[i] = KT * self.cn_alpha_fin[i]
 
@@ -748,8 +869,8 @@ class Rocket:
             self.fin_cn[i] *= self.v_sq_over_v_tot_sq_fin[i]
 
     def _correct_ctrl_fin_coeff_for_actuator_angle(self):
-        ctrl_fin_cn =  self.fin_cn[1]# Still normal to the fin
-        self.fin_cn[1] = ctrl_fin_cn * np.cos(self.actuator_angle) # now normal to the rocket
+        ctrl_fin_cn = self.fin_cn[1]  # Still normal to the fin
+        self.fin_cn[1] = ctrl_fin_cn * np.cos(self.actuator_angle)  # now normal to the rocket
         self.ctrl_fin_ca = ctrl_fin_cn * np.sin(self.actuator_angle)
         self.cn_alpha_ctrl_fin_3d_arrow = self.cn_alpha_fin[1] * np.cos(self.actuator_angle)
 
@@ -757,7 +878,7 @@ class Rocket:
         self.v_sq_over_v_tot_sq_body = [0] * len(self.component_tan_vel)
         for i in range(len(self.v_sq_over_v_tot_sq_body)):
             v_component_sq = (self.v_loc_tot[0]**2 +
-                             (self.v_loc_tot[1] + self.component_tan_vel[i])**2)
+                              (self.v_loc_tot[1] + self.component_tan_vel[i])**2)
             self.v_sq_over_v_tot_sq_body[i] = (v_component_sq+0.001) / (self.v_modulus_sq+0.001)
         self.v_sq_over_v_tot_sq_fin = [0] * 2
         for i in range(len(self.v_sq_over_v_tot_sq_fin)):
@@ -778,8 +899,8 @@ class Rocket:
         if self.use_fins is True:
             a += fin[0].cp * self.fin_cn[0]
             b += self.fin_cn[0]
-        self.cp_w_o_ctrl_fin = a / b # For the 3D Cn Arrow
-        self.passive_cn = b # For the 3D Cn Arrow
+        self.cp_w_o_ctrl_fin = a / b  # For the 3D Cn Arrow
+        self.passive_cn = b  # For the 3D Cn Arrow
         if self.use_fins is True:
             a += fin[1].cp * self.fin_cn[1]
             b += self.fin_cn[1]
@@ -789,11 +910,9 @@ class Rocket:
     def _calculate_cm(self):
         self.cm_xcg = self.cn * (self.cp-self.xcg) / self.max_diam
 
-    ## DRAG - DRAG - DRAG - DRAG - DRAG
+    # DRAG - DRAG - DRAG - DRAG - DRAG
     def _calculate_total_ca(self, aoa=0):
         """
-        Boundry layer always turbulent
-        There are no boattails, if they are, they are treated as shoulders
         Base drag is not reduced by motor exhaust
         There is no interpolation of the pressure drag for compressibility
 
@@ -801,9 +920,9 @@ class Rocket:
         Open Rocket's documentation.
         """
         self._calculate_reynolds()
-        self._calculate_cf()               
+        self._calculate_cf()
         self._calculate_base_drag()
-        self._calculate_pressure_drag() 
+        self._calculate_pressure_drag()
         self._calculate_pressure_drag_fins()
         self._calculate_cd(aoa)
         self._calculate_ca(aoa)
@@ -818,7 +937,7 @@ class Rocket:
             self.Cf = 1 / ((1.5*np.log(self.reynolds)-5.6)**2)
         else:
             self.Cf = 0.032 * np.power((self.relative_rough/self.length), 0.2)
-        self.Cf = self.Cf * (1 - 0.1*self.mach**2)        
+        self.Cf = self.Cf * (1 - 0.1*self.mach**2)
 
     def _calculate_base_drag(self):
         self.base_drag = 0.12 + 0.13*self.mach**2
@@ -834,44 +953,44 @@ class Rocket:
                 phi = np.arctan((r2-r1) / l)
             except ZeroDivisionError:
                 print("Component length is zero")
-            if self.component_is_boattail(phi):                
+            if self.component_is_boattail(phi):
                 gamma = l / ((r1-r2) * 2)
                 if gamma > 3:
                     self.cd_pressure_component[i] = 0
                 elif gamma < 1:
                     self.cd_pressure_component[i] = self.base_drag
-                else:                   
+                else:
                     self.cd_pressure_component[i] = (3-gamma) / 2 * self.base_drag
             else:
                 self.cd_pressure_component[i] = 0.8 * np.sin(phi)**2
         if self.ogive is True:
             self.cd_pressure_component[0] = 0
-     
+
     def component_is_boattail(self, phi):
-        if phi>=0:
+        if phi >= 0:
             return False
         else:
             return True
-        
+
     def _calculate_pressure_drag_fins(self):
         self.cd_le = [0]*2
         self.cd_te = [0]*2
         for i in range(2):
             self.cd_le[i] = ((1-self.mach**2)**-0.417 - 1) * np.cos(fin[i].le_angle)**2
             self.cd_te[i] = self.base_drag / 2
-            
+
     def _calculate_cd(self, aoa):
         self._calculate_cd0_friction()
         self._calculate_total_pressure_drag(aoa)
         self._calculate_total_base_drag()
         self.cd0 = self.cd0_friction + self.total_pressure_drag + self.total_base_drag
 
-    def _calculate_cd0_friction(self):        
+    def _calculate_cd0_friction(self):
         cd0_fin = 0
-        t = 0.003
         cd0_body = (1 + 1/(2*self.fineness)) * self.area_wet_body
-        for i in range(2):            
-            cd0_fin += (1 + 2*t/fin[i].mac) * 4*fin[i].area        
+        for i in range(2):
+            t = fin[i].thickness
+            cd0_fin += (1 + 2*t/fin[i].mac) * 4*fin[i].area
         self.cd0_friction = self.Cf * (cd0_body + cd0_fin) / self.area_ref
 
     def _calculate_total_pressure_drag(self, aoa):
@@ -879,26 +998,28 @@ class Rocket:
         self.total_pressure_drag = 0
         for i in range(n):
             if i == n-1 and abs(aoa) > np.pi/2:
-                # Rocket flying backwards, area_ref_component would be 0 so it has to be tricked
+                """Rocket flying backwards,
+                area_ref_component would be 0 so it has to be tricked"""
                 area_ref_component = self.station_cross_area[i+1]
                 # 1 is the pressure cd for a hollow cilinder
                 self.cd_pressure_component[i] = 1
                 self.total_pressure_drag += ((area_ref_component/self.area_ref)
                                              * self.cd_pressure_component[i])
             else:
-                area_ref_component = abs(self.station_cross_area[i+1] - self.station_cross_area[i])
-                self.total_pressure_drag += ((area_ref_component/self.area_ref)
+                area_ref_component = abs(self.station_cross_area[i+1]
+                                         - self.station_cross_area[i])
+                self.total_pressure_drag += ((area_ref_component / self.area_ref)
                                              * self.cd_pressure_component[i])
         for i in range(2):
-            frontal_area_fin = fin[i].wingspan * 0.003
-            self.total_pressure_drag += (self.cd_te[i]+self.cd_le[i]) * 4*frontal_area_fin/self.area_ref
+            frontal_area_fin = 4 * fin[i].wingspan * fin[i].thickness
+            self.total_pressure_drag += ((self.cd_te[i] + self.cd_le[i]) *
+                                         frontal_area_fin / self.area_ref)
 
     def _calculate_total_base_drag(self):
-        self.total_base_drag = (self.station_cross_area[-1]/self.area_ref) * self.base_drag
+        self.total_base_drag = ((self.station_cross_area[-1] / self.area_ref)
+                                * self.base_drag)
 
     def _calculate_ca(self, aoa):
-        # First order interpolation
-        # cd2ca = np.interp(aoa, self.aoa_list_ca, self.ca_scale)
         self.cd2ca = self.f_ca_interp(aoa)
         self.ca = self.cd0 * self.cd2ca
         if self.use_fins is True:
@@ -907,7 +1028,7 @@ class Rocket:
     def _add_control_fin_ca(self):
         self.ca += self.ctrl_fin_ca
 
-    ## MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR
+    # MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR - MOTOR
     def set_motor(self, data):
         """
         Set the rocket motor with the corresponding data.
@@ -952,7 +1073,7 @@ class Rocket:
 
     def is_in_the_pad(self, alt):
         """
-        Check if the rocket is in the pad
+        Check if the rocket is in the pad.
 
         Parameters
         ----------
@@ -1017,16 +1138,18 @@ class Rocket:
         return float(self.xcg)
 
     def get_mass_parameters(self, t, t_launch):
+        """Get mass, Iy and xcg."""
         m = self.get_mass(t, t_launch)
         Iy = self.get_Iy(t, t_launch)
         xcg = self.get_xcg(t, t_launch)
         return m, Iy, xcg
 
     def reset_variables(self):
-        """Resets some variables of the rocket."""
-        self.thrust = 0
-        self.cn = 0
-        self.xcp = 0
-        self.ca = 0
-        self.motor=[[],[]]
+        """Reset variables of the rocket."""
         self.is_in_the_pad_flag = True
+        self.ogive = False
+        self.use_fins = False
+        self.fins_attached = True
+        self.use_fins_control = False
+        self.is_in_the_pad_flag = True
+        self.is_supersonic = False
