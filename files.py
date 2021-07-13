@@ -422,7 +422,7 @@ class SaveFile:
 
     def _split_list(self, content, split_index):
         # splits the list in the selected indexes
-        res = [content[i : j] for i, j in zip([0]+split_index, split_index+[None])]
+        res = [content[i: j] for i, j in zip([0]+split_index, split_index+[None])]
         # Deletes the # that's left from the ###=# separator
         del res[1][0]
         del res[2][0]
@@ -444,9 +444,8 @@ class SaveFile:
         self.open_and_split_file()
         self.check_and_correct_v20_save()
         self.open_and_split_file()
-        if self.error_opening_file_flag == False:
+        if self.error_opening_file_flag is False:
             print("File Opened Successfully")
-
 
     def open_and_split_file(self):
         try:
@@ -497,9 +496,8 @@ class SaveFile:
                             file.write("Altimeter ST=0.005" + end)
                             file.write("GNSS ST=1" + end)
                 print("Save updated to v2.0")
-            except:
+            except EnvironmentError:
                 print("Error updating to v2.0")
-
 
     def check_and_correct_v20_save(self):
         if self.check_file("Mass [kg]", "Iy"):
@@ -605,7 +603,7 @@ class SaveFile:
             with open(".\\saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
                 for line in file:
                     try:
-                        if found_param == True:
+                        if found_param is True:
                             if line.startswith(parameter2):
                                 flag = True
                                 break

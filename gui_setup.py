@@ -72,6 +72,7 @@ def configure_root(root, notebook):
     notebook.grid(row=1, column=0, columnspan=50, rowspan=49, sticky="NESW")
     return notebook
 
+
 # Tabs
 # CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
 def create_file_tab(notebook):
@@ -170,7 +171,7 @@ def create_file_tab(notebook):
                                command=save_as, width=30)
     save_as_button.grid(row=2, column=2)
     fun.move_tk_object(file_tab.entry[1], 2, 1)
-    file_tab.create_active_file_label(32, 0)
+    file_tab.create_active_file_label()
     file_tab.configure()
 
 
@@ -209,9 +210,8 @@ def create_parameters_tab(notebook):
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
                                  command=button_save_parameters, width=20)
-    h = 32
-    save_file_button.grid(row=h, column=9)
-    param_file_tab.create_active_file_label(h, 0)
+    save_file_button.place(x=432, y=535)
+    param_file_tab.create_active_file_label()
     param_file_tab.configure()
 
 
@@ -300,6 +300,8 @@ def create_draw_rocket_tab(notebook):
 
     def button_select_point():
         draw_rocket_tab.active_point = draw_rocket_tab.combobox[0].get()
+        entry_rocket.delete(0, 150)
+        entry_rocket.insert(0, draw_rocket_tab.active_point)
         if draw_rocket_tab.active_point == "0,0":
             print("Cannot Modify the Nosecone Tip")
         select_point_button.config(bg="yellow")
@@ -332,7 +334,7 @@ def create_draw_rocket_tab(notebook):
 
     save_file_button = tk.Button(draw_rocket_tab.tab, text="Save",
                                  command=button_save, width=20)
-    save_file_button.grid(row=24, column=3)
+    save_file_button.place(x=432, y=535)
 
     # Fins
     def load_fins_stabi():
@@ -409,7 +411,7 @@ def create_draw_rocket_tab(notebook):
     update_fins_control_button.grid(row=18, column=1, sticky="S")
 
     draw_rocket_tab.create_sliders()
-    draw_rocket_tab.create_active_file_label(24, 0)
+    draw_rocket_tab.create_active_file_label()
     draw_rocket_tab.configure()
 
 
@@ -432,9 +434,9 @@ def create_conf_3d_tab(notebook):
 
     save_conf_3d_button = tk.Button(conf_3d_tab.tab, text="Save",
                                     command=button_save, width=20)
-    save_conf_3d_button.grid(row=87, column=12)
+    save_conf_3d_button.place(x=432, y=535)
     conf_3d_tab.change_state()
-    conf_3d_tab.create_active_file_label(87, 0)
+    conf_3d_tab.create_active_file_label()
     conf_3d_tab.configure(5)
 
 
@@ -541,8 +543,8 @@ def create_sitl_tab(notebook):
 
     save_conf_sitl_button = tk.Button(conf_sitl_tab.tab, text="Save",
                                       command=button_save_conf_sitl, width=20)
-    save_conf_sitl_button.grid(row=37, column=12)
-    conf_sitl_tab.create_active_file_label(37, 0)
+    save_conf_sitl_button.place(x=432, y=535)
+    conf_sitl_tab.create_active_file_label()
     conf_sitl_tab.configure(10)
 
 
@@ -570,11 +572,10 @@ def create_simulation_setup_tab(notebook):
         savefile.set_conf_controller(d)
         savefile.save_all_configurations()
 
-    h = 38
     save_conf_controller_button = tk.Button(sim_setup_tab.tab, text="Save",
                                             command=button_save, width=20)
-    save_conf_controller_button.grid(row=h, column=3, columnspan=2, sticky="E")
-    sim_setup_tab.create_active_file_label(h, 0)
+    save_conf_controller_button.place(x=432, y=535)
+    sim_setup_tab.create_active_file_label()
     sim_setup_tab.configure(10)
 
 
@@ -649,6 +650,6 @@ def create_run_sim_tab(notebook):
 
     save_file_button = tk.Button(run_sim_tab.tab, text="Save",
                                  command=button_save, width=20)
-    save_file_button.grid(row=47, column=6)
-    run_sim_tab.create_active_file_label(47, 0)
+    save_file_button.place(x=432, y=535)
+    run_sim_tab.create_active_file_label()
     run_sim_tab.configure()

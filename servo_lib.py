@@ -60,7 +60,7 @@ class Servo:
                             [0.],
                             [0.]
                             ])
-        #Continous time
+        # Continous time
         self._A_s_c = np.array([
                             [0., 0.],
                             [0., 0.]
@@ -122,7 +122,7 @@ class Servo:
                             [0.],
                             [0.]
                             ])
-        #Continous time
+        # Continous time
         self._A_s_c = np.array([
                             [0., 0.],
                             [0., 0.]
@@ -186,7 +186,7 @@ class Servo:
 
     def _update(self):
         self._u_delta = (self._actuator_weight_compensation
-                        * abs(self._u-self._out_s[0,0]))
+                         * abs(self._u-self._out_s[0,0]))
         if self._u_delta <= 10 * DEG2RAD:
             self._u_delta = 10 * DEG2RAD
         elif self._u_delta >= 90 * DEG2RAD:
@@ -195,7 +195,7 @@ class Servo:
         asc11 = 0.
         asc12 = 1.
         asc21 = -(-2624.5*self._u_delta**3 + 9996.2*self._u_delta**2
-                - 13195*self._u_delta + 6616.2)
+                  - 13195*self._u_delta + 6616.2)
         asc22 = -(39.382*self._u_delta**2 - 125.81*self._u_delta + 124.56)
         # Third order polinomial that modifies the model of the sevo based
         # on its current position and setpoint
@@ -217,7 +217,7 @@ class Servo:
             [0, 1]
             ])
         # D Matrix
-        ## Tustin integration with variable paramenters (u_delta)
+        # Tustin integration with variable paramenters (u_delta)
         self._tustin_discretization()
 
     def _tustin_discretization(self):

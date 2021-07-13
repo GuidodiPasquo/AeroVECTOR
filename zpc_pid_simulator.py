@@ -52,6 +52,7 @@ import rocket_functions as rkt
 import control
 import servo_lib
 import importlib
+from scipy.interpolate import interp1d
 
 rocket = rkt.Rocket()
 controller = control.Controller()
@@ -479,7 +480,7 @@ def reset_variables():
 
 # Transforms from local coordinates to global coordinates
 # (body to world)
-def loc2glob(u0,v0,theta):
+def loc2glob(u0, v0, theta):
     # Rotational matrix 2x2
     # Axes are rotated, there is more info in the Technical documentation.
     A = np.array([[np.cos(theta), np.sin(theta)],
@@ -1137,8 +1138,9 @@ def run_3d():
         except:
             pass
 
-        rocket_dim = gui.draw_rocket_tab.get_points_float(0)
-        L = rocket_dim[-1][0]
+        rocket_dim = rocket.rocket_dim
+        L_body = rocket_dim[-1][0]
+        L_total = gui.draw_rocket_tab.max_length
         nosecone_length = rocket_dim[1][0]
         d = rocket_dim[1][1]
 
@@ -1151,6 +1153,7 @@ def run_3d():
         # floor
         dim_x_floor = 3000
         dim_z_floor = 4000
+
         n = 21
         # Sky (many panels)
         for i in range(n):
@@ -1165,39 +1168,39 @@ def run_3d():
         for i in range(n):
             for j in range(n):
                 vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2),
-                                     -L/2,
+                                     -0.5,
                                      dim_z_floor/3+1000),
                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
                        texture={'file': 'grass_texture.jpg'})
 
         # rocket
-        n_c = 20  # how many pieces have each non standard component
-        R_ogive = rocket_dim[1][1]
+        n_c = 50  # how many pieces have each non standard component
+        R_ogive = rocket_dim[1][1] / 2
         L_ogive = rocket_dim[1][0]
         rho_radius = (R_ogive**2 + L_ogive**2)/(2 * R_ogive)
         compound_list = []
         for i in range(len(rocket_dim)-1):
-            if i == 0 and rocket.ogive is True:
+            if i == 0 and rocket.ogive_flag is True:
                 # Ogive goes brrrrr
                 l_partial2 = 0
                 l_partial = L_ogive / n_c
                 for j in range(n_c):
-                    # diameter can never be 0
-                    d = ((np.sqrt(rho_radius**2 - (L_ogive-l_partial2)**2)
+                    # diameter must never be 0
+                    r = ((np.sqrt(rho_radius**2 - (L_ogive-l_partial2)**2)
                           + R_ogive - rho_radius)
                          + 0.000001)
                     pos = l_partial * (j+1)
                     rod = vp.cylinder(pos=vp.vector(dim_x_floor/2,
-                                                    L-pos,
+                                                    L_total-pos,
                                                     dim_z_floor/2),
-                                      axis=vp.vector(0, 1, 0), radius=d/2,
+                                      axis=vp.vector(0, 1, 0), radius=r,
                                       color=vp.color.black, length=l_partial)
                     compound_list.append(rod)
                     l_partial2 += l_partial
                 continue
-            if i == 0 and rocket.ogive is False:
+            if i == 0 and rocket.ogive_flag is False:
                 nosecone = vp.cone(pos=vp.vector(dim_x_floor/2,
-                                                 L-nosecone_length,
+                                                 L_total-nosecone_length,
                                                  dim_z_floor/2),
                                    axis=vp.vector(0, 1, 0), radius=d/2,
                                    color=vp.color.black,
@@ -1208,7 +1211,7 @@ def run_3d():
                 l = rocket_dim[i+1][0] - rocket_dim[i][0]
                 d = rocket_dim[i][1]
                 rod = vp.cylinder(pos=vp.vector(dim_x_floor/2,
-                                                L-rocket_dim[i+1][0],
+                                                L_total-rocket_dim[i+1][0],
                                                 dim_z_floor/2),
                                   axis=vp.vector(0, 1, 0),
                                   radius=d/2,
@@ -1227,7 +1230,7 @@ def run_3d():
                     l_partial = l/n_c
                     pos = x0 + l_partial * (i+1)
                     rod = vp.cylinder(pos=vp.vector(dim_x_floor/2,
-                                                    L-pos,
+                                                    L_total-pos,
                                                     dim_z_floor/2),
                                       axis=vp.vector(0, 1, 0),
                                       radius=d/2,
@@ -1243,6 +1246,7 @@ def run_3d():
                                size=vp.vector(0.001, 0.001, 0.001),
                                color=vp.color.black)
         fin_compound = [0]*4
+        fin_outline_interp = interp1d([0, 1], [0, 0], fill_value=0, bounds_error=False)
         for i in range(4):
             fin_compound[i] = throwaway_box
         fin_compound_control = [0]*4
@@ -1250,49 +1254,48 @@ def run_3d():
             fin_compound_control[i] = throwaway_box
         if rocket.use_fins is True:
             compound_fins = []
+            chord_list = [0]*2
             fins = gui.draw_rocket_tab.get_points_float(1)
+            fin_parameters = gui.draw_rocket_tab.get_param_fin_float(0)
+            wingspan = fin_parameters[2]
+            le_list = [[fins[0][0], fins[1][0]],
+                       [fins[0][1], fins[1][1]]]
+            te_list = [[fins[3][0], fins[2][0]],
+                       [fins[3][1], fins[2][1]]]
+
+            if fins[3][0] >= fins[2][0] and fins[0][0] <= fins[1][0]:  # Delta
+                fin_outline = [[fins[0][0], fins[1][0], fins[2][0], fins[3][0]],
+                               [fins[0][1], fins[1][1], fins[2][1], fins[3][1]]]
+            elif fins[2][0] > fins[3][0]:  # swept back
+                fin_outline = [[fins[0][0], fins[1][0], fins[2][0]],
+                               [fins[0][1], fins[1][1], fins[2][1]]]
+            else:  # swept forward
+                fin_outline = [[fins[1][0], fins[2][0], fins[3][0]],
+                               [fins[1][1], fins[2][1], fins[3][1]]]
+            fin_outline_interp = interp1d(fin_outline[0], fin_outline[1],
+                                          fill_value=0, bounds_error=False)
+            for i in range(len(le_list)):
+                chord_list[i] = te_list[0][i] - le_list[0][i]
             thickness = rkt.fin[0].thickness
+            if thickness < 0.002:
+                thickness = 0.002
             if fins[1][0] > 0.001:
-                for i in range(len(fins)-1):
-                    if fins[i][1] == fins[i+1][1]:
-                        l = abs(fins[i+1][0] - fins[i][0])+0.001
-                        if l == 0:
-                            continue
-                        b0 = fins[i][1]
-                        b1 = fins[i+1][1]
-                        x0 = abs(fins[i][0] - rocket_dim[-1][0])
-                        x1 = abs(fins[i+1][0] - rocket_dim[-1][0])
-                        c = l
-                        b = fins[i][1]
-                        posy = c/2 + x0 - c * (i)
-                        posx = b/2 + rocket_dim[-1][1]/2 * 0
-                        fin = vp.box(pos=vp.vector(dim_x_floor/2+posx,
-                                                   posy,
-                                                   dim_z_floor/2),
-                                     axis=vp.vector(1, 0, 0),
-                                     size=vp.vector(b, c, thickness),
-                                     color=vp.color.black)
-                        compound_fins.append(fin)
-                    if fins[i][1] != fins[i+1][1]:
-                        l = abs(fins[i+1][0] - fins[i][0])
-                        if l==0:
-                            continue
-                        b0 = fins[i][1]
-                        b1 = fins[i+1][1]
-                        x0 = abs(fins[i][0] - rocket_dim[-1][0])
-                        x1 = abs(fins[i+1][0] - rocket_dim[-1][0])
-                        for i in range(n_c):
-                            b = b0 + i*((b1-b0)/n_c)+0.0001
-                            c = l/n_c
-                            posy = -c/2 + x0 - c * (i)
-                            posx = b/2 + rocket_dim[-1][1]/2 * 0
-                            fin = vp.box(pos=vp.vector(dim_x_floor/2+posx,
-                                                       posy,
-                                                       dim_z_floor/2),
-                                         axis=vp.vector(1, 0, 0),
-                                         size=vp.vector(b, c, thickness),
-                                         color=vp.color.black)
-                            compound_fins.append(fin)
+                n = 50
+                b = wingspan/n
+                for i in range(n):
+                    wing_station = b * (i+1) + fins[0][1] - b/2
+                    le = np.interp(wing_station, le_list[1], le_list[0])
+                    chord = (np.interp(wing_station, te_list[1], te_list[0])
+                             - np.interp(wing_station, le_list[1], le_list[0]))
+                    posy = L_total - le - chord/2
+                    fin = vp.box(pos=vp.vector(dim_x_floor/2+wing_station,
+                                               posy,
+                                               dim_z_floor/2),
+                                 axis=vp.vector(1, 0, 0),
+                                 size=vp.vector(b*1.5, chord, thickness),
+                                 color=vp.color.black)
+                    compound_fins.append(fin)
+
                 fin_compound = [0]*4
                 fin_compound[0] = vp.compound(compound_fins)
                 for i in range(3):
@@ -1305,49 +1308,34 @@ def run_3d():
 
             if rocket.use_fins_control is True:
                 fins = gui.draw_rocket_tab.get_points_float(2)
+                fin_parameters = gui.draw_rocket_tab.get_param_fin_float(1)
+                le_list = [[fins[0][0], fins[1][0]],
+                           [fins[0][1], fins[1][1]]]
+                te_list = [[fins[3][0], fins[2][0]],
+                           [fins[3][1], fins[2][1]]]
+                for i in range(len(le_list)):
+                    chord_list[i] = te_list[0][i] - le_list[0][i]
                 thickness = rkt.fin[1].thickness
+                if thickness < 0.002:
+                    thickness = 0.002
                 compound_fins_control = []
-                for i in range(len(fins)-1):
-                    if fins[i][1] == fins[i+1][1]:
-                        l = abs(fins[i+1][0] - fins[i][0])
-                        if l==0:
-                            continue
-                        b0 = fins[i][1]
-                        b1 = fins[i+1][1]
-                        x0 = abs(fins[i][0] - rocket_dim[-1][0])
-                        x1 = abs(fins[i+1][0] - rocket_dim[-1][0])
-                        c = l
-                        b = fins[i][1]
-                        posy = c/2 + x0 - c * (i)
-                        posx = b/2 + rocket_dim[-1][1]/2 * 0
-                        fin = vp.box(pos=vp.vector(dim_x_floor/2+posx,
+                if fins[1][0] > 0.001:
+                    n = 50
+                    b = fin_parameters[2]/n
+                    for i in range(n):
+                        wing_station = b * (i+1) + fins[0][1] - b/2
+                        le = np.interp(wing_station, le_list[1], le_list[0])
+                        chord = (np.interp(wing_station, te_list[1], te_list[0])
+                                 - np.interp(wing_station, le_list[1], le_list[0]))
+                        posy = L_total - le - chord/2
+                        fin = vp.box(pos=vp.vector(dim_x_floor/2+wing_station,
                                                    posy,
                                                    dim_z_floor/2),
                                      axis=vp.vector(1, 0, 0),
-                                     size=vp.vector(b, c, thickness),
+                                     size=vp.vector(b*1.5, chord, thickness),
                                      color=vp.color.red)
+                        compound_fins.append(fin)
                         compound_fins_control.append(fin)
-                    if fins[i][1] != fins[i+1][1]:
-                        l = abs(fins[i+1][0] - fins[i][0])
-                        if l==0:
-                            continue
-                        l = fins[i+1][0] - fins[i][0]
-                        b0 = fins[i][1]
-                        b1 = fins[i+1][1]
-                        x0 = abs(fins[i][0] - rocket_dim[-1][0])
-                        x1 = abs(fins[i+1][0] - rocket_dim[-1][0])
-                        for i in range(n_c):
-                            b = b0 + i*((b1-b0)/n_c)+0.0001
-                            c = l/n_c
-                            posy = -c/2 + x0 - c * (i)
-                            posx = b/2 + rocket_dim[-1][1]/2 * 0
-                            fin = vp.box(pos=vp.vector(dim_x_floor/2+posx,
-                                                       posy,
-                                                       dim_z_floor/2),
-                                         axis=vp.vector(1, 0, 0),
-                                         size=vp.vector(b, c, thickness),
-                                         color=vp.color.red)
-                            compound_fins_control.append(fin)
                 fin_compound_control = [0]*4
                 fin_compound_control[0] = vp.compound(compound_fins_control)
                 for i in range(3):
@@ -1358,22 +1346,16 @@ def run_3d():
                                                                       0,
                                                                       dim_z_floor/2))
 
-        def maximum_diameter(rocket_dim):
-            d = 0
-            for i in range(len(rocket_dim)):
-                if rocket_dim[i][1] > d:
-                    d = rocket_dim[i][1]
-            return d
-
-        # Create final components
-        d = maximum_diameter(rocket_dim)
-        motor_radius = d / 4.5
+        d = rocket.max_diam
+        d_at_motor = rocket.diam_interp(L_body)
+        motor_radius = d_at_motor / 4.5
         motor_lenght = motor_radius * 10
+
         compound_rocket = (compound_list + fin_compound
                            + [fin_compound_control[0], fin_compound_control[2]])
         rocket_3d = vp.compound(compound_rocket)
         motor = vp.cone(pos=vp.vector(dim_x_floor/2,
-                                      0,
+                                      L_total - L_body,
                                       dim_z_floor/2),
                         axis=vp.vector(0,-1,0),
                         radius=motor_radius,
@@ -1396,70 +1378,84 @@ def run_3d():
         motor.rotate(motor_offset, axis=vp.vector(0,0,-1))
 
         if rocket.use_fins is True:
-            sep = rkt.fin[0].dim[2]
+            sep = fin_outline_interp(L_body-0.001)
         else:
             sep = 0
 
         # Torque motor
-        Tmotor_pos = vp.arrow(pos=vp.vector(motor.pos.x-(d/2 + 0.015 + sep),
+        Tmotor_pos = vp.arrow(pos=vp.vector(motor.pos.x-(d_at_motor/2 + d_at_motor/3 + sep),
                                             motor.pos.y,
                                             motor.pos.z),
-                              axis=vp.vector(0.0001, 0, 0),
+                              axis=vp.vector(-0.001, 0.001, 0.001),
                               shaftwidth=0,
                               color=vp.color.red)
-        Tmotor_neg = vp.arrow(pos=vp.vector(motor.pos.x+(d/2 + 0.015 + sep),
+        Tmotor_neg = vp.arrow(pos=vp.vector(motor.pos.x+(d_at_motor/2 + d_at_motor/3 + sep),
                                             motor.pos.y,
                                             motor.pos.z),
-                              axis=vp.vector(-0.0001, 0, 0),
+                              axis=vp.vector(-0.001, 0.001, 0.001),
                               shaftwidth=0,
                               color=vp.color.red)
-        Nforce_pos = vp.arrow(pos=vp.vector(motor.pos.x+(d/2+0.015),
-                                            motor.pos.y+(L-xa_3d[0]),
-                                            motor.pos.z),
-                              axis=vp.vector(0.0001, 0, 0),
+        Nforce_pos = vp.arrow(pos=vp.vector(rocket_3d.pos.x + d/3,
+                                            L_total,
+                                            rocket_3d.pos.z),
+                              axis=vp.vector(-0.001, 0.001, 0.001),
                               shaftwidth=0,
                               color=vp.color.green)
-        Nforce_neg = vp.arrow(pos=vp.vector(motor.pos.x-(d/2+0.015),
-                                            motor.pos.y+(L-xa_3d[0]),
-                                            motor.pos.z),
-                              axis=vp.vector(0.0001, 0, 0),
+        Nforce_neg = vp.arrow(pos=vp.vector(rocket_3d.pos.x - d/3,
+                                            L_total,
+                                            rocket_3d.pos.z),
+                              axis=vp.vector(-0.001, 0.001, 0.001),
                               shaftwidth=0,
                               color=vp.color.green)
 
         if rocket.use_fins_control is True:
             # Torque control fin
-            T_fin_pos = vp.arrow(pos=vp.vector(control_fins.pos.x-(d/2+rkt.fin[1].wingspan+0.015),
+            T_fin_pos = vp.arrow(pos=vp.vector((control_fins.pos.x -
+                                                (d/2 + rkt.fin[1].wingspan + d/3)),
                                                control_fins.pos.y,
                                                control_fins.pos.z),
                                  axis=vp.vector(0.0001, 0, 0),
                                  shaftwidth=0,
                                  color=vp.color.red)
-            T_fin_neg = vp.arrow(pos=vp.vector(control_fins.pos.x+(d/2+rkt.fin[1].wingspan+0.015),
+            T_fin_neg = vp.arrow(pos=vp.vector((control_fins.pos.x +
+                                                (d/2 + rkt.fin[1].wingspan + d/3)),
                                                control_fins.pos.y,
                                                control_fins.pos.z),
                                  axis=vp.vector(-0.0001, 0, 0),
                                  shaftwidth=0,
                                  color=vp.color.red)
-        Nforce_neg.visible = False
-        Nforce_pos.visible = False
-        Tmotor_pos.visible = False
-        Tmotor_neg.visible = False
-        if rocket.use_fins_control is True:
-            T_fin_pos.visible = False
-            T_fin_neg.visible = False
 
+        """Activate for the CG to vary with time"""
+        variable_radius_cg = True
+        if variable_radius_cg is True:
+            max_rad_cg_ball = d/2*1.6
+            min_rad_cg_ball = d/2*1.3
+            rad_cg_ball_time = [[t_launch, rocket.t_burnout+t_launch],
+                                [max_rad_cg_ball, min_rad_cg_ball]]
         cg_ball = vp.sphere(pos=vp.vector(dim_x_floor/2,
                                           0,
                                           dim_z_floor/2),
                             axis=vp.vector(1,0,0),
                             radius=d/2*1.5,
-                            color=vp.color.blue)
-
+                            color=vp.color.white,
+                            texture={'file': 'center_of_gravity.jpg'})
+        cg_ball.rotate(np.pi, axis=vp.vector(0,1,0))
         cg_ball.visilbe = not hide_cg
 
-        velocity_arrow = vp.arrow(pos=(rocket_3d.pos+vp.vector(0, L/2, 0)),
-                                  axis=vp.vector(0, L*0.7, 0), shaftwidth=d/4,
-                                  color=vp.color.blue)
+        """Activate for the velocity arrow to vary with time"""
+        variable_length_velocity_arrow = False
+        if variable_length_velocity_arrow is True:
+            max_vel = 0
+            for i in range(len(v_loc_3d)):
+               v = np.sqrt(v_loc_3d[i][0]**2 + v_loc_3d[i][1]**2)
+               if v > max_vel:
+                   max_vel = v
+            vel_arrow_length_interp = [[0, max_vel],
+                                       [L_total*0.5, L_total*0.8]]
+        velocity_arrow = vp.arrow(pos=(rocket_3d.pos + vp.vector(0, L_total/2, 0)),
+                                  axis=vp.vector(0, 1, 0), shaftwidth=d/4,
+                                  length=L_total*0.7, color=vp.color.blue,
+                                  headwidth=2*d/4, headlength=3*d/4)
 
         """buttons & Sliders ##############################################"""
         break_flag_button = False
@@ -1740,46 +1736,63 @@ def run_3d():
             delta_theta = theta_3d[j] - theta_3d[i]
             delta_servo = servo_3d[j] - servo_3d[i]
             delta_aoa = aoa_3d[j] - aoa_3d[i]
+            delta_xa = xa_3d[j] - xa_3d[i]
+            delta_xa_radius = ((rocket.diam_interp(xa_3d[j])
+                                - rocket.diam_interp(xa_3d[i])) / 2
+                               + (fin_outline_interp(xa_3d[j])
+                                  - fin_outline_interp(xa_3d[i])))
 
             # Moves the rocket
             rocket_3d.pos.y += delta_pos_X
             rocket_3d.pos.x += delta_pos_Z
 
-            # Displacements and rotations of the arrows
-            Tmotor_pos.pos.y += delta_pos_X
-            Tmotor_pos.pos.x += delta_pos_Z
-            Tmotor_neg.pos.y += delta_pos_X
-            Tmotor_neg.pos.x += delta_pos_Z
-
             # Creates a cg and cp vector with reference to the origin of the
             # 3d rocket (its centroid)
             # Delta xa_radius, this is then integrated when you move
             # the Aerodynamic Force arrow
-            xcg_radius = loc2glob((L/2-xcg_3d[j]), 0, theta_3d[i])
-            xa_radius = loc2glob(xa_3d[j]-xa_3d[i], 0, theta_3d[i])
+            xcg_radius = loc2glob((L_total/2-xcg_3d[j]), 0, theta_3d[i])
+            xa_radius_pos = loc2glob(delta_xa, -delta_xa_radius, theta_3d[i])
+            xa_radius_neg = loc2glob(delta_xa, delta_xa_radius, theta_3d[i])
 
-            #CP and CG global vectors
+            # CP and CG global vectors
             if i == 0:
-                vect_cg = rocket_3d.pos-vp.vector(0, L/2, 0)
-                launchrod_3d.rotate(theta_3d[1],axis=vp.vector(0, 0, 1), origin=vect_cg)
+                vect_cg = rocket_3d.pos - vp.vector(0, L_total/2, 0)
+                launchrod_3d.rotate(theta_3d[1], axis=vp.vector(0,0,1), origin=vect_cg)
             else:
                 vect_cg = vp.vector(rocket_3d.pos.x + xcg_radius[1],
                                     rocket_3d.pos.y + xcg_radius[0],
-                                    2000)
+                                    dim_z_floor / 2)
 
             # Put the ball in the cg
             cg_ball.visible = not hide_cg
             velocity_arrow.visible = not hide_cg
             cg_ball.pos = vect_cg
             velocity_arrow.pos = vect_cg
+            if variable_length_velocity_arrow is True:
+                velocity = np.sqrt(v_loc_3d[i][0]**2 + v_loc_3d[i][1]**2)
+                vel_arrow_length = np.interp(velocity,
+                                             vel_arrow_length_interp[0],
+                                             vel_arrow_length_interp[1])
+                velocity_arrow.axis = vp.vector(0, vel_arrow_length, 0)
+                velocity_arrow.rotate(theta_3d[i],
+                                      axis=vp.vector(0,0,1),
+                                      origin=velocity_arrow.pos)
+                velocity_arrow.rotate(-aoa_3d[i],
+                                      axis=vp.vector(0,0,1),
+                                      origin=velocity_arrow.pos)
+            velocity_arrow.rotate(delta_theta, axis=vp.vector(0,0,1),
+                                  origin=vect_cg)
+            velocity_arrow.rotate(-delta_aoa, axis=vp.vector(0,0,1),
+                                  origin=vect_cg)
+            if variable_radius_cg is True:
+                cg_ball.radius = np.interp(t_3d[i],
+                                           rad_cg_ball_time[0],
+                                           rad_cg_ball_time[1])
+            cg_ball.rotate(delta_theta, axis=vp.vector(0,0,1))
 
             # Rotate rocket from the CG
             rocket_3d.rotate(delta_theta, axis=vp.vector(0,0,1),
                              origin=vect_cg)
-            velocity_arrow.rotate(delta_theta, axis=vp.vector(0,0,1),
-                                  origin=vect_cg)
-            velocity_arrow.rotate(delta_aoa, axis=vp.vector(0,0,-1),
-                                  origin=vect_cg)
 
             # Move the motor together with the rocket
             motor.pos.y += delta_pos_X
@@ -1799,39 +1812,45 @@ def run_3d():
                 control_fins.rotate(delta_servo,
                                     axis=vp.vector(0,0,-1))
 
+            # Arrows are hit or miss, tried this to avoid them going in the
+            # wrong direction, didn't work
+            if rocket.use_fins_control is False:
+                aux = np.sin(servo_3d[i] + motor_offset)*thrust_3d[i] * force_scale
+            else:
+                aux = np.sin(motor_offset) * thrust_3d[i] * force_scale
+            axis_motor_arrow = vp.vector(aux, 0, 0)
+            # Makes visible one arrow or the other, be it left or right
+            if aux > 0:
+                Tmotor_pos.visible = False
+                Tmotor_neg.visible = True
+            else:
+                Tmotor_pos.visible = True
+                Tmotor_neg.visible = False
+            # Displacements and rotations of the arrows
+            Tmotor_pos.axis = axis_motor_arrow
+            Tmotor_pos.pos.y += delta_pos_X
+            Tmotor_pos.pos.x += delta_pos_Z
+            Tmotor_pos.rotate(theta_3d[i],
+                              axis=vp.vector(0,0,1),
+                              origin=Tmotor_pos.pos)
+            Tmotor_pos.rotate(delta_theta,
+                              axis=vp.vector(0,0,1),
+                              origin=vect_cg)
+            Tmotor_neg.axis = axis_motor_arrow
+            Tmotor_neg.pos.y += delta_pos_X
+            Tmotor_neg.pos.x += delta_pos_Z
+            Tmotor_neg.rotate(theta_3d[i],
+                              axis=vp.vector(0,0,1),
+                              origin=Tmotor_neg.pos)
+            Tmotor_neg.rotate(delta_theta,
+                              axis=vp.vector(0,0,1),
+                              origin=vect_cg)
+
             # Motor Burnout, stops the red trail of the rocket
             if t_3d[i] > burnout_time + t_launch:
                 motor.visible = False
                 motor.make_trail = False
             else:
-                # Arrows are hit or miss, tried this to avoid them going in the
-                # wrong direction, didn't work
-
-                if rocket.use_fins_control is False:
-                    aux = np.sin(servo_3d[i] + motor_offset)*thrust_3d[i]*force_scale
-                else:
-                    aux = np.sin(motor_offset) * thrust_3d[i] * force_scale
-                # Makes visible one arrow or the other, be it left or right
-                if aux > 0:
-                    Tmotor_pos.visible = False
-                    Tmotor_neg.visible = True
-                else:
-                    Tmotor_pos.visible = True
-                    Tmotor_neg.visible = False
-                Tmotor_pos.axis=vp.vector(aux, 0, 0)
-                Tmotor_pos.rotate(theta_3d[i],
-                                  axis=vp.vector(0,0,1),
-                                  origin=Tmotor_pos.pos)
-                Tmotor_pos.rotate((delta_theta),
-                                  axis=vp.vector(0,0,1),
-                                 origin=vect_cg)
-                Tmotor_neg.axis=vp.vector(aux, 0, 0)
-                Tmotor_neg.rotate(theta_3d[i],
-                                  axis=vp.vector(0,0,1),
-                                  origin=Tmotor_neg.pos)
-                Tmotor_neg.rotate(delta_theta,
-                                  axis=vp.vector(0,0,1),
-                                   origin=vect_cg)
                 motor.visible = True
                 motor.make_trail = True
 
@@ -1844,18 +1863,19 @@ def run_3d():
                 Nforce_pos.visible = True
                 Nforce_neg.visible = False
             # Displacements and rotations
-            Nforce_pos.pos.y += delta_pos_X - xa_radius[0]
-            Nforce_pos.pos.x += delta_pos_Z - xa_radius[1]
-            Nforce_pos.axis = vp.vector(cn_3d[i]*force_scale, 0, 0)
+            Nforce_axis = vp.vector(cn_3d[i]*force_scale, 0, 0)
+            Nforce_pos.pos.y += delta_pos_X - xa_radius_pos[0]
+            Nforce_pos.pos.x += delta_pos_Z - xa_radius_pos[1]
+            Nforce_pos.axis = Nforce_axis
             Nforce_pos.rotate(theta_3d[i],
                               axis=vp.vector(0,0,1),
                               origin=Nforce_pos.pos)
             Nforce_pos.rotate(delta_theta,
                               axis=vp.vector(0,0,1),
                               origin=vect_cg)
-            Nforce_neg.pos.y += delta_pos_X - xa_radius[0]
-            Nforce_neg.pos.x += delta_pos_Z - xa_radius[1]
-            Nforce_neg.axis = vp.vector(cn_3d[i]*force_scale, 0, 0)
+            Nforce_neg.pos.y += delta_pos_X - xa_radius_neg[0]
+            Nforce_neg.pos.x += delta_pos_Z - xa_radius_neg[1]
+            Nforce_neg.axis = Nforce_axis
             Nforce_neg.rotate(theta_3d[i],
                               axis=vp.vector(0,0,1),
                               origin=Nforce_neg.pos)
@@ -1899,13 +1919,6 @@ def run_3d():
                     T_fin_pos.visible = False
                     T_fin_neg.visible = False
 
-            # To avoid the ugly arrows before the rocket starts going
-            if v_glob_3d[i][0] < 0.1:
-                Nforce_neg.visible = False
-                Nforce_pos.visible = False
-                Tmotor_pos.visible = False
-                Tmotor_neg.visible = False
-
         def run_camera_3d(i,j):
             #Camera
             global vect_cg
@@ -1920,8 +1933,8 @@ def run_3d():
             if camera_type == "Follow":
                 scene.fov = fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
-                                             rocket_3d.pos.y+L*70-camera_shake[0]/500,
-                                             rocket_3d.pos.z-L*70)
+                                             rocket_3d.pos.y+L_total*70-camera_shake[0]/500,
+                                             rocket_3d.pos.z-L_total*70)
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                             rocket_3d.pos.y-scene.camera.pos.y,
                                             rocket_3d.pos.z-scene.camera.pos.z)

@@ -349,7 +349,6 @@ class Fin:
         except ZeroDivisionError:
             pass
 
-
     def _calculate_force_application_point(self):
         self.cp_total = self._dim[0][0] + self.x_force_fin
 
@@ -422,7 +421,7 @@ class Rocket:
         self.component_plan_area = []
         self.component_volume = []
         self.component_centroid = []
-        self.ogive = False
+        self.ogive_flag = False
         self.reynolds_crit = 1
         self.relative_rough = 150e-6
         # Empirical method to calculate the ca from the cd, it should use a
@@ -541,32 +540,36 @@ class Rocket:
         None.
         """
         l = copy.deepcopy(l0)
-        self.reset_variables()
-        self.ogive = l[0]
-        self.use_fins = l[1]
-        self.fins_attached = [l[2], l[4]]
-        self.use_fins_control = l[3]
-        self.m_liftoff = mass_param[0]
-        self.m_burnout = mass_param[1]
-        self.Iy_liftoff = mass_param[2]
-        self.Iy_burnout = mass_param[3]
-        self.xcg_liftoff = mass_param[4]
-        self.xcg_burnout = mass_param[5]
-        self.xcg = self.xcg_liftoff
-        self._update_rocket_dim(l[5])
-        # In case one fin is not set up
-        zero_fin = [[0, 0.0000000001], [0, 0], 0.0000000001, 0]
-        if self.use_fins is True:
-            fin[0].update(l[6], self.fins_attached[0], 0)
-            if self.use_fins_control is True:
-                fin[1].update(l[7], self.fins_attached[1], 1)
-            else:
-                # In case there are no control fins
-                fin[1].update(zero_fin, which_fin=3)
+        if len(l[5]) <= 1:
+            print("WARNING: incorrect rocket dimensions.")
         else:
-            for i in range(2):
-                fin[i].update(zero_fin, which_fin=3)
-        self._calculate_reynolds_crit()
+            self.reset_variables()
+            self.ogive_flag = l[0]
+            self.use_fins = l[1]
+            self.fins_attached = [l[2], l[4]]
+            self.use_fins_control = l[3]
+            self.m_liftoff = mass_param[0]
+            self.m_burnout = mass_param[1]
+            self.Iy_liftoff = mass_param[2]
+            self.Iy_burnout = mass_param[3]
+            self.xcg_liftoff = mass_param[4]
+            self.xcg_burnout = mass_param[5]
+            self.xcg = self.xcg_liftoff
+            self._update_rocket_dim(l[5])
+            # In case one fin is not set up
+            zero_fin = [[0, 0.0000000001], [0, 0], 0.0000000001, 0]
+            if self.use_fins is True:
+                fin[0].update(l[6], self.fins_attached[0], 0)
+                if self.use_fins_control is True:
+                    fin[1].update(l[7], self.fins_attached[1], 1)
+                else:
+                    # In case there are no control fins
+                    fin[1].update(zero_fin, which_fin=3)
+            else:
+                for i in range(2):
+                    fin[i].update(zero_fin, which_fin=3)
+            self._calculate_reynolds_crit()
+            self._check_if_cg_falls_inside_nose_cone()
 
     def _update_rocket_dim(self, l):
         # Looks like the Reference area is the maximum one,
@@ -594,17 +597,21 @@ class Rocket:
             centroid = (l * (2*r2 + r1)) / (3 * (r1+r2))
             self.component_centroid[i] = centroid
             self.component_centroid_pos[i] = centroid + self.rocket_dim[i][0]
-        if self.ogive is True:
-            l = self.rocket_dim[1][0]
-            self.component_centroid[0] = 0.463 * l
-            self.component_centroid_pos[0] = self.component_centroid[0]
-            d = self.rocket_dim[1][1]
-            self.component_plan_area[0] = 2/3 * l * d
+            if self.ogive_flag is True and i == 0:
+                plan_area, centroid = self._integrate_ogive()
+                self.component_centroid[0] = centroid
+                self.component_centroid_pos[0] = centroid
+                self.component_plan_area[0] = plan_area
         self._compute_total_rocket_plan_area()
         self._calculate_wet_area_body()
         self._calculate_barrowman_constants()
         self._calculate_body_cn_constants()
         self._update_rocket_diam_interpolation()
+
+    def _check_if_cg_falls_inside_nose_cone(self):
+        if self.rocket_dim[1][0] > self.xcg_burnout and self.ogive_flag is True:
+            print("WARNING: CG lays inside the nose cone, ogive will not be " +
+                  "properly calculated.")
 
     def _separate_xcg_component(self):
         index = 1
@@ -632,13 +639,21 @@ class Rocket:
         self.component_centroid = [0]*(n-1)
         self.component_centroid_pos = [0]*(n-1)
 
-
     def _maximum_diameter(self):
         d = 0
         for i in range(len(self.rocket_dim)):
             if self.rocket_dim[i][1] > d:
                 d = self.rocket_dim[i][1]
+        if d == 0:
+            d = 0.0000001
         return d
+
+    def _integrate_ogive(self):
+        len_nc = self.rocket_dim[1][0]
+        radius_nc = self.rocket_dim[1][1] / 2
+        rho_radius = (radius_nc**2 + len_nc**2) / (2*radius_nc)
+        self.ogive = Ogive(radius_nc, len_nc, rho_radius)
+        return self.ogive.calculate_area_cp_and_volume()
 
     def _compute_total_rocket_plan_area(self):
         self.plan_area = 0
@@ -677,7 +692,7 @@ class Rocket:
             pos.append(self.rocket_dim[i][0])
             diam.append(self.rocket_dim[i][1])
         self.diam_interp = interp1d(pos, diam, bounds_error=False,
-                                    fill_value=diam[-1])
+                                    fill_value=(0, diam[-1]))
 
     @property
     def reference_area(self):
@@ -817,8 +832,19 @@ class Rocket:
             aoa = abs(self.component_aoa[i])
             cn[i] = self._body_cn_const[i] * np.sin(aoa)**2
             cn[i] *= self._sign_correction[i]
+        self._calculate_ogive_cp(self.ogive_flag, cn[0])
         for i in range(len(self.component_cn)):
             self.component_cn[i] += cn[i]
+
+    def _calculate_ogive_cp(self, ogive_flag, cn):
+        if ogive_flag is True:
+            barrowman_cn = self.component_cn[0]
+            plan_area_cn = cn
+            total_cn = barrowman_cn + plan_area_cn
+            moment = (barrowman_cn * self.ogive.center_of_pressure +
+                      plan_area_cn * self.ogive.center_of_area)
+            self.component_centroid[0] = moment / total_cn
+            self.component_centroid_pos[0] = self.component_centroid[0]
 
     def _fin_cn(self):
         # Since the control fin rotates, its normal force is no
@@ -963,7 +989,7 @@ class Rocket:
                     self.cd_pressure_component[i] = (3-gamma) / 2 * self.base_drag
             else:
                 self.cd_pressure_component[i] = 0.8 * np.sin(phi)**2
-        if self.ogive is True:
+        if self.ogive_flag is True:
             self.cd_pressure_component[0] = 0
 
     def component_is_boattail(self, phi):
@@ -1147,9 +1173,45 @@ class Rocket:
     def reset_variables(self):
         """Reset variables of the rocket."""
         self.is_in_the_pad_flag = True
-        self.ogive = False
+        self.ogive_flag = False
         self.use_fins = False
         self.fins_attached = True
         self.use_fins_control = False
         self.is_in_the_pad_flag = True
         self.is_supersonic = False
+
+
+class Ogive():
+    def __init__(self, radius_nc, len_nc, rho_radius):
+        self.radius_nc = radius_nc
+        self.len_nc = len_nc
+        self.rho_radius = rho_radius
+
+    def radius(self, x):
+        y = (np.sqrt(self.rho_radius**2 - (self.len_nc - x)**2)
+             + self.radius_nc - self.rho_radius)
+        return y
+
+    def calculate_area_cp_and_volume(self):
+        self.area = 0
+        moment = 0
+        volume = 0
+        x1 = 0
+        definition = 200
+        step = self.len_nc/definition
+        for j in range(definition):
+            x2 = x1 + step
+            y1 = self.radius(x1)
+            ym = self.radius((x1+x2)/2)
+            y2 = self.radius(x2)
+            integral_delta = 2 * ((x2-x1)/6) * (y1+4*ym+y2)
+            self.area += integral_delta
+            moment += integral_delta * (x1 + x2)/2
+            volume_1 = (1/3) * np.pi * step/2 * (y1**2 + ym**2 + y1*ym)
+            volume_2 = (1/3) * np.pi * step/2 * (ym**2 + y2**2 + ym*y2)
+            volume += volume_1 + volume_2
+            x1 += step
+        self.center_of_area = moment / self.area
+        cross_area = np.pi * self.radius_nc**2
+        self.center_of_pressure = (self.len_nc * cross_area - volume) / (cross_area)
+        return self.area, self.center_of_pressure

@@ -166,7 +166,7 @@ class Controller:
                 out_pid = -self.tvc_max
         else:
             self.cum_error = ((((self.last_error + ((error_pid-self.last_error)/2)))
-                             * T_program) + self.cum_error)
+                               * T_program) + self.cum_error)
             out_pid = self.kp*error_pid + self.ki*self.cum_error + self.kd*rate_error
         self.okp = self.kp * error_pid
         self.oki = self.ki * self.cum_error

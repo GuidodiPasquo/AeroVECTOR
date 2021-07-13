@@ -86,7 +86,7 @@ class ActiveFileLabel:
         self.r = 0
         self.c = 0
 
-    def create_label(self, root, r, c):
+    def create_label(self, root):
         """
         Create the label in the canvas root, in the row = r and column = c.
 
@@ -103,12 +103,11 @@ class ActiveFileLabel:
         -------
         None.
         """
-        self.r = r
-        self.c = c
         self.canvas = root
         self.text = tk.StringVar()
         self.active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        self.active_file_label.grid(row=r, column=c, sticky="W", columnspan=2)
+        self.active_file_label.grid(columnspan=2)
+        self.active_file_label.place(x=10, y=535)
 
     def update(self, active_file):
         """
@@ -124,9 +123,7 @@ class ActiveFileLabel:
         None.
         """
         self.text.set("Active File is " + active_file)
-        active_file_label = tk.Label(self.canvas, textvariable=self.text)
-        active_file_label.grid(row=self.r, column=self.c,
-                               sticky="W", columnspan=2)
+        self.active_file_label.place(x=3, y=540)
 
 
 class Tab:
@@ -511,7 +508,7 @@ class Tab:
         for row in range(row_count):
             self.tab.grid_rowconfigure(row, minsize=n)
 
-    def create_active_file_label(self, r, c):
+    def create_active_file_label(self):
         """
         Create a label with the active file name in the position row = r and
         column = c.
@@ -527,7 +524,7 @@ class Tab:
         -------
         None.
         """
-        self.active_file_label.create_label(self.tab, r, c)
+        self.active_file_label.create_label(self.tab)
 
     @classmethod
     def update_active_file_label(cls, name):
@@ -574,13 +571,15 @@ class TabWithCanvas(Tab):
         super().__init__()
         self.canvas_height = 0
         self.canvas_width = 0
-        # points[0] -> rocket, points[1] -> fin
-        # Rocket points go from the tip down to the tail.
-        # Fin[n][x position (longitudinal), z position (span)]
-        #  [0]|\
-        #     | \[1]
-        #     | |
-        #  [3]|_|[2]
+        r"""
+        points[0] -> rocket, points[1] -> fin
+        Rocket points go from the tip down to the tail.
+        Fin[n][x position (longitudinal), z position (span)]
+         [0]|\
+            | \[1]
+            | |
+         [3]|_|[2]
+        """
         self.points = [["0,0", "0,0"],
                        ["0.001,0.001",
                         "0.001,0.001",
@@ -821,12 +820,60 @@ class TabWithCanvas(Tab):
         -------
         None.
         """
-        # x in the canvas is y/z in the rocket
-        # y in the canvas is x in the rocket
+        """
+        x in the canvas is y/z in the rocket
+        y in the canvas is x in the rocket
+        """
+        self._update_scale_limits()
         self.canvas.delete("all")
         l2 = self.get_points_float(0)
         self.rocket_length = l2[-1][0]
-        self.max_fin_len = self.get_points_float(1)[2][0]
+        self._calculate_bounding_box()
+        if self.rocket_length != 0:
+            canvas_h_to_w_ratio = self.canvas_height / self.canvas_width
+            length_relative = self.max_length
+            width_relative = self.max_width * canvas_h_to_w_ratio * 2.1
+            if width_relative < length_relative:
+                self.scale_y = self.canvas_height / self.max_length * 0.93
+            else:
+                self.scale_y = self.canvas_width / self.max_width / 2.1
+        else:
+            self.scale_y = 1
+        # Centers the rocket in the horizontal
+        self.centering = (self.canvas_height-self.max_length*self.scale_y) / 2
+        self._re_draw_rocket(l2)
+        if self.checkbox_status[1].get() == "True":
+            self.points[1] = self.param_2_points_fins(self.param_fin[0])
+            fin_stab_points = self.get_points_float(1)
+            attached = self.checkbox_status[2].get()
+            separate = "False"
+            self._draw_fins(fin_stab_points, "black", attached, separate)
+            if self.checkbox_status[3].get() == "True":
+                self.points[2] = self.param_2_points_fins(self.param_fin[1])
+                fin_control_points = self.get_points_float(2)
+                attached = self.checkbox_status[4].get()
+                separate = "True"
+                self._draw_fins(fin_control_points, "red", attached, separate)
+
+    def _calculate_bounding_box(self):
+        fin_stab_points = self.get_points_float(1)
+        fin_control_points = self.get_points_float(2)
+        max_fin_stab_length = self._calculate_max_length_fins(fin_stab_points)
+        max_fin_stab_width = fin_stab_points[1][1]
+        max_fin_control_length = self._calculate_max_length_fins(fin_control_points)
+        max_fin_control_width = fin_control_points[1][1]
+        if max_fin_stab_length > max_fin_control_length:
+            self.max_fin_len = max_fin_stab_length
+        else:
+            self.max_fin_len = max_fin_control_length
+        if max_fin_stab_width > max_fin_control_width:
+            self.max_fin_width = fin_stab_points[1][1]
+        else:
+            self.max_fin_width = fin_control_points[1][1]
+        if self.max_fin_width > self.rocket.max_diam:
+            self.max_width = self.max_fin_width
+        else:
+            self.max_width = self.rocket.max_diam
         if self.checkbox_status[1].get() == "True":
             if self.rocket_length > self.max_fin_len:
                 self.max_length = self.rocket_length
@@ -834,23 +881,13 @@ class TabWithCanvas(Tab):
                 self.max_length = self.max_fin_len
         else:
             self.max_length = self.rocket_length
-        if self.rocket_length != 0:
-            self.scale_y = self.canvas_height / self.max_length
-        else:
-            self.scale_y = 1
-        # Centers the rocket in the horizontal
-        self.centering = (self.canvas_height-self.max_length*self.scale_y) / 2
-        self._re_draw_rocket(l2)
-        if self.checkbox_status[1].get() == "True":
-            fin_stab_points = self.get_points_float(1)
-            attached = self.checkbox_status[2].get()
-            separate = "False"
-            self._draw_fins(fin_stab_points, "black", attached, separate)
-            if self.checkbox_status[3].get() == "True":
-                fin_control_points = self.get_points_float(2)
-                attached = self.checkbox_status[4].get()
-                separate = "True"
-                self._draw_fins(fin_control_points, "red", attached, separate)
+
+    def _calculate_max_length_fins(self, s):
+        current_max = 0
+        for i in range(4):
+            if s[i][0] > current_max:
+                current_max = s[i][0]
+        return current_max
 
     def _re_draw_rocket(self, l2):
         # x in the canvas is y/z in the rocket
@@ -858,32 +895,31 @@ class TabWithCanvas(Tab):
         for i in range(len(l2)-1):
             # checkbox_status[0] is the Ogive
             if i == 0 and self.checkbox_status[0].get() == "True":
-                radius_nc = l2[1][1]
+                radius_nc = l2[1][1] / 2
                 len_nc = l2[1][0]
                 rho_radius = (radius_nc**2 + len_nc**2) / (2*radius_nc)
                 x_ogive_1 = 0
                 # y = np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)+radius_nc-rho_radius
-                # Draws an ogive with 10 points
+                # Draws an ogive with 20 points
                 definition = 20
-                for _ in range(definition):
+                for j in range(definition):
                     x_ogive_2 = x_ogive_1 + len_nc/definition
                     y_ogive_1 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)
                                  + radius_nc - rho_radius)
                     y_ogive_2 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_2)**2)
                                  + radius_nc - rho_radius)
-                    x1 = (y_ogive_1*self.scale_y + self.canvas_width) / 2
+                    x1 = (y_ogive_1*self.scale_y + self.canvas_width / 2)
                     y1 = x_ogive_1*self.scale_y + self.centering
-                    x2 = (y_ogive_2*self.scale_y + self.canvas_width) / 2
+                    x2 = (y_ogive_2*self.scale_y + self.canvas_width / 2)
                     y2 = x_ogive_2*self.scale_y + self.centering
-                    x1_mirror = (-y_ogive_1*self.scale_y + self.canvas_width) / 2
-                    x2_mirror = (-y_ogive_2*self.scale_y + self.canvas_width) / 2
+                    x1_mirror = (-y_ogive_1*self.scale_y + self.canvas_width / 2)
+                    x2_mirror = (-y_ogive_2*self.scale_y + self.canvas_width / 2)
                     self.canvas.create_line(x1, y1, x2, y2)
                     self.canvas.create_line(x1_mirror, y1, x2_mirror, y2)
                     x_ogive_1 += len_nc/definition
-                point_diameter = 5
-                self._create_point_cp(point_diameter)
-                self._create_point_xcg(point_diameter)
-                self._update_n_f_app_m_labels()
+                    if j == 0:
+                        self.rocket_origin_canvas = y1
+                self.canvas.create_line(x2_mirror, y2, x2, y2)
             else:
                 # Conic nosecone / rest of the body
                 x1 = (l2[i][1]*self.scale_y + self.canvas_width) / 2
@@ -894,34 +930,41 @@ class TabWithCanvas(Tab):
                 x2_mirror = (-l2[i+1][1]*self.scale_y + self.canvas_width) / 2
                 self.canvas.create_line(x1, y1, x2, y2)
                 self.canvas.create_line(x1_mirror, y1, x2_mirror, y2)
-                if i == len(l2)-2:
-                    self.canvas.create_line(x2_mirror, y2, x2, y2)
-                point_diameter = 5
-                self._create_point_cp(point_diameter)
-                self._create_point_xcg(point_diameter)
-                self._update_n_f_app_m_labels()
-            self._draw_base_component(l2)
+                self.canvas.create_line(x2_mirror, y2, x2, y2)
+                if i == 0:
+                    self.rocket_origin_canvas = y1
+        point_diameter = 5
+        self._create_point_cp(point_diameter)
+        self._create_point_xcg(point_diameter)
+        self._update_n_f_app_m_labels()
+
+    def _draw_points(self):
+        self.canvas.delete(self.xcg_point_canvas, self.cp_point_canvas)
+        self._update_scale_limits()
+        point_diameter = 5
+        self._create_point_cp(point_diameter)
+        self._create_point_xcg(point_diameter)
+        self._update_n_f_app_m_labels()
 
     def _create_point_cp(self, point_diameter):
         # Creates a point where the CP is located
         # the slider can move it by modifying the aoa
         f = point_diameter / 2
-        mass_parameters = [0]*6
-        for i in range(6):
-            mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
-        self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
-        self._update_scale_limits()
         v = self.transform_AoA_2_v(self.aoa) * self.velocity
         cn, cm, ca, cp_point = self.rocket.calculate_aero_coef(v_loc_tot=v,
                                                                actuator_angle=self.aoa_ctrl_fin)
         self.normal_force, self.force_app_point = self._calculate_total_cn_cp(cn, cp_point)
         self._set_f_app_point_color(self.normal_force)
-        self.canvas.create_oval(self.canvas_width/2-f,
-                                self.force_app_point*self.scale_y - f,
-                                self.canvas_width/2+f,
-                                self.force_app_point*self.scale_y + f,
-                                fill=self.f_app_colour,
-                                outline=self.f_app_colour)
+        self.cp_point_canvas = self.canvas.create_oval(self.canvas_width/2-f,
+                                                       (self.force_app_point*self.scale_y
+                                                        - f
+                                                        + self.rocket_origin_canvas),
+                                                       self.canvas_width/2 + f,
+                                                       (self.force_app_point*self.scale_y
+                                                        + f
+                                                        + self.rocket_origin_canvas),
+                                                       fill=self.f_app_colour,
+                                                       outline=self.f_app_colour)
 
     def transform_AoA_2_v(self, aoa):
         if aoa <= -np.pi/2:
@@ -935,6 +978,10 @@ class TabWithCanvas(Tab):
         return v
 
     def _update_scale_limits(self):
+        mass_parameters = [0]*6
+        for i in range(6):
+            mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
+        self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
         data = gui_setup.param_file_tab.get_configuration_destringed()
         max_actuator_angle = data[9]
         servo_def = data[8]
@@ -956,7 +1003,8 @@ class TabWithCanvas(Tab):
         thrust = self._get_motor_data()
         xt = float(gui_setup.param_file_tab.entry[6].get())
         normal_force = thrust*np.sin(self.tvc_angle) + aero_force
-        force_app_point = (aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt) / normal_force
+        force_app_point = ((aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt)
+                           / normal_force)
         return normal_force, force_app_point
 
     def _get_motor_data(self):
@@ -964,8 +1012,6 @@ class TabWithCanvas(Tab):
             gui_setup.savefile.read_motor_data(gui_setup.param_file_tab.combobox[0].get())
             self.rocket.set_motor(gui_setup.savefile.get_motor_data())
             self.current_motor = gui_setup.param_file_tab.combobox[0].get()
-            # self.thrust_entry.delete(0,100)
-            # self.thrust_entry.insert(0,str(round(self.rocket.get_thrust(0.5, 0),3)))
             self.thrust = self.rocket.get_thrust(self.flight_time, 0)
         else:
             self.thrust = self.rocket.get_thrust(self.flight_time, 0)
@@ -980,11 +1026,14 @@ class TabWithCanvas(Tab):
     def _create_point_xcg(self, point_diameter):
         f = point_diameter / 2
         self.xcg_point = self.rocket.get_xcg(self.flight_time, 0)
-        self.canvas.create_oval(self.canvas_width/2 - f,
-                                self.xcg_point*self.scale_y - f,
-                                self.canvas_width/2 + f,
-                                self.xcg_point*self.scale_y + f,
-                                fill="blue", outline="blue")
+        self.xcg_point_canvas = self.canvas.create_oval(self.canvas_width/2 - f,
+                                                        (self.xcg_point*self.scale_y
+                                                         - f
+                                                         + self.rocket_origin_canvas),
+                                                        self.canvas_width/2 + f,
+                                                        (self.xcg_point*self.scale_y
+                                                         + f + self.rocket_origin_canvas),
+                                                        fill="blue", outline="blue")
 
     def _update_n_f_app_m_labels(self):
         n_force = "N Force = " + str(round(self.normal_force, 3)) + " N"
@@ -997,24 +1046,17 @@ class TabWithCanvas(Tab):
         self.moment_label.config(text=moment_text)
         self.thrust_label.config(text=thrust_text)
 
-    def _draw_base_component(self, l2):
-        # Draws the horizontal line that separates each component
-        for element in l2:
-            x1 = (element[1]*self.scale_y + self.canvas_width) / 2
-            y1 = element[0]*self.scale_y + self.centering
-            x2 = (element[1]*self.scale_y + self.canvas_width) / 2
-            y2 = element[0]*self.scale_y + self.centering
-            self.canvas.create_line(x1, y1, x2, y2)
-
     def _draw_fins(self, l2, s, attached, separate):
-        # Stabilization fins are attached to a hollow
-        # body, therefore they lose a lot of lift but
-        # aren't physically separated from the body.
-        # Control fins are attached  to a servo and they
-        # are a distance apart from the body (or not,
-        # it depends on the rocket)
+        """
+        Stabilization fins are attached to a hollow
+        body, therefore they lose a lot of lift but
+        aren't physically separated from the body.
+        Control fins are attached  to a servo and they
+        are a distance apart from the body (or not,
+        it depends on the rocket)
+        """
         if separate == "True" and attached == "False":
-            sep = 0.01
+            sep = l2[0][1] / 3
         else:
             sep = 0
         # Draws the fin
@@ -1027,6 +1069,10 @@ class TabWithCanvas(Tab):
             x2_mirror = -(l2[i+1][1]+sep) * self.scale_y + self.canvas_width/2
             self.canvas.create_line(x1, y1, x2, y2, fill=s)
             self.canvas.create_line(x1_mirror, y1, x2_mirror, y2, fill=s)
+            if i == 0:
+                x0, y0, x0_mirror = x1, y1, x1_mirror
+        self.canvas.create_line(x0, y0, x2, y2, fill=s)  # Root Chord
+        self.canvas.create_line(x0_mirror, y0, x2_mirror, y2, fill=s)  # Root Chord
         # Draws an horizontal line to "simulate" the cut body
         if attached == "False" and separate == "False":
             x1 = l2[0][1]*self.scale_y + self.canvas_width/2
@@ -1162,7 +1208,7 @@ class TabWithCanvas(Tab):
         def slider_aoa(a):
             # Changes the aoa and re draws the CP
             self.aoa = float(a)/57.295 + 0.000001
-            self.draw_rocket()
+            self._draw_points()
 
         self.aoa_scale = tk.Scale(self.tab, from_=0, to=90,
                                   orient=tk.HORIZONTAL,
@@ -1183,7 +1229,7 @@ class TabWithCanvas(Tab):
             if float(gui_setup.param_file_tab.entry[8].get()) == 0:
                 self.tvc_angle = 0
                 self.aoa_ctrl_fin = 0
-            self.draw_rocket()
+            self._draw_points()
 
         self.scale_act_angle = tk.Scale(self.tab, from_=-45, to=45,
                                         orient=tk.HORIZONTAL,
@@ -1195,7 +1241,7 @@ class TabWithCanvas(Tab):
 
         def slider_velocity(a):
             self.velocity = float(a)
-            self.draw_rocket()
+            self._draw_points()
 
         self.scale_velocity = tk.Scale(self.tab, from_=1, to=100,
                                        orient=tk.HORIZONTAL,
@@ -1207,7 +1253,8 @@ class TabWithCanvas(Tab):
 
         def slider_time(a):
             self.flight_time = float(a)
-            self.draw_rocket()
+            self._update_scale_limits()
+            self._draw_points()
 
         self.scale_time = tk.Scale(self.tab, from_=0.01, to=15,
                                    orient=tk.HORIZONTAL,
@@ -1222,20 +1269,18 @@ class TabWithCanvas(Tab):
         p = [[0, 0]]*4
         p_string = [[0, 0]]*4
         wingspan = float(s[2])
-        for i in range(2):
-            position = float(s[i].split(",")[0])
-            chord = float(s[i].split(",")[1])
-            if i == 0:
-                radius = self.rocket.diam_interp(position) / 2
-                p[0] = [position, radius]
-                p[3] = [position+chord, radius]
-            else:
-                pos_root = p[0][0]
-                position += pos_root
-                radius = self.rocket.diam_interp(position) / 2
-                radius += wingspan
-                p[1] = [position, radius]
-                p[2] = [position+chord, radius]
+        position = float(s[0].split(",")[0])
+        chord = float(s[0].split(",")[1])
+        radius = self.rocket.diam_interp(position) / 2
+        p[0] = [position, radius]
+        p[3] = [position+chord, radius]
+        position = float(s[1].split(",")[0])
+        chord = float(s[1].split(",")[1])
+        pos_root = p[0][0]
+        position += pos_root
+        radius += wingspan
+        p[1] = [position, radius]
+        p[2] = [position+chord, radius]
         for i in range(4):
             p_string[i] = str(p[i][0]) + "," + str(p[i][1])
         return p_string
