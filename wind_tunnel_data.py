@@ -17,14 +17,18 @@ class FinWindTunnelData:
         self.alpha = [[], [], [], []]
         self.cl = [[], [], [], []]
         self._fill_alpha_and_cl()
-        self.cl_f_of_alpha_for_AR_125 = interp1d(self.alpha[3], self.cl[3])
-        self.cl_f_of_alpha_for_AR_1 = interp1d(self.alpha[2], self.cl[2])
-        self.cl_f_of_alpha_for_AR_075 = interp1d(self.alpha[1], self.cl[1])
-        self.cl_f_of_alpha_for_AR_05 = interp1d(self.alpha[0], self.cl[0])
-        self.alpha_f_of_cl_for_AR_125 = interp1d(self.cl[3], self.alpha[3])
-        self.alpha_f_of_cl_for_AR_1 = interp1d(self.cl[2], self.alpha[2])
-        self.alpha_f_of_cl_for_AR_075 = interp1d(self.cl[1], self.alpha[1])
-        self.alpha_f_of_cl_for_AR_05 = interp1d(self.cl[0], self.alpha[0])
+        self.cl_f_of_alpha = {
+            "1.25": interp1d(self.alpha[3], self.cl[3]),
+            "1": interp1d(self.alpha[2], self.cl[2]),
+            "0.75": interp1d(self.alpha[1], self.cl[1]),
+            "0.5": interp1d(self.alpha[0], self.cl[0])
+            }
+        self.alpha_f_of_cl = {
+            "1.25": interp1d(self.cl[3], self.alpha[3]),
+            "1": interp1d(self.cl[2], self.alpha[2]),
+            "0.75": interp1d(self.cl[1], self.alpha[1]),
+            "0.5": interp1d(self.cl[0], self.alpha[0])
+            }
 
     def _fill_alpha_and_cl(self):
         for i in range(4):

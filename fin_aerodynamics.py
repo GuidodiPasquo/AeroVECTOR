@@ -176,10 +176,10 @@ class AerodynamicProperties:
         cl_list = [0]*n
         cl = 0
         for i in range(n):
-            alphas_list[i] = [wtd.alpha_f_of_cl_for_AR_05(cl),
-                              wtd.alpha_f_of_cl_for_AR_075(cl),
-                              wtd.alpha_f_of_cl_for_AR_1(cl),
-                              wtd.alpha_f_of_cl_for_AR_125(cl)]
+            alphas_list[i] = [wtd.alpha_f_of_cl["0.5"](cl),
+                              wtd.alpha_f_of_cl["0.75"](cl),
+                              wtd.alpha_f_of_cl["1"](cl),
+                              wtd.alpha_f_of_cl["1.25"](cl)]
             cl_list[i] = cl
             cl += step_cl
 
