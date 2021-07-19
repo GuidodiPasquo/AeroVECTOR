@@ -102,6 +102,8 @@ class Fin:
                 warnings_and_cautions.w_and_c.cautions.fin_zero_thickness[self.type_of_fin[1]] = False
         else:
             warnings_and_cautions.w_and_c.cautions.fin_zero_thickness[self.type_of_fin[1]] = False
+            warnings_and_cautions.w_and_c.warnings.fin_incorrect_dim[self.type_of_fin[1]] = False
+            warnings_and_cautions.w_and_c.stalled_fins.stalled_fin[self.type_of_fin[1]] = False
 
     def update_conditions(self, h, v, aoa, angle):
         self.ffc.update(h, v, aoa, angle)

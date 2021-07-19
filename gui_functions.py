@@ -1087,12 +1087,8 @@ class TabWithCanvas(Tab):
         stalled_stab_fin_text, stalled_control_fins_text = "", ""
         if stalled_fins[0] is True:
             stalled_stab_fin_text = "Stabilization fin stalled!"
-        else:
-            stalled_stab_fin_text = ""
         if stalled_fins[1] is True:
             stalled_control_fins_text = "Control fin stalled!"
-        else:
-            stalled_control_fins_text = ""
         self.stalled_stabilization_fins_label.config(text=stalled_stab_fin_text, bg="white")
         self.stalled_control_fins_label.config(text=stalled_control_fins_text, bg="white")
 
