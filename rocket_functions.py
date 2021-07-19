@@ -225,6 +225,7 @@ class Rocket:
         self.component_centroid_pos = [0]*(n-1)
         self.component_length = [0]*(n-1)
         self.component_fineness = [0]*(n-1)
+        self.fin_cn, self.fin_ca = [0]*2, [0]*2
 
     def _maximum_diameter(self):
         d = 0
