@@ -5,6 +5,24 @@ Created on Fri May  8 15:23:20 2020
 @author: Guido di Pasquo
 """
 
+
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+import numpy as np
+import random
+import vpython as vp
+import time
+import gui_setup as gui
+import rocket_functions as rkt
+import control
+import servo_lib
+import importlib
+from scipy.interpolate import interp1d
+
+matplotlib.use('TkAgg')
+
+
 """
 Thanks to:
      LukeDeWaal for the Standard Atmosphere Calculator
@@ -39,20 +57,7 @@ flight computer are doing the same thing
 Parameters related to the servo have the convenient "s" ending.
 """
 
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-import numpy as np
-import random
-import vpython as vp
-import time
-import gui_setup as gui
-import rocket_functions as rkt
-import control
-import servo_lib
-import importlib
-from scipy.interpolate import interp1d
+
 
 rocket = rkt.Rocket()
 controller = control.Controller()
@@ -286,6 +291,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     xcg = xcg_liftoff
     rocket_mass_parameters = [m_liftoff, m_burnout, Iy_burnout, Iy_liftoff,
                               xcg_liftoff, xcg_burnout]
+    roughness = parameters[18]*1e-6
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
@@ -306,8 +312,8 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     rocket.set_motor(gui.savefile.get_motor_data())
     burnout_time = rocket.burnout_time()
     rocket.update_rocket(gui.draw_rocket_tab.get_configuration_destringed(),
-                         rocket_mass_parameters)
-    S = rocket.reference_area
+                         rocket_mass_parameters, roughness)
+    S = rocket.area_ref
     d = rocket.max_diam
 
     # controller
@@ -535,7 +541,7 @@ def update_parameters():
     aoa = calculate_aoa(v_loc_tot)
     thrust = rocket.get_thrust(t, t_launch)
     m, Iy, xcg = rocket.get_mass_parameters(t, t_launch)
-    S = rocket.reference_area
+    S = rocket.area_ref
     v_modulus = np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
@@ -617,7 +623,7 @@ def simulation():
             motor_angle = actuator_angle + motor_offset
         else:
             motor_angle = motor_offset
-            fin_force = q * S * rocket.cn_alpha_ctrl_fin_3d_arrow * actuator_angle
+            fin_force = q * S * rocket.fin_cn[1]
         x_force = thrust * np.cos(motor_angle) - q*S*ca + m*g_loc[0]
         z_force = thrust * np.sin(motor_angle) + m*g_loc[1] + q*S*cn
         Q_moment = (thrust * np.sin(motor_angle) * (xt-xcg) + S*q*d*cm_xcg)
@@ -791,6 +797,8 @@ def check_which_plot(s):
         return Iy
     if s == "CG Position [m]":
         return xcg
+    if s == "Thrust [N]":
+        return thrust
     if s == "Normal Force Coefficient":
         return cn
     if s == "Axial Force Coefficient":
@@ -908,7 +916,7 @@ def run_sim_local():
             timer_run_sim = t
         timer()
         plot_data()
-        if t > burnout_time * 10:
+        if t > burnout_time * 15:
             print("Nice Coast")
             break
         if position_global[0] < -0.1:
@@ -1066,7 +1074,7 @@ def run_sim_python_sitl():
                 timer_gnss = t
         timer()
         plot_data()
-        if t > burnout_time * 10:
+        if t > burnout_time * 15:
             print("Nice Coast")
             break
         if position_global[0] < -0.1:
@@ -1127,6 +1135,7 @@ def run_3d():
     if toggle_3d is False:
         plt.draw()
         plt.show()
+        print("\n")
     if toggle_3d is True:
         try:
             labels.delete()
@@ -1276,7 +1285,7 @@ def run_3d():
                                           fill_value=0, bounds_error=False)
             for i in range(len(le_list)):
                 chord_list[i] = te_list[0][i] - le_list[0][i]
-            thickness = rkt.fin[0].thickness
+            thickness = rkt.fin[0].pp.thickness
             if thickness < 0.002:
                 thickness = 0.002
             if fins[1][0] > 0.001:
@@ -1315,7 +1324,7 @@ def run_3d():
                            [fins[3][1], fins[2][1]]]
                 for i in range(len(le_list)):
                     chord_list[i] = te_list[0][i] - le_list[0][i]
-                thickness = rkt.fin[1].thickness
+                thickness = rkt.fin[1].pp.thickness
                 if thickness < 0.002:
                     thickness = 0.002
                 compound_fins_control = []
@@ -1411,14 +1420,14 @@ def run_3d():
         if rocket.use_fins_control is True:
             # Torque control fin
             T_fin_pos = vp.arrow(pos=vp.vector((control_fins.pos.x -
-                                                (d/2 + rkt.fin[1].wingspan + d/3)),
+                                                (d/2 + rkt.fin[1].pp.wingspan + d/3)),
                                                control_fins.pos.y,
                                                control_fins.pos.z),
                                  axis=vp.vector(0.0001, 0, 0),
                                  shaftwidth=0,
                                  color=vp.color.red)
             T_fin_neg = vp.arrow(pos=vp.vector((control_fins.pos.x +
-                                                (d/2 + rkt.fin[1].wingspan + d/3)),
+                                                (d/2 + rkt.fin[1].pp.wingspan + d/3)),
                                                control_fins.pos.y,
                                                control_fins.pos.z),
                                  axis=vp.vector(-0.0001, 0, 0),
@@ -1569,7 +1578,7 @@ def run_3d():
         def exit_3d(b):
             global break_flag_button
             break_flag_button = True
-            print("3D Forced Stop")
+            print("3D Forced Stop \n")
         exit_button = vp.button(canvas=scene,
                                 bind=exit_3d,
                                 text='   Finish    ',
@@ -1627,8 +1636,8 @@ def run_3d():
         slider_fov = vp.slider(canvas=scene,
                                bind=slider_fov_3d,
                                text='Fov',
-                               min=0.01,
-                               max=3*fov,
+                               min=0.001,
+                               max=4*fov,
                                value=fov,
                                left=440,
                                right=12)
@@ -1671,7 +1680,7 @@ def run_3d():
 
 
         """Labels #########################################################"""
-        labels = vp.canvas(width=1280,height=200,
+        labels = vp.canvas(width=1280, height=200,
                            center=vp.vector(0,0,0),
                            background=vp.color.white)
 
@@ -1768,6 +1777,7 @@ def run_3d():
             velocity_arrow.visible = not hide_cg
             cg_ball.pos = vect_cg
             velocity_arrow.pos = vect_cg
+
             if variable_length_velocity_arrow is True:
                 velocity = np.sqrt(v_loc_3d[i][0]**2 + v_loc_3d[i][1]**2)
                 vel_arrow_length = np.interp(velocity,
@@ -1784,6 +1794,7 @@ def run_3d():
                                   origin=vect_cg)
             velocity_arrow.rotate(-delta_aoa, axis=vp.vector(0,0,1),
                                   origin=vect_cg)
+
             if variable_radius_cg is True:
                 cg_ball.radius = np.interp(t_3d[i],
                                            rad_cg_ball_time[0],
@@ -1799,6 +1810,7 @@ def run_3d():
             motor.pos.x += delta_pos_Z
             motor.rotate(delta_theta, axis=vp.vector(0,0,1),
                          origin=vect_cg)  # Rigid rotation with the rocket
+
             if rocket.use_fins_control is False:
                 # TVC mount rotation
                 motor.rotate(delta_servo, axis=vp.vector(0,0,-1))
@@ -1936,8 +1948,8 @@ def run_3d():
                                              rocket_3d.pos.y+L_total*70-camera_shake[0]/500,
                                              rocket_3d.pos.z-L_total*70)
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
-                                            rocket_3d.pos.y-scene.camera.pos.y,
-                                            rocket_3d.pos.z-scene.camera.pos.z)
+                                              rocket_3d.pos.y-scene.camera.pos.y,
+                                              rocket_3d.pos.z-scene.camera.pos.z)
 
             # Simulates someone in the ground
             elif camera_type == "Fixed":

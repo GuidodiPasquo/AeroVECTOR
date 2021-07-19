@@ -5,6 +5,13 @@ Created on Mon Jan 18 21:20:41 2021
 @author: Guido di Pasquo
 """
 
+
+import tkinter as tk
+import files
+import gui_functions as fun
+import zpc_pid_simulator as sim
+
+
 """
 Handles the functions to set up the GUI.
 
@@ -18,11 +25,6 @@ Functions:
     create_simulation_setup_tab -- Handles the simulation config.
     create_run_sim_tab -- Handles the plot config and runs the sim.
 """
-
-import tkinter as tk
-import files
-import gui_functions as fun
-import zpc_pid_simulator as sim
 
 DEG2RAD = 3.14159265 / 180
 RAD2DEG = 1 / DEG2RAD
@@ -199,7 +201,8 @@ def create_parameters_tab(notebook):
                    "Wind Gust [m/s] = ",
                    "Launch Rod Length [m] = ",
                    "Launch Rod Angle [º] = ",
-                   "Motor Misalignment [º] = "]
+                   "Motor Misalignment [º] = ",
+                   "Roughness [μm] = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
 
     def button_save_parameters():
@@ -597,6 +600,7 @@ def create_run_sim_tab(notebook):
                                  "Mass [kg]",
                                  "Iy [kg*m^2]",
                                  "CG Position [m]",
+                                 "Thrust [N]",
                                  "Force Application Point [m]",
                                  "Normal Force [N]",
                                  "Normal Force Coefficient",

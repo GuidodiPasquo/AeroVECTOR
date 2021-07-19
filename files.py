@@ -5,6 +5,12 @@ Created on Mon Jan 18 18:28:36 2021
 @author: Guido di Pasquo
 """
 
+
+import os
+import copy
+import gui_functions
+
+
 """
 Handles the savefile and motor file.
 
@@ -15,10 +21,6 @@ Methods:
 Classes:
     SaveFile -- Handles all the rocket's data.
 """
-
-import os
-import copy
-import gui_functions
 
 
 def get_save_names():
@@ -101,7 +103,8 @@ class SaveFile:
                                 "Wind Gust = ",
                                 "Launch Rod Length = ",
                                 "Launch Rod Angle [º] = ",
-                                "Motor Misalignment [º] = "]
+                                "Motor Misalignment [º] = ",
+                                "Roughness = "]
         self.conf_3d_names = ["###=#",
                               "toggle_3D=",
                               "camera_shake_toggle=",
@@ -287,7 +290,8 @@ class SaveFile:
                            "0.1",
                            "0",
                            "0",
-                           "0"]
+                           "0",
+                           "60"]
         self.conf_3d = ["True",
                         "False",
                         "False",
@@ -312,7 +316,7 @@ class SaveFile:
                                 "0.02",
                                 "0.01",
                                 "30",
-                                "0.001"]
+                                "0.003"]
         self.conf_sitl = ["False",
                           "False",
                           "False",
@@ -521,6 +525,7 @@ class SaveFile:
                         elif line.startswith("Launch Rod Angle"):
                             file.write(line)
                             file.write("Motor Misalignment = 0" + end)
+                            file.write("Roughness = 60" + end)
                         elif line.startswith("variable_fov"):
                             file.write(line)
                             file.write("hide_cg=True" + end)

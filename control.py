@@ -5,14 +5,16 @@ Created on Fri Jan 29 14:05:35 2021
 @author: Guido di Pasquo
 """
 
+
+import zpc_pid_simulator as sim
+
+
 """
 Handles the controller.
 
 Classes:
     Controller
 """
-
-import zpc_pid_simulator as sim
 
 
 class Controller:

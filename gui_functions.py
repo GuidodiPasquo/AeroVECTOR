@@ -5,6 +5,16 @@ Created on Tue Jan 26 16:21:38 2021
 @author: Guido di Pasquo
 """
 
+
+import copy
+import tkinter as tk
+from tkinter import ttk
+import numpy as np
+import gui_setup
+import rocket_functions
+import warnings_and_cautions
+
+
 """
 Functions necessary to make the GUI.
 
@@ -16,13 +26,6 @@ Functions necessary to make the GUI.
         Tab -- Basic tab.
         TabWithCanvas -- Tab with a canvas.
 """
-
-import copy
-import tkinter as tk
-from tkinter import ttk
-import numpy as np
-import gui_setup
-import rocket_functions
 
 
 # Order in the savefile:
@@ -607,6 +610,7 @@ class TabWithCanvas(Tab):
         self.centering = 0
         self.choose_cg = 2
         self.flight_time = 0.01
+        self.prev_total_errors = 0
 
     def _sort(self, l):
         """
@@ -772,12 +776,13 @@ class TabWithCanvas(Tab):
         """
         l = copy.deepcopy(self.param_fin[n])
         l2 = []
+        zero = 0.0000000001
         for i in range(2):
             a = l[i].split(",")
-            l2.append([float(a[0]), float(a[1])])
+            l2.append([float(a[0]) + zero, float(a[1]) + zero])
         for i in range(2):
             a = l[i+2]
-            l2.append(float(a))
+            l2.append(float(a) + zero)
         return copy.deepcopy(l2)
 
     def create_canvas(self, canvas_width, canvas_height):
@@ -800,9 +805,9 @@ class TabWithCanvas(Tab):
         self.canvas = (tk.Canvas(self.tab, width=self.canvas_width,
                                  heigh=self.canvas_height, bg="white"))
         self.canvas.grid(row=0, column=0, rowspan=20)
-        self._create_n_f_app_m_labels()
+        self._create_labels()
 
-    def _create_n_f_app_m_labels(self):
+    def _create_labels(self):
         self.n_force_label = tk.Label(self.tab, text="")
         self.n_force_label.grid(row=14, column=3)
         self.f_point_label = tk.Label(self.tab, text="")
@@ -811,6 +816,12 @@ class TabWithCanvas(Tab):
         self.moment_label.grid(row=16, column=3)
         self.thrust_label = tk.Label(self.tab, text="")
         self.thrust_label.grid(row=17, column=3)
+        self.warn_and_cau_label = tk.Label(self.tab, text="")
+        self.warn_and_cau_label.place(x=3, y=520)
+        self.stalled_stabilization_fins_label = tk.Label(self.tab, text="")
+        self.stalled_stabilization_fins_label.place(x=3, y=430)
+        self.stalled_control_fins_label = tk.Label(self.tab, text="")
+        self.stalled_control_fins_label.place(x=3, y=410)
 
     def draw_rocket(self):
         """
@@ -825,6 +836,7 @@ class TabWithCanvas(Tab):
         y in the canvas is x in the rocket
         """
         self._update_scale_limits()
+        self.update_full_rocket()
         self.canvas.delete("all")
         l2 = self.get_points_float(0)
         self.rocket_length = l2[-1][0]
@@ -936,7 +948,7 @@ class TabWithCanvas(Tab):
         point_diameter = 5
         self._create_point_cp(point_diameter)
         self._create_point_xcg(point_diameter)
-        self._update_n_f_app_m_labels()
+        self._update_labels()
 
     def _draw_points(self):
         self.canvas.delete(self.xcg_point_canvas, self.cp_point_canvas)
@@ -944,7 +956,7 @@ class TabWithCanvas(Tab):
         point_diameter = 5
         self._create_point_cp(point_diameter)
         self._create_point_xcg(point_diameter)
-        self._update_n_f_app_m_labels()
+        self._update_labels()
 
     def _create_point_cp(self, point_diameter):
         # Creates a point where the CP is located
@@ -981,7 +993,8 @@ class TabWithCanvas(Tab):
         mass_parameters = [0]*6
         for i in range(6):
             mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
-        self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
+        # self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
+        self.rocket.update_mass_parameters(mass_parameters)
         data = gui_setup.param_file_tab.get_configuration_destringed()
         max_actuator_angle = data[9]
         servo_def = data[8]
@@ -997,17 +1010,23 @@ class TabWithCanvas(Tab):
                                     resolution=definition)
         self.scale_time.config(to=self.rocket.t_burnout)
 
+    def update_full_rocket(self):
+        mass_parameters = [0]*6
+        for i in range(6):
+            mass_parameters[i] = float(gui_setup.param_file_tab.entry[i].get())
+        self.rocket.update_rocket(self.get_configuration_destringed(), mass_parameters)
+
     def _calculate_total_cn_cp(self, cn, cp_point):
         q = 0.5 * 1.225 * self.velocity**2
         aero_force = q * self.rocket.area_ref * cn
-        thrust = self._get_motor_data()
+        thrust = self._get_motor_thrust()
         xt = float(gui_setup.param_file_tab.entry[6].get())
         normal_force = thrust*np.sin(self.tvc_angle) + aero_force
         force_app_point = ((aero_force*cp_point + thrust*np.sin(self.tvc_angle) * xt)
                            / normal_force)
         return normal_force, force_app_point
 
-    def _get_motor_data(self):
+    def _get_motor_thrust(self):
         if self.current_motor != gui_setup.param_file_tab.combobox[0].get():
             gui_setup.savefile.read_motor_data(gui_setup.param_file_tab.combobox[0].get())
             self.rocket.set_motor(gui_setup.savefile.get_motor_data())
@@ -1035,9 +1054,9 @@ class TabWithCanvas(Tab):
                                                          + f + self.rocket_origin_canvas),
                                                         fill="blue", outline="blue")
 
-    def _update_n_f_app_m_labels(self):
+    def _update_labels(self):
         n_force = "N Force = " + str(round(self.normal_force, 3)) + " N"
-        f_point = "Force App point = " + str(round(self.force_app_point, 3)) + " m"
+        f_point = "Force App point = " + str(round(self.force_app_point, 4)) + " m"
         moment = self.normal_force * (self.force_app_point-self.xcg_point)
         moment_text = "Moment = " + str(round(moment, 3)) + " N.m"
         thrust_text = "T = " + str(round(self.rocket.get_thrust(self.flight_time, 0), 3)) + " N"
@@ -1045,6 +1064,37 @@ class TabWithCanvas(Tab):
         self.f_point_label.config(text=f_point)
         self.moment_label.config(text=moment_text)
         self.thrust_label.config(text=thrust_text)
+        warn, cau, new_event = warnings_and_cautions.w_and_c.check_warnings_and_cautions()
+        if warn == 0 and cau == 0:
+            c_and_w_text = ""
+            color = self.tab.cget("background")
+            color2 = self.tab.cget("background")
+        else:
+            c_and_w_text = str(warn) + " WARNINGS and " + str(cau) + " CAUTIONS active in the console."
+            if warn > 0:
+                color = "red"
+                color2 = "white"
+            elif cau > 0:
+                color = "yellow"
+                color2 = "black"
+        self.warn_and_cau_label.config(text=c_and_w_text, bg=color, fg=color2)
+        total_errors = warn + cau
+        if total_errors != self.prev_total_errors and total_errors == 0:
+            print("\nAll warnings or cautions have been corrected, good work :). \n")
+        self.prev_total_errors = total_errors
+
+        stalled_fins = warnings_and_cautions.w_and_c.check_stalled_fins()
+        stalled_stab_fin_text, stalled_control_fins_text = "", ""
+        if stalled_fins[0] is True:
+            stalled_stab_fin_text = "Stabilization fin stalled!"
+        else:
+            stalled_stab_fin_text = ""
+        if stalled_fins[1] is True:
+            stalled_control_fins_text = "Control fin stalled!"
+        else:
+            stalled_control_fins_text = ""
+        self.stalled_stabilization_fins_label.config(text=stalled_stab_fin_text, bg="white")
+        self.stalled_control_fins_label.config(text=stalled_control_fins_text, bg="white")
 
     def _draw_fins(self, l2, s, attached, separate):
         """
@@ -1129,6 +1179,7 @@ class TabWithCanvas(Tab):
         self.rocket._update_rocket_dim(self.get_points_float(0))
         self.points[1] = copy.deepcopy(self.param_2_points_fins(l3))
         self.points[2] = copy.deepcopy(self.param_2_points_fins(l4))
+        self.prev_total_errors = 0  # prevents showing the "all errors corrected" when opening a file without errors after opening one that had
         self.draw_rocket()
         self.change_state_fins()
 

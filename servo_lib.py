@@ -5,6 +5,11 @@ Created on Fri Jan 29 15:05:28 2021
 @author: Guido di Pasquo
 """
 
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 """
 Handles the actuator dynamics.
 
@@ -18,8 +23,6 @@ since the characterization was done without resistance, with the test
 method you can adjust fairly simply the compensation to match your servo
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 
 DEG2RAD = np.pi / 180
 RAD2DEG = 1 / DEG2RAD

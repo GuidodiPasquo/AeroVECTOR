@@ -1,21 +1,21 @@
-Motor = AeroTech_G12.csv
-Mass Liftoff [kg] = 1
-Mass Burnout [kg] = 1
+Motor = Estes_F15.csv
+Mass Liftoff [kg] = 0.650
+Mass Burnout [kg] = 0.6
 Iy Liftoff [kg*m] = 0.0662
-Iy Burnout [kg*m] = 0.0662
+Iy Burnout [kg*m] = 0.0601
 Xcg Liftoff [m] = 0.55
-Xcg Burnout [m] = 0.55
-Xt [m] = 0.85
+Xcg Burnout [m] = 0.51
+Xt [m] = 0.9
 Servo definition [º] = 1
-Max Actuator Angle [º] = 30
-Actuator Reduction = 1
-Initial Misalignment [º] = 0.1
+Max Actuator Angle [º] = 5
+Actuator Reduction = 5
+Initial Misalignment [º] = 2
 Servo Compensation = 2.1
 Wind [m/s] = 2
 Wind Gust = 0.1
 Launch Rod Length = 0
 Launch Rod Angle [º] = 0
-Motor Misalignment [º] = 0.1
+Motor Misalignment [º] = 0
 Roughness = 60
 ###=#
 toggle_3D=True
@@ -23,27 +23,27 @@ camera_shake_toggle=False
 hide_forces=False
 variable_fov=False
 hide_cg=True
-Camera_type=Follow Far
-slow_mo=1
+Camera_type=Fixed
+slow_mo=3
 force_scale=0.2
-fov=0.6
+fov=4
 ###=#
 Torque Controller = False
-Anti Windup = True
-Input Type = Step [º]
-Kp = 3
-Ki = 0.5
-Kd = 0.3
+Anti Windup = False
+Input Type = Up
+Kp = 1
+Ki = 0
+Kd = 0.005
 K All = 1
 K Damping = 0
-Reference Thrust [N] = 20
-Input = 60
+Reference Thrust [N] = 30
+Input = 0
 Input time = 0.5
 Launch Time = 0
 Servo Sample Time [s] = 0.02
 Controller Sample Time [s] = 0.01
 Maximum Sim Duration [s] = 10
-Sim Delta T [s] = 0.005
+Sim Delta T [s] = 0.002
 ###=#
 Activate_SITL=False
 Use Sensor Noise=False
@@ -63,25 +63,25 @@ GNSS ST=1
 ###=#
 Frist_plot=Pitch Angle [º]
 Second_plot=Setpoint [º]
-Third_plot=Actuator deflection [º]
-Fourth_plot=Altitude [m]
-Fifth_plot=Total Velocity [m/s]
+Third_plot=Altitude [m]
+Fourth_plot=Actuator deflection [º]
+Fifth_plot=Off
 ###=#
 True
+False
 True
-True
-True
+False
 False
 0,0
 0.2,0.066
 1,0.066
 Fins_s
-0.8,0.2
-0.1,0.05
-0.047
-0.003
+0,0
+0,0
+0
+0
 Fins_c
-0.2,0.055
-0.04,0.01
-0.037
-0.003
+0,0
+0,0
+0
+0

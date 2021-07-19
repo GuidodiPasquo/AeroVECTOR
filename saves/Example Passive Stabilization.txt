@@ -16,6 +16,7 @@ Wind Gust = 0.1
 Launch Rod Length = 2
 Launch Rod Angle [º] = -5
 Motor Misalignment [º] = 0.1
+Roughness = 40
 ###=#
 toggle_3D=True
 camera_shake_toggle=False
@@ -72,11 +73,11 @@ True
 False
 False
 0,0
-0.2,0.05
-1,0.05
+0.2 , 0.05
+1 , 0.05
 Fins_s
-0.93,0.07
-0.02,0.04
+0.93 , 0.07
+0.02 , 0.04
 0.027
 0.003
 Fins_c
