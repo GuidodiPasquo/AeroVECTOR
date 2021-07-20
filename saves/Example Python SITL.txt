@@ -44,6 +44,7 @@ Servo Sample Time [s] = 0.02
 Controller Sample Time [s] = 0
 Maximum Sim Duration [s] = 20
 Sim Delta T [s] = 0.0025
+Launch Altitude = 0
 ###=#
 Activate_SITL=True
 Use Sensor Noise=True

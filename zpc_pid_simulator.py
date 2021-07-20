@@ -321,7 +321,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global torque_controller, inp, inp_time, t_launch
     global T, Ts, T_Program, sim_duration
     global input_type, reference_thrust
-    global average_T
+    global average_T, launch_altitude
     input_type = conf_controller[2]
     controller.setup_controller(conf_controller[0:9],
                                 Actuator_reduction,
@@ -333,6 +333,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     T_Program = conf_controller[13]
     sim_duration = conf_controller[14]
     T = conf_controller[15]
+    launch_altitude =  conf_controller[16]
     average_T = T
 
     # SITL
@@ -518,7 +519,7 @@ def update_parameters():
     global thrust, t_launch, xcg, m, Iy
     global out, timer_disturbance, timer_U, U2, q_wind
     global cm_xcg, ca, S
-    global actuator_angle
+    global actuator_angle, launch_altitude
 
     # NEW SIMULATION
     global v_loc, v_loc_tot, v_glob
@@ -546,11 +547,11 @@ def update_parameters():
     if rocket.use_fins_control is True:
         # Detailed explanation in rocket_functions
         cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q,
-                                                        position_global[0],
+                                                        position_global[0] + launch_altitude,
                                                         actuator_angle)
     else:
         cn, cm_xcg, ca, xa = rocket.calculate_aero_coef(v_loc_tot, Q,
-                                                        position_global[0])
+                                                        position_global[0] + launch_altitude)
     # Computes the dynamic pressure
     rho = rocket.rho
     q = 0.5 * rho * v_modulus**2

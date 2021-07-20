@@ -131,7 +131,8 @@ class SaveFile:
                                       "Servo Sample Time [s] = ",
                                       "Controller Sample Time [s] = ",
                                       "Maximum Sim Duration [s] = ",
-                                      "Sim Delta T [s] = "]
+                                      "Sim Delta T [s] = ",
+                                      "Launch Altitude = "]
         self.conf_sitl_names = ["###=#",
                                 "Activate_SITL=",
                                 "Use Sensor Noise=",
@@ -316,7 +317,8 @@ class SaveFile:
                                 "0.02",
                                 "0.01",
                                 "30",
-                                "0.003"]
+                                "0.003",
+                                "0"]
         self.conf_sitl = ["False",
                           "False",
                           "False",
@@ -532,6 +534,9 @@ class SaveFile:
                         elif line.startswith("Python SITL="):
                             file.write(line)
                             file.write("File=example_python_sitl" + end)
+                        elif line.startswith("Sim Delta"):
+                            file.write(line)
+                            file.write("Launch Altitude = 0" + end)
                         elif line.startswith("Fins_s") or line.startswith("Fins_c"):
                             file.write(line)
                             counter = 0

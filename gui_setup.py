@@ -567,7 +567,8 @@ def create_simulation_setup_tab(notebook):
                    "Servo Sample Time [s] =",
                    "Controller Sample Time [s] =",
                    "Maximum Sim Duration [s] =",
-                   "Sim Delta T [s] ="]
+                   "Sim Delta T [s] =",
+                   "Launch Altitude [m] ="]
     sim_setup_tab.create_entry(names_entry, 0, 0, "W")
 
     def button_save():
