@@ -122,9 +122,9 @@ class PhysicalProperties:
                 if self.aspect_ratio > 1:
                     avg_t_ar = (self.transition_ar[1] + 1) / 2
                     if self.aspect_ratio > avg_t_ar:
-                        todo = " enlarging or shrinking"
+                        todo = " increasing or reducing"
                     else:
-                        todo = " shrinking or enlarging"
+                        todo = " reducing or increasing"
                     print("CAUTION: " + self.type_of_fin[0]
                           + " fin is in the transition Aspect Ratio (AR = " + str(round(self.aspect_ratio, 2))
                           + "), consider"
