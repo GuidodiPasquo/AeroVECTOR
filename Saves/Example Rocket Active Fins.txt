@@ -1,0 +1,88 @@
+Motor = AeroTech_G12.csv
+Mass Liftoff [kg] = 1
+Mass Burnout [kg] = 1
+Iy Liftoff [kg*m] = 0.0662
+Iy Burnout [kg*m] = 0.0662
+Xcg Liftoff [m] = 0.55
+Xcg Burnout [m] = 0.55
+Xt [m] = 0.85
+Servo definition [º] = 1
+Max Actuator Angle [º] = 30
+Actuator Reduction = 1
+Initial Misalignment [º] = 0.1
+Servo Compensation = 2.1
+Wind [m/s] = 2
+Wind Gust = 0.1
+Launch Rod Length = 0
+Launch Rod Angle [º] = 0
+Motor Misalignment [º] = 0.1
+Roughness = 60
+###=#
+toggle_3D=True
+camera_shake_toggle=False
+hide_forces=False
+variable_fov=False
+hide_cg=True
+Camera_type=Follow Far
+slow_mo=1
+force_scale=0.2
+fov=0.6
+###=#
+Torque Controller = False
+Anti Windup = True
+Input Type = Step [º]
+Kp = 3
+Ki = 0.5
+Kd = 0.3
+K All = 1
+K Damping = 0
+Reference Thrust [N] = 20
+Input = 60
+Input time = 0.5
+Launch Time = 0
+Servo Sample Time [s] = 0.02
+Controller Sample Time [s] = 0.01
+Maximum Sim Duration [s] = 10
+Sim Delta T [s] = 0.005
+Launch Altitude = 0
+###=#
+Activate_SITL=False
+Use Sensor Noise=False
+Python SITL=True
+File=example_python_sitl
+Port=COM3
+Baudrate=1000000
+Gyroscope SD=0
+Accelerometer SD=0
+Altimeter SD=0
+GNSS Pos SD=0
+GNSS Vel SD=0
+Gyroscope ST=0.0025
+Accelerometer ST=0.0025
+Altimeter ST=0.005
+GNSS ST=1
+###=#
+Frist_plot=Pitch Angle [º]
+Second_plot=Setpoint [º]
+Third_plot=Actuator deflection [º]
+Fourth_plot=Altitude [m]
+Fifth_plot=Total Velocity [m/s]
+###=#
+True
+True
+True
+True
+False
+0,0
+0.2,0.066
+1,0.066
+Fins_s
+0.8,0.2
+0.1,0.05
+0.047
+0.003
+Fins_c
+0.2,0.055
+0.04,0.01
+0.037
+0.003
