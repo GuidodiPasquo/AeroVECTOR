@@ -120,12 +120,14 @@ class PhysicalProperties:
         if self.wingspan > 0.000001:
             if self.transition_ar[1] > self.aspect_ratio:
                 if self.aspect_ratio > 1:
-                    avg_t_ar = (self.transition_ar[1] + self.transition_ar[0]) / 2
+                    avg_t_ar = (self.transition_ar[1] + 1) / 2
                     if self.aspect_ratio > avg_t_ar:
                         todo = " enlarging or shrinking"
                     else:
                         todo = " shrinking or enlarging"
-                    print("CAUTION: " + self.type_of_fin[0] + " fin is in the transition Aspect Ratio, consider"
+                    print("CAUTION: " + self.type_of_fin[0]
+                          + " fin is in the transition Aspect Ratio (AR = " + str(round(self.aspect_ratio, 2))
+                          + "), consider"
                           + todo + " the wingspan.")
                     warnings_and_cautions.w_and_c.cautions.fin_transition_ar[self.type_of_fin[1]] = True
                 else:

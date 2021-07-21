@@ -102,7 +102,7 @@ class Rocket:
 
     """ BODY ==============================================================#"""
 
-    def update_rocket(self, l0, mass_param, roughness=60e-6):
+    def update_rocket(self, l0, mass_param, roughness=[60e-6]*3):
         """
         Update the Rocket instance with the data in l0 and the cg position.
 
@@ -123,12 +123,12 @@ class Rocket:
             warnings_and_cautions.w_and_c.warnings.incorrect_rocket_dimensions = True
         else:
             warnings_and_cautions.w_and_c.warnings.incorrect_rocket_dimensions = False
-            self.relative_rough = roughness
+            self.relative_rough = roughness[0]
             self.reset_variables()
             self._set_variables(l)
             self.update_mass_parameters(mass_param)
             self._update_rocket_dim(l[5])
-            self._update_fins(l)
+            self._update_fins(l, roughness)
             self._calculate_reynolds_crit()
             self._check_if_cg_falls_inside_nose_cone()
             self._calculate_cd_pressure_compresibility_correction()
@@ -289,19 +289,19 @@ class Rocket:
         self.diam_interp = interp1d(pos, diam, bounds_error=False,
                                     fill_value=(0, diam[-1]))
 
-    def _update_fins(self, l):
+    def _update_fins(self, l, roughness):
         # In case one fin is not set up
         zero_fin = [[0, 0.0000000001], [0, 0], 0.0000000002, 0]
         if self.use_fins is True:
             fin[0].update(l[6],
                           self.fins_attached[0],
                           which_fin=0,
-                          roughness=self.relative_rough)
+                          roughness=roughness[1])
             if self.use_fins_control is True:
                 fin[1].update(l[7],
                               self.fins_attached[1],
                               which_fin=1,
-                              roughness=self.relative_rough)
+                              roughness=roughness[2])
             else:
                 # In case there are no control fins
                 fin[1].update(zero_fin, which_fin=1)
@@ -793,7 +793,7 @@ class Rocket:
         is_in_the_pad_flag : bool
             Is the rocket in the pad?.
         """
-        if alt > 0.2 and self.is_in_the_pad_flag is True:
+        if alt > 0.001 and self.is_in_the_pad_flag is True:
             self.is_in_the_pad_flag = False
         return self.is_in_the_pad_flag
 

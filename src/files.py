@@ -103,7 +103,9 @@ class SaveFile:
                                 "Launch Rod Length = ",
                                 "Launch Rod Angle [º] = ",
                                 "Motor Misalignment [º] = ",
-                                "Roughness = "]
+                                "Rocket Roughness = ",
+                                "Stabilization Fin Roughness = ",
+                                "Control Fin Roughness = "]
         self.conf_3d_names = ["###=#",
                               "toggle_3D=",
                               "camera_shake_toggle=",
@@ -131,7 +133,12 @@ class SaveFile:
                                       "Controller Sample Time [s] = ",
                                       "Maximum Sim Duration [s] = ",
                                       "Sim Delta T [s] = ",
-                                      "Launch Altitude = "]
+                                      "Launch Altitude = ",
+                                      "Initial Altitude = ",
+                                      "Initial Vertical Velocity = ",
+                                      "Initial Horizontal Velocity = ",
+                                      "Initial Pitch Angle = ",
+                                      "Initial Pitch Rate = "]
         self.conf_sitl_names = ["###=#",
                                 "Activate_SITL=",
                                 "Use Sensor Noise=",
@@ -291,6 +298,8 @@ class SaveFile:
                            "0",
                            "0",
                            "0",
+                           "60",
+                           "60",
                            "60"]
         self.conf_3d = ["True",
                         "False",
@@ -317,6 +326,11 @@ class SaveFile:
                                 "0.01",
                                 "30",
                                 "0.003",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
                                 "0"]
         self.conf_sitl = ["False",
                           "False",
@@ -527,6 +541,8 @@ class SaveFile:
                             file.write(line)
                             file.write("Motor Misalignment = 0" + end)
                             file.write("Roughness = 60" + end)
+                            file.write("Roughness = 60" + end)
+                            file.write("Roughness = 60" + end)
                         elif line.startswith("variable_fov"):
                             file.write(line)
                             file.write("hide_cg=True" + end)
@@ -536,6 +552,11 @@ class SaveFile:
                         elif line.startswith("Sim Delta"):
                             file.write(line)
                             file.write("Launch Altitude = 0" + end)
+                            file.write("Initial Altitude = 0" + end)
+                            file.write("Initial Vertical Velocity = 0" + end)
+                            file.write("Initial Horizontal Velocity = 0" + end)
+                            file.write("Initial Pitch Angle = 0" + end)
+                            file.write("Initial Pitch Rate = 0" + end)
                         elif line.startswith("Fins_s") or line.startswith("Fins_c"):
                             file.write(line)
                             counter = 0

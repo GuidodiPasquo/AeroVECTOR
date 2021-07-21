@@ -26,9 +26,12 @@ def getSimData():
     return data
 
 
-def sendCommand(servo, parachute):
+def sendCommand(servo, parachute, ignition=0):
     sim.u_servos = servo * DEG2RAD
     sim.parachute = int(parachute)
+    if int(ignition) == 1:
+        if sim.t_launch > sim.t:
+            sim.t_launch = sim.t
 
 
 def plot_variable(var, i):

@@ -265,7 +265,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global xcg_liftoff, xcg_burnout, xt
     global k1, k2, k3, Actuator_max, Actuator_reduction
     global u_initial_offset, motor_offset
-    global wind, wind_distribution, launchrod_lenght, theta, wind_total
+    global wind, wind_distribution, launchrod_lenght, theta, wind_total, launchrod_angle
 
     m_liftoff = parameters[1]
     m_burnout = parameters[2]
@@ -282,7 +282,8 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     wind = parameters[13]
     wind_distribution = parameters[14]
     launchrod_lenght = parameters[15]
-    Q_d.f = parameters[16] * DEG2RAD
+    launchrod_angle = parameters[16] * DEG2RAD
+    Q_d.f = launchrod_angle
     motor_offset = parameters[17] * DEG2RAD
     theta = Q_d.f
     wind_total = wind
@@ -291,7 +292,10 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     xcg = xcg_liftoff
     rocket_mass_parameters = [m_liftoff, m_burnout, Iy_burnout, Iy_liftoff,
                               xcg_liftoff, xcg_burnout]
-    roughness = parameters[18]*1e-6 + 1e-9
+    roughness = [0, 0, 0]  # Rocket, stabilization fin, control fin.
+    roughness[0] = parameters[18]*1e-6 + 1e-9
+    roughness[1] = parameters[19]*1e-6 + 1e-9
+    roughness[2] = parameters[20]*1e-6 + 1e-9
 
     ##
     global toggle_3d, camera_shake_toggle, slow_mo, force_scale, hide_forces
@@ -322,6 +326,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global T, Ts, T_Program, sim_duration
     global input_type, reference_thrust
     global average_T, launch_altitude
+    global position_global, position_local, v_glob, Q
     input_type = conf_controller[2]
     controller.setup_controller(conf_controller[0:9],
                                 Actuator_reduction,
@@ -333,7 +338,16 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     T_Program = conf_controller[13]
     sim_duration = conf_controller[14]
     T = conf_controller[15]
-    launch_altitude =  conf_controller[16]
+    launch_altitude = conf_controller[16]
+    position_global[0] = conf_controller[17]
+    x_d.f = position_global[0]
+    v_glob = [conf_controller[18], conf_controller[19]]
+    x_d.f_d, z_d.f_d = conf_controller[18], conf_controller[19]
+    Q_d.f += conf_controller[20] * DEG2RAD
+    Q_d.f_d = conf_controller[21] * DEG2RAD
+    Q = Q_d.f_d
+    theta = Q_d.f
+    [U_d.f, W_d.f] = glob2loc(position_global[0], 0, theta)
     average_T = T
 
     # SITL
@@ -355,6 +369,11 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     acc_st = conf_sitl[12]
     alt_st = conf_sitl[13]
     gnss_st = conf_sitl[14]
+
+    global send_gyro, send_alt, send_gnss_vel
+    send_gyro = Q
+    send_alt = position_global[0]
+    send_gnss_vel = v_glob[0]
 
     global data_plot
     data_plot = gui.run_sim_tab.get_configuration_destringed()
@@ -516,7 +535,7 @@ def update_parameters():
     global i
     global aoa
     global wind
-    global thrust, t_launch, xcg, m, Iy
+    global thrust, t_launch, t, xcg, m, Iy
     global out, timer_disturbance, timer_U, U2, q_wind
     global cm_xcg, ca, S
     global actuator_angle, launch_altitude
@@ -586,7 +605,7 @@ def simulation():
     global position_global, position_local
     global i_turns
     global accx, accz, accQ, g_loc
-    global t_launch
+    global t_launch, launchrod_angle
 
     global force_app_point, normal_force
 
@@ -608,15 +627,15 @@ def simulation():
     """
     v_d = 0  # 0 uses Local and Global Velocities, 1 uses vector derivatives.
 
-    if rocket.is_in_the_pad(position_global[0]) and thrust < m*g or t < t_launch:
+    if rocket.is_in_the_pad(position_global[0]) and thrust < m*g:
         accx = 0
         accz = 0
         accQ = 0
         force_app_point = 0
         normal_force = 0
-        launchrod_lock = 0
     else:
-        if position_local[0] <= launchrod_lenght:
+        launchrod_global_coor = loc2glob(launchrod_lenght, 0, launchrod_angle)
+        if position_global[0] <= launchrod_global_coor[0]:
             launchrod_lock = 0
         else:
             launchrod_lock = 1
@@ -920,8 +939,11 @@ def run_sim_local():
         if t > burnout_time * 15:
             print("Nice Coast")
             break
-        if position_global[0] < -0.1:
-            print("CRASH")
+        if position_global[0] < -0.01:
+            if abs(v_glob[0]) < 2:
+                print("Landing!")
+            else:
+                print("CRASH")
             break
         if t >= sim_duration:
             print("Simulation Ended")
@@ -974,8 +996,11 @@ def run_sim_sitl():
                 print("Time is ", round(t, 0), " seconds")
             if t > burnout_time * 10:
                 break
-            if position_global[0] < -0.1:
-                print("CRASH")
+            if position_global[0] < -0.01:
+                if abs(v_glob[0]) < 2:
+                    print("Landing!")
+                else:
+                    print("CRASH")
                 break
             if parachute == 1:
                 print("Parachute Deployed")
@@ -1078,8 +1103,11 @@ def run_sim_python_sitl():
         if t > burnout_time * 15:
             print("Nice Coast")
             break
-        if position_global[0] < -0.1:
-            print("CRASH")
+        if position_global[0] < -0.01:
+            if abs(v_glob[0]) < 2:
+                print("Landing!")
+            else:
+                print("CRASH")
             break
         if parachute == 1:
             print("Parachute Deployed")
@@ -1765,7 +1793,7 @@ def run_3d():
             xa_radius_neg = loc2glob(delta_xa, delta_xa_radius, theta_3d[i])
 
             # CP and CG global vectors
-            if i == 0:
+            if i == 0 and position_3d[j][0] < 1:
                 vect_cg = rocket_3d.pos - vp.vector(0, L_total/2, 0)
                 launchrod_3d.rotate(theta_3d[1], axis=vp.vector(0,0,1), origin=vect_cg)
             else:
@@ -1860,7 +1888,7 @@ def run_3d():
                               origin=vect_cg)
 
             # Motor Burnout, stops the red trail of the rocket
-            if t_3d[i] > burnout_time + t_launch:
+            if t_3d[i] > burnout_time + t_launch or t_3d[i] < t_launch:
                 motor.visible = False
                 motor.make_trail = False
             else:

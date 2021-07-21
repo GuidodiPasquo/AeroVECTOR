@@ -202,7 +202,9 @@ def create_parameters_tab(notebook):
                    "Launch Rod Length [m] = ",
                    "Launch Rod Angle [º] = ",
                    "Motor Misalignment [º] = ",
-                   "Roughness [μm] = "]
+                   "Rocket Roughness [μm] = ",
+                   "Stabilization Fin Roughness [μm] = ",
+                   "Control Fin Roughness [μm] = "]
     param_file_tab.create_entry(names_entry, 2, 1, "W")
 
     def button_save_parameters():
@@ -568,7 +570,12 @@ def create_simulation_setup_tab(notebook):
                    "Controller Sample Time [s] =",
                    "Maximum Sim Duration [s] =",
                    "Sim Delta T [s] =",
-                   "Launch Altitude [m] ="]
+                   "Launch Altitude [m] =",
+                   "Initial Altitude [m] =",
+                   "Initial Vertical Velocity [m/s] =",
+                   "Initial Horizontal Velocity [m/s] =",
+                   "Initial Pitch Angle [º] =",
+                   "Initial Pitch Rate [º/s] ="]
     sim_setup_tab.create_entry(names_entry, 0, 0, "W")
 
     def button_save():
