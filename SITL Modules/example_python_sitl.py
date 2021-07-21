@@ -4,7 +4,7 @@ Created on Sat Jun 19 15:17:35 2021
 
 @author: Guido di Pasquo
 """
-import python_sitl_functions as Sim
+from src import python_sitl_functions as Sim
 import numpy as np
 import importlib
 class SITLProgram:
@@ -32,16 +32,16 @@ class SITLProgram:
     def everything_that_is_outside_functions(self):
         module = "pid_module"
         self.pid_module = importlib.import_module("SITL Modules.Complemetary Modules."
-                                                      +module)        
-        
+                                                      +module)
+
         self.DEG2RAD = np.pi / 180
         self.RAD2DEG = 1 / self.DEG2RAD
         self.fin_max = 30 / 57.3
         self.pid_pitch = self.pid_module.PID(3, 0.5, 0.3, True, self.fin_max)
-        self.pid_pos = self.pid_module.PID(1/20, 0.01, 0.005, False, 5)     
+        self.pid_pos = self.pid_module.PID(1/20, 0.01, 0.005, False, 5)
         self.k_all = -5
         self.actuator_reduction = 1
-        
+
         self.u_controller = 0
         self.u_prev = 0
         self.u_servos = 0
@@ -57,7 +57,7 @@ class SITLProgram:
         self.alt_prev = 0
         self.pos_corrected = [0,0]
         self.pos_gnss_prev = 0
-        
+
 
 
 
@@ -83,7 +83,7 @@ class SITLProgram:
             self.convert_measurement_system()
             self.integrate_gyro()
             self.integrate_accelerometer()
-            self.compute_position_acc_and_gnss()            
+            self.compute_position_acc_and_gnss()
             inp_pos = 0-self.pos_corrected[1]
             setpoint = self.pid_pos.compute_output(-inp_pos, self.t)
             inp_pitch = self.theta
@@ -113,7 +113,7 @@ class SITLProgram:
         # u_controller=u_controller-u_prev*0.05;  #filter, increasing the
         # number makes it stronger and slower
         self.u_servos = self.u_controller * self.actuator_reduction
-        return self.u_servos    
+        return self.u_servos
 
     def parachute_deployment(self):
         if self.alt < self.alt_prev and self.alt > 10:
@@ -161,59 +161,3 @@ class SITLProgram:
         self.gyro *= self.DEG2RAD
         self.accx *= 9.8
         self.accz *= 9.8
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

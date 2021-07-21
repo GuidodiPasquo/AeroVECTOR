@@ -4,7 +4,7 @@ Created on Sat Jun 19 15:17:35 2021
 
 @author: Guido di Pasquo
 """
-import python_sitl_functions as Sim
+from src import python_sitl_functions as Sim
 import numpy as np
 import importlib
 class SITLProgram:
@@ -68,59 +68,3 @@ class SITLProgram:
         else:
             self.alt_prev = self.alt
             return 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
