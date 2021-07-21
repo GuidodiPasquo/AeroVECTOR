@@ -46,6 +46,9 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The effective launch rod length is the length at which the rocket can pitch somewhat freely.
 - Angle of the launch rod.
 - The *Motor Misalignment* sets the motor at an angle (mainly for active fin control).  
+- The roughness applies to the body and fins, therefore, a little tuning might be required to get the performances right.
+
+
 **Please do not leave blank entries**
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
@@ -58,12 +61,12 @@ To draw the rocket, one must insert the point as **coordinate from the nose cone
 With the *Add Point* button, one adds the point written in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
 
 #### Fins
-To draw the fins, the procedure is similar. One must fill the entries with their respective points as:  
-**coordinate from the nose cone tip, *radius* to that point**.   
+To draw the fins, one must insert the position and chord of the root and tip, separated by comma. The wingspan is measured from the root to the tip.
+**All dimensions are in meters.**  
 The order is the following:  
 ![](/Images/Readme/Screenshot_8.png)
 
-**Only trapezoidal fins are modelled**, therefore, ensure that the root and tip chords are parallel.
+**Only trapezoidal fins are modelled.**
 
 After the points are written in the entries, one can either update the stabilization or control fin. Clicking the *Load "" Fins* button will fill the entries with the current data of the fin. The button *Reset Fin* sets the fin entries to a zero-area fin.
 
@@ -160,6 +163,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
   - The simulation will stop if the Rocket tumbles more than 2 times, hits the ground, or coasts for more than 10 burnout times.
 - *Sim Delta T* is the sample time of the simulation, one can increase it to hasten it.
   - Since the Software in the Loop simulation runs in real time, this setting does not affect it.
+- Launch altitude is the height above sea level of the launchpad.
   
   
 ### Plotting the results
