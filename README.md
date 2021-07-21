@@ -47,6 +47,8 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - Angle of the launch rod.
 - The *Motor Misalignment* sets the motor at an angle (mainly for active fin control).  
 - The roughness applies to the body and fins, therefore, a little tuning might be required to get the performances right.
+
+
 **Please do not leave blank entries**
 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
