@@ -46,7 +46,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The effective launch rod length is the length at which the rocket can pitch somewhat freely.
 - Angle of the launch rod.
 - The *Motor Misalignment* sets the motor at an angle (mainly for active fin control).  
-- The roughness applies to the body and fins, therefore, a little tuning might be required to get the performances right.
+- The roughness applies to all the components of the body and fins, therefore, a little tuning might be required to get the performances right.
 
 
 **Please do not leave blank entries**
@@ -164,6 +164,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 - *Sim Delta T* is the sample time of the simulation, one can increase it to hasten it.
   - Since the Software in the Loop simulation runs in real time, this setting does not affect it.
 - Launch altitude is the height above sea level of the launchpad.
+- The next entries deal with the initial state of the rocket, useful for second stages or landings (landing aerodynamics are not well modelled, please do not rely exclusively on them.)
   
   
 ### Plotting the results
