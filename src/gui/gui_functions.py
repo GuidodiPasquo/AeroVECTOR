@@ -10,7 +10,6 @@ import copy
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
-import importlib
 from src.gui import gui_setup
 from src.aerodynamics import rocket_functions
 from src import warnings_and_cautions
@@ -391,10 +390,6 @@ class Tab:
         n_check = len(self.checkbox)
         n_comb = len(self.names_combobox)
         n_ent = len(self.entry)
-        # !!!
-        # if n_ent > (len(data) - n_check - n_comb):
-        #     for i in range(n_ent - (len(data) - n_check - n_comb)):
-        #         data.append("0")
         for i in range(n_check):
             if data[i] == "True":
                 self.checkbox[i].select()

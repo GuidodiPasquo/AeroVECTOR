@@ -38,6 +38,22 @@ def get_save_names():
     return copy.deepcopy(filenames)
 
 
+def get_export_names():
+    r"""
+    Return a list with the names of the files in the folder .\\Saves.
+
+    Returns
+    -------
+    List of strings
+        Save files names.
+    """
+    filenames = os.listdir(".\\Exports")
+    for i, filename in enumerate(filenames):
+        # Removes the .csv
+        filenames[i] = filename[:-4]
+    return copy.deepcopy(filenames)
+
+
 def get_motor_names():
     r"""
     Return a list with the names of the motor files in the folder .\\Motors.
@@ -67,6 +83,49 @@ def get_sitl_modules_names():
     return copy.deepcopy(names)
 
 
+def export_plots(file_name, names, data, T):
+    file_name += "_0"
+    export_names = get_export_names()
+
+    number_found = False
+    counter = 0
+    while number_found is False:  # Check for the file and add _1, _2, etc if they exist
+        for name in export_names:
+            if name == file_name:
+                counter += 1
+                file_name = file_name[:-1] + str(counter)
+                continue
+        number_found = True
+
+    to_file = ""
+    prev_time = 0
+    for i in range(len(data[0])):
+        line = ""
+        if i == 0:
+            for j in range(len(names)):
+                if j == len(names)-1:
+                    end = "\n"
+                else:
+                    end = ","
+                line += names[j] + end
+        else:
+            if data[0][i] > T*0.999 + prev_time:
+                for j in range(len(names)):
+                    if j == len(names)-1:
+                        end = "\n"
+                    else:
+                        end = ","
+                    line += str(data[j][i]) + end
+                prev_time = data[0][i]
+        to_file += line
+    try:
+        with open(".\\Exports\\"+file_name+".csv", "w", encoding="utf-8") as file:
+            file.write(to_file)
+        print("Data Exported Successfully")
+    except EnvironmentError:
+        print("Error Exporting Data")
+
+
 class SaveFile:
     """
     Save file class. Handles the opening, reading and writing of the .txt's
@@ -86,36 +145,36 @@ class SaveFile:
 
     def __init__(self):
         self.parameter_names = ["Motor = ",
-                                "Mass Liftoff [kg] = ",
-                                "Mass Burnout [kg] = ",
-                                "Iy Liftoff [kg*m] = ",
-                                "Iy Burnout [kg*m] = ",
-                                "Xcg Liftoff [m] = ",
-                                "Xcg Burnout [m] = ",
-                                "Xt [m] = ",
-                                "Servo definition [º] = ",
-                                "Max Actuator Angle [º] = ",
+                                "Mass Liftoff = ",
+                                "Mass Burnout = ",
+                                "Iy Liftoff = ",
+                                "Iy Burnout = ",
+                                "Xcg Liftoff = ",
+                                "Xcg Burnout = ",
+                                "Xt = ",
+                                "Servo definition = ",
+                                "Max Actuator Angle = ",
                                 "Actuator Reduction = ",
-                                "Initial Misalignment [º] = ",
+                                "Initial Misalignment = ",
                                 "Servo Compensation = ",
-                                "Wind [m/s] = ",
+                                "Wind = ",
                                 "Wind Gust = ",
                                 "Launch Rod Length = ",
-                                "Launch Rod Angle [º] = ",
-                                "Motor Misalignment [º] = ",
+                                "Launch Rod Angle = ",
+                                "Motor Misalignment = ",
                                 "Rocket Roughness = ",
                                 "Stabilization Fin Roughness = ",
                                 "Control Fin Roughness = "]
         self.conf_3d_names = ["###=#",
-                              "toggle_3D=",
-                              "camera_shake_toggle=",
-                              "hide_forces=",
-                              "variable_fov=",
-                              "hide_cg=",
-                              "Camera_type=",
-                              "slow_mo=",
-                              "force_scale=",
-                              "fov="]
+                              "Toggle 3D = ",
+                              "Camera Shake Toggle = ",
+                              "Hide Forces = ",
+                              "Variable FOV = ",
+                              "Hide cg = ",
+                              "Camera Type = ",
+                              "Slow mo = ",
+                              "Force Scale = ",
+                              "FOV = "]
         self.conf_controller_names = ["###=#",
                                       "Torque Controller = ",
                                       "Anti Windup = ",
@@ -125,14 +184,15 @@ class SaveFile:
                                       "Kd = ",
                                       "K All = ",
                                       "K Damping = ",
-                                      "Reference Thrust [N] = ",
+                                      "Reference Thrust = ",
                                       "Input = ",
                                       "Input time = ",
                                       "Launch Time = ",
-                                      "Servo Sample Time [s] = ",
-                                      "Controller Sample Time [s] = ",
-                                      "Maximum Sim Duration [s] = ",
-                                      "Sim Delta T [s] = ",
+                                      "Servo Sample Time = ",
+                                      "Controller Sample Time = ",
+                                      "Maximum Sim Duration = ",
+                                      "Sim Delta T = ",
+                                      "Export T = ",
                                       "Launch Altitude = ",
                                       "Initial Altitude = ",
                                       "Initial Vertical Velocity = ",
@@ -140,27 +200,32 @@ class SaveFile:
                                       "Initial Pitch Angle = ",
                                       "Initial Pitch Rate = "]
         self.conf_sitl_names = ["###=#",
-                                "Activate_SITL=",
-                                "Use Sensor Noise=",
+                                "Activate SITL = ",
+                                "Use Sensor Noise = ",
                                 "Python SITL=",
-                                "File=",
-                                "Port=",
-                                "Baudrate=",
-                                "Gyroscope SD=",
-                                "Accelerometer SD=",
-                                "Altimeter SD=",
-                                "GNSS Pos SD=",
-                                "GNSS Vel SD=",
-                                "Gyroscope ST=",
-                                "Accelerometer ST=",
-                                "Altimeter ST=",
-                                "GNSS ST="]
+                                "File = ",
+                                "Port = ",
+                                "Baudrate = ",
+                                "Gyroscope SD = ",
+                                "Accelerometer SD = ",
+                                "Altimeter SD = ",
+                                "GNSS Pos SD = ",
+                                "GNSS Vel SD = ",
+                                "Gyroscope ST = ",
+                                "Accelerometer ST = ",
+                                "Altimeter ST = ",
+                                "GNSS ST = "]
         self.conf_plot_names = ["###=#",
-                                "Frist_plot=",
-                                "Second_plot=",
-                                "Third_plot=",
-                                "Fourth_plot=",
-                                "Fifth_plot="]
+                                "First Plot = ",
+                                "Second Plot = ",
+                                "Third Plot = ",
+                                "Fourth Plot = ",
+                                "Fifth Plot = ",
+                                "Sixth Plot = ",
+                                "Seventh Plot = ",
+                                "Eighth Plot = ",
+                                "Ninth Plot = ",
+                                "Tenth Plot = "]
         self.rocket_dim_names = ["###=#"]
         self.name = ""
         self.parameters = []
@@ -351,6 +416,11 @@ class SaveFile:
                            "Setpoint [º]",
                            "Actuator deflection [º]",
                            "Off",
+                           "Off",
+                           "Off",
+                           "Off",
+                           "Off",
+                           "Off",
                            "Off"]
         self.rocket_dim = ["True",
                            "False",
@@ -503,23 +573,23 @@ class SaveFile:
                     for i, line in enumerate(self.raw_data):
                         file.write(line)
                         if line.startswith("Wind Gust"):
-                            file.write("Launch Rod Length [m] = 0" + end)
-                            file.write("Launch Rod Angle [º] = 0" + end)
+                            file.write("Launch Rod Length = 0" + end)
+                            file.write("Launch Rod Angle = 0" + end)
                         elif line.startswith("Use Sensor Noise"):
-                            file.write("Python SITL=True" + end)
-                        elif line.startswith("Altimeter SD="):
-                            file.write("GNSS Pos SD=0" + end)
-                            file.write("GNSS Vel SD=0" + end)
-                            file.write("Gyroscope ST=0.0025" + end)
-                            file.write("Accelerometer ST=0.0025" + end)
-                            file.write("Altimeter ST=0.005" + end)
-                            file.write("GNSS ST=1" + end)
+                            file.write("Python SITL = True" + end)
+                        elif line.startswith("Altimeter SD = "):
+                            file.write("GNSS Pos SD = 0" + end)
+                            file.write("GNSS Vel SD = 0" + end)
+                            file.write("Gyroscope ST = 0.0025" + end)
+                            file.write("Accelerometer ST = 0.0025" + end)
+                            file.write("Altimeter ST = 0.005" + end)
+                            file.write("GNSS ST = 1" + end)
                 print("Save updated to v2.0")
             except EnvironmentError:
                 print("Error updating to v2.0")
 
     def check_and_correct_v20_save(self):
-        if self.check_file("Mass [kg]", "Iy"):
+        if self.check_file("Mass =", "Iy"):
             try:
                 with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
                     counter = 4
@@ -527,16 +597,16 @@ class SaveFile:
                     for i, line in enumerate(self.raw_data):
                         if line.startswith("Mass"):
                             mass = self.parameters[1]
-                            file.write("Mass Liftoff [kg] = " + mass + end)
-                            file.write("Mass Burnout [kg] = " + mass + end)
+                            file.write("Mass Liftoff = " + mass + end)
+                            file.write("Mass Burnout = " + mass + end)
                         elif line.startswith("Iy"):
                             Iy = self.parameters[2]
-                            file.write("Iy Liftoff [kg*m^2] = " + Iy + end)
-                            file.write("Iy Burnout [kg*m^2] = " + Iy + end)
+                            file.write("Iy Liftoff = " + Iy + end)
+                            file.write("Iy Burnout = " + Iy + end)
                         elif line.startswith("Xcg"):
                             xcg = self.parameters[3]
-                            file.write("Xcg Liftoff [m] = " + xcg + end)
-                            file.write("Xcg Burnout [m] = " + xcg + end)
+                            file.write("Xcg Liftoff = " + xcg + end)
+                            file.write("Xcg Burnout = " + xcg + end)
                         elif line.startswith("Launch Rod Angle"):
                             file.write(line)
                             file.write("Motor Misalignment = 0" + end)
@@ -545,8 +615,8 @@ class SaveFile:
                             file.write("Roughness = 60" + end)
                         elif line.startswith("variable_fov"):
                             file.write(line)
-                            file.write("hide_cg=True" + end)
-                        elif line.startswith("Python SITL="):
+                            file.write("Hide cg = True" + end)
+                        elif line.startswith("Python SITL = "):
                             file.write(line)
                             file.write("File=example_python_sitl" + end)
                         elif line.startswith("Sim Delta"):
@@ -557,6 +627,8 @@ class SaveFile:
                             file.write("Initial Horizontal Velocity = 0" + end)
                             file.write("Initial Pitch Angle = 0" + end)
                             file.write("Initial Pitch Rate = 0" + end)
+                            file.write("Export T = 0.003" + end)
+
                         elif line.startswith("Fins_s") or line.startswith("Fins_c"):
                             file.write(line)
                             counter = 0
@@ -573,11 +645,11 @@ class SaveFile:
                         elif counter < 4:
                             counter += 1
                             continue
-                        elif (line.startswith("Frist_plot") or
-                              line.startswith("Second_plot") or
-                              line.startswith("Third_plot") or
-                              line.startswith("Fourth_plot") or
-                              line.startswith("Fifth_plot")):
+                        elif (line.startswith("First Plot") or
+                              line.startswith("Second Plot") or
+                              line.startswith("Third Plot") or
+                              line.startswith("Fourth Plot") or
+                              line.startswith("Fifth Plot")):
                             line_split = line.split("=")[1].strip()
                             if (line_split.startswith("Pitch Angle") or
                                 line_split.startswith("Actuator deflection") or
@@ -620,6 +692,12 @@ class SaveFile:
                                 file.write(s)
                             else:
                                 file.write(line)
+                            if line.startswith("Fifth Plot"):
+                                file.write("Sixth Plot = Off" + end)
+                                file.write("Seventh Plot = Off" + end)
+                                file.write("Eighth Plot = Off" + end)
+                                file.write("Ninth Plot = Off" + end)
+                                file.write("Tenth Plot = Off" + end)
                         else:
                             file.write(line)
                     print("Save updated to v2.1")

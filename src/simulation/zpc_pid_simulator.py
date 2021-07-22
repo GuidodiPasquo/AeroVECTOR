@@ -13,12 +13,14 @@ import numpy as np
 import random
 import vpython as vp
 import time
+import importlib
+from scipy.interpolate import interp1d
 from src.gui import gui_setup as gui
 from src.aerodynamics import rocket_functions as rkt
 from src import control
 from src.simulation import servo_lib
-import importlib
-from scipy.interpolate import interp1d
+from src import files
+
 
 matplotlib.use('TkAgg')
 
@@ -247,7 +249,7 @@ gyro_st = 0
 acc_st = 0
 alt_st = 0
 gnss_st = 0
-var_sitl_plot = [0, 0, 0, 0, 0]
+var_sitl_plot = [0]*10
 
 # FUNCTIONS
 
@@ -327,6 +329,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     global input_type, reference_thrust
     global average_T, launch_altitude
     global position_global, position_local, v_glob, Q
+    global export_T
     input_type = conf_controller[2]
     controller.setup_controller(conf_controller[0:9],
                                 Actuator_reduction,
@@ -338,13 +341,14 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     T_Program = conf_controller[13]
     sim_duration = conf_controller[14]
     T = conf_controller[15]
-    launch_altitude = conf_controller[16]
-    position_global[0] = conf_controller[17]
+    export_T = conf_controller[16]
+    launch_altitude = conf_controller[17]
+    position_global[0] = conf_controller[18]
     x_d.f = position_global[0]
-    v_glob = [conf_controller[18], conf_controller[19]]
-    x_d.f_d, z_d.f_d = conf_controller[18], conf_controller[19]
-    Q_d.f += conf_controller[20] * DEG2RAD
-    Q_d.f_d = conf_controller[21] * DEG2RAD
+    v_glob = [conf_controller[19], conf_controller[20]]
+    x_d.f_d, z_d.f_d = v_glob[0], v_glob[1]
+    Q_d.f += conf_controller[21] * DEG2RAD
+    Q_d.f_d = conf_controller[22] * DEG2RAD
     Q = Q_d.f_d
     theta = Q_d.f
     [U_d.f, W_d.f] = glob2loc(position_global[0], 0, theta)
@@ -444,11 +448,17 @@ def reset_variables():
 
     ##
     global second_plot, first_plot, third_plot, fourth_plot, fifth_plot, t_plot
+    global sixth_plot, seventh_plot, eighth_plot, ninth_plot, tenth_plot
     first_plot = []
     second_plot = []
     third_plot = []
     fourth_plot = []
     fifth_plot = []
+    sixth_plot = []
+    seventh_plot = []
+    eighth_plot = []
+    ninth_plot = []
+    tenth_plot = []
     t_plot = []
 
     ##
@@ -782,88 +792,98 @@ def check_which_plot(s):
     global var_sitl_plot
     if s == "Setpoint [º]":
         return setpoint * RAD2DEG
-    if s == "Pitch Angle [º]":
+    elif s == "Pitch Angle [º]":
         return theta * RAD2DEG
-    if s == "Actuator deflection [º]":
+    elif s == "Actuator deflection [º]":
         return actuator_angle * RAD2DEG
-    if s == "Pitch Rate [º/s]":
+    elif s == "Pitch Rate [º/s]":
         return Q * RAD2DEG
-    if s == "Local Velocity X [m/s]":
+    elif s == "Local Velocity X [m/s]":
         return v_loc[0]
-    if s == "Local Velocity Z [m/s]":
+    elif s == "Local Velocity Z [m/s]":
         return v_loc[1]
-    if s == "Global Velocity X [m/s]":
+    elif s == "Global Velocity X [m/s]":
         return v_glob[0]
-    if s == "Global Velocity Z [m/s]":
+    elif s == "Global Velocity Z [m/s]":
         return v_glob[1]
-    if s == "Total Velocity [m/s]":
+    elif s == "Total Velocity [m/s]":
         return np.sqrt(v_loc_tot[0]**2 + v_loc_tot[1]**2)
-    if s == "Local Acc X [m^2/s]":
+    elif s == "Local Acc X [m^2/s]":
         return accx
-    if s == "Local Acc Z [m^2/s]":
+    elif s == "Local Acc Z [m^2/s]":
         return accz
-    if s == "Global Acc X [m^2/s]":
+    elif s == "Global Acc X [m^2/s]":
         return acc_glob[0]
-    if s == "Global Acc Z [m^2/s]":
+    elif s == "Global Acc Z [m^2/s]":
         return acc_glob[1]
-    if s == "Angle of Atack [º]":
+    elif s == "Angle of Atack [º]":
         return aoa * RAD2DEG
-    if s == "CP Position [m]":
+    elif s == "CP Position [m]":
         xa_plot = saturate_plot_xa_force_app(xa)
         return xa_plot
-    if s == "Mass [kg]":
+    elif s == "Mass [kg]":
         return m
-    if s == "Iy [kg*m^2]":
+    elif s == "Iy [kg*m^2]":
         return Iy
-    if s == "CG Position [m]":
+    elif s == "CG Position [m]":
         return xcg
-    if s == "Thrust [N]":
+    elif s == "Thrust [N]":
         return thrust
-    if s == "Normal Force Coefficient":
+    elif s == "Normal Force Coefficient":
         return cn
-    if s == "Axial Force Coefficient":
+    elif s == "Axial Force Coefficient":
         return ca
-    if s == "Moment Coefficient":
+    elif s == "Moment Coefficient":
         return cm_xcg
-    if s == "Force Application Point [m]":
+    elif s == "Force Application Point [m]":
         return force_app_point
-    if s == "Normal Force [N]":
+    elif s == "Normal Force [N]":
         return normal_force
-    if s == "Altitude [m]":
+    elif s == "Altitude [m]":
         return position_global[0]
-    if s == "Distance Downrange [m]":
+    elif s == "Distance Downrange [m]":
         return position_global[1]
-    if s == "Proportional Contribution":
+    elif s == "Proportional Contribution":
         return okp * RAD2DEG
-    if s == "Integral Contribution":
+    elif s == "Integral Contribution":
         return oki * RAD2DEG
-    if s == "Derivative Contribution":
+    elif s == "Derivative Contribution":
         return okd * RAD2DEG
-    if s == "Total Error":
+    elif s == "Total Error":
         return totError * RAD2DEG
-    if s == "Simulated Gyro [º/s]":
+    elif s == "Simulated Gyro [º/s]":
         return send_gyro
-    if s == "Simulated Acc X [m^2/s]":
+    elif s == "Simulated Acc X [m^2/s]":
         return send_accx
-    if s == "Simulated Acc Z [m^2/s]":
+    elif s == "Simulated Acc Z [m^2/s]":
         return send_accz
-    if s == "Simulated Altimeter":
+    elif s == "Simulated Altimeter":
         return send_alt
-    if s == "Simulated GNSS Position [m]":
+    elif s == "Simulated GNSS Position [m]":
         return send_gnss_pos
-    if s == "Simulated GNSS Velocity [m/s]":
+    elif s == "Simulated GNSS Velocity [m/s]":
         return send_gnss_vel
-    if s == "Variable SITL 1":
+    elif s == "Variable SITL 1":
         return var_sitl_plot[0]
-    if s == "Variable SITL 2":
+    elif s == "Variable SITL 2":
         return var_sitl_plot[1]
-    if s == "Variable SITL 3":
+    elif s == "Variable SITL 3":
         return var_sitl_plot[2]
-    if s == "Variable SITL 4":
+    elif s == "Variable SITL 4":
         return var_sitl_plot[3]
-    if s == "Variable SITL 5":
+    elif s == "Variable SITL 5":
         return var_sitl_plot[4]
-    if s == "Off":
+    elif s == "Variable SITL 6":
+        return var_sitl_plot[5]
+    elif s == "Variable SITL 7":
+        return var_sitl_plot[6]
+    elif s == "Variable SITL 8":
+        return var_sitl_plot[7]
+    elif s == "Variable SITL 9":
+        return var_sitl_plot[8]
+    elif s == "Variable SITL 10":
+        return var_sitl_plot[9]
+    elif s == "Off":
         return None
 
 def plot_data():
@@ -873,16 +893,25 @@ def plot_data():
     c_plt = check_which_plot(data_plot[2])
     d_plt = check_which_plot(data_plot[3])
     e_plt = check_which_plot(data_plot[4])
+    f_plt = check_which_plot(data_plot[5])
+    g_plt = check_which_plot(data_plot[6])
+    h_plt = check_which_plot(data_plot[7])
+    i_plt = check_which_plot(data_plot[8])
+    j_plt = check_which_plot(data_plot[9])
     first_plot.append(a_plt)
     second_plot.append(b_plt)
     third_plot.append(c_plt)
     fourth_plot.append(d_plt)
     fifth_plot.append(e_plt)
+    sixth_plot.append(f_plt)
+    seventh_plot.append(g_plt)
+    eighth_plot.append(h_plt)
+    ninth_plot.append(i_plt)
+    tenth_plot.append(j_plt)
     t_plot.append(t)
 
 def plot_plots():
-    figure = Figure(figsize=(5, 4), dpi=100)
-    plot = figure.add_subplot(1, 1, 1)
+    plt.figure(1, figsize=(12, 7), dpi=100)  # First Plot
     s = gui.run_sim_tab.get_configuration_destringed()
     if s[0] != "Off":
         plt.plot(t_plot,
@@ -907,8 +936,69 @@ def plot_plots():
     plt.grid(True, linestyle='--')
     plt.xlabel('Time', fontsize=16)
     plt.ylabel('', fontsize=16)
-    legend = plt.legend(loc='upper right', shadow=True, fontsize='x-small')
+    plt.legend(loc='upper right', shadow=True, fontsize='small')
     plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
+
+    # Second Plot
+    if s[5] != "Off":
+        plt.figure(2, figsize=(12, 7), dpi=100)
+        s = gui.run_sim_tab.get_configuration_destringed()
+        if s[5] != "Off":
+            plt.plot(t_plot,
+                     sixth_plot,
+                     label=gui.run_sim_tab.get_configuration_destringed()[5])
+        if s[6] != "Off":
+            plt.plot(t_plot,
+                     seventh_plot,
+                     label=gui.run_sim_tab.get_configuration_destringed()[6])
+        if s[7] != "Off":
+            plt.plot(t_plot,
+                     eighth_plot,
+                     label=gui.run_sim_tab.get_configuration_destringed()[7])
+        if s[8] != "Off":
+            plt.plot(t_plot,
+                     ninth_plot,
+                     label=gui.run_sim_tab.get_configuration_destringed()[8])
+        if s[9] != "Off":
+            plt.plot(t_plot,
+                     tenth_plot,
+                     label=gui.run_sim_tab.get_configuration_destringed()[9])
+        plt.grid(True, linestyle='--')
+        plt.xlabel('Time', fontsize=16)
+        plt.ylabel('', fontsize=16)
+        plt.legend(loc='upper right', shadow=True, fontsize='small')
+        plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
+
+def export_plots(file_name):
+    names = gui.run_sim_tab.get_configuration_destringed()
+    names_to_csv = ["Time"]
+    for name in names:
+        if name != "Off":
+            names_to_csv.append(name)
+    plots_to_csv = [t_plot]
+    if first_plot[0] != None:
+        plots_to_csv.append(first_plot)
+    if second_plot[0] != None:
+        plots_to_csv.append(second_plot)
+    if third_plot[0] != None:
+        plots_to_csv.append(third_plot)
+    if fourth_plot[0] != None:
+        plots_to_csv.append(fourth_plot)
+    if fifth_plot[0] != None:
+        plots_to_csv.append(fifth_plot)
+    if sixth_plot[0] != None:
+        plots_to_csv.append(sixth_plot)
+    if seventh_plot[0] != None:
+        plots_to_csv.append(seventh_plot)
+    if eighth_plot[0] != None:
+        plots_to_csv.append(eighth_plot)
+    if ninth_plot[0] != None:
+        plots_to_csv.append(ninth_plot)
+    if tenth_plot[0] != None:
+        plots_to_csv.append(tenth_plot)
+    export_T = gui.sim_setup_tab.get_configuration_destringed()[16]
+    files.export_plots(file_name, names_to_csv, plots_to_csv, export_T)
+
 
 def run_sim_local():
     global parameters, conf_3d, conf_controller

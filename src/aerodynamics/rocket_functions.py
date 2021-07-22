@@ -405,7 +405,6 @@ class Rocket:
     def _calculate_aoa_components(self):
         """Using Q and the radius."""
         self.aoa_total = self._calculate_aoa(0)
-        # !!!
         self.new_cp_greater_90_deg = True
         if self.new_cp_greater_90_deg is True:
             if self.body_is_stable is False:
@@ -513,7 +512,6 @@ class Rocket:
                       plan_area_cn * self.ogive.center_of_area)
             self.component_centroid[0] = moment / total_cn
             self.component_centroid_pos[0] = self.component_centroid[0]
-            # !!!
             if self.new_cp_greater_90_deg is True:
                 if self.body_is_stable is False:
                     if abs(self.aoa_total) > np.pi/2:
@@ -576,8 +574,8 @@ class Rocket:
         for i in range(len(self.component_cn_alpha)):
             a += self.component_centroid_pos[i] * self.component_cn[i]
             b += self.component_cn[i]
-        # !!!
-        self._check_if_body_is_stable(a, b)
+        if self.new_cp_greater_90_deg is True:
+            self._check_if_body_is_stable(a, b)
         if self.use_fins is True:
             a += fin[0].cp * self.fin_cn[0]
             b += self.fin_cn[0]

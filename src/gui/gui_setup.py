@@ -570,6 +570,7 @@ def create_simulation_setup_tab(notebook):
                    "Controller Sample Time [s] =",
                    "Maximum Sim Duration [s] =",
                    "Sim Delta T [s] =",
+                   "Export T [s] = ",
                    "Launch Altitude [m] =",
                    "Initial Altitude [m] =",
                    "Initial Vertical Velocity [m/s] =",
@@ -594,7 +595,7 @@ def create_simulation_setup_tab(notebook):
 def create_run_sim_tab(notebook):
     run_sim_tab.create_tab(notebook, "Run Simulation")
     combobox_options = []
-    number_of_plots = 5
+    number_of_plots = 10
     for _ in range(number_of_plots):
         combobox_options.append(["Setpoint [º]",
                                  "Pitch Angle [º]",
@@ -637,23 +638,53 @@ def create_run_sim_tab(notebook):
                                  "Variable SITL 3",
                                  "Variable SITL 4",
                                  "Variable SITL 5",
+                                 "Variable SITL 6",
+                                 "Variable SITL 7",
+                                 "Variable SITL 8",
+                                 "Variable SITL 9",
+                                 "Variable SITL 10",
                                  "Off"])
     names_combobox = ["First Plot",
                       "Second Plot",
                       "Third Plot",
                       "Fourth Plot",
-                      "Fifth Plot"]
-    run_sim_tab.create_combobox(combobox_options, names_combobox, 0, 0, w=27)
+                      "Fifth Plot",
+                      "Sixth Plot",
+                      "Seventh Plot",
+                      "Eighth Plot",
+                      "Ninth Plot",
+                      "Tenth Plot"]
+    run_sim_tab.create_combobox(combobox_options, names_combobox, 1, 0, w=27)
+
+    for i in range(5):
+        fun.move_tk_object(run_sim_tab.combobox[i+5], i+9, 1)
+        fun.move_tk_object(run_sim_tab.combobox_label[i+5], i+9, 0)
+
+    tk.Label(run_sim_tab.tab,
+             text="First Figure",
+             bg="#CCFFCC").grid(row=0, column=0, columnspan=2, sticky="NESW")
+    tk.Label(run_sim_tab.tab,
+             text="Second Figure",
+             bg="#CCFFCC").grid(row=8, column=0, columnspan=2, sticky="NESW")
 
     def button_run_sim():
         sim.run_simulation()
         sim.run_3d()
 
-    save_conf_controller_button = tk.Button(run_sim_tab.tab,
-                                            text="Run Simulation",
-                                            command=button_run_sim, width=20,
-                                            bg="red", fg="white")
-    save_conf_controller_button.grid(row=2, column=5)
+    run_sim_button = tk.Button(run_sim_tab.tab,
+                               text="Run Simulation",
+                               command=button_run_sim, width=20,
+                               bg="red", fg="white")
+    run_sim_button.place(x=340, y=60)
+
+    def button_export_plots():
+        sim.export_plots(savefile.name)
+
+    export_plots_button = tk.Button(run_sim_tab.tab,
+                                    text="Export Plots",
+                                    command=button_export_plots, width=20,
+                                    bg="blue", fg="white")
+    export_plots_button.place(x=340, y=205)
 
     def button_save():
         d = run_sim_tab.get_configuration()
