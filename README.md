@@ -172,7 +172,8 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 ![](/Images/Readme/Screenshot_7.png)
   
 There are ten plots in total, one can choose between a variety of variables to be plotted in two different figures.
-The Export Plots button creates a *.csv* file with the name of the save file and a subscript in the *Exports* folder.
+The Export Plots button creates a *.csv* file containing all the plotted variables. The name of the *.csv* is the savefile's name with a subscript and is created in the *Exports* folder.
+The exports are useful for feeding simulated sensor data from the Python SITL modules to a real flight computer and debug the latter by comparing the outputs. In consequence, there will be faster code prototyping and more complex controllers with less failures.
 
 ### 3D Representation
 ![](/Images/Readme/Screenshot_15.png)
