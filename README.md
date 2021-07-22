@@ -163,6 +163,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
   - The simulation will stop if the Rocket tumbles more than 2 times, hits the ground, or coasts for more than 10 burnout times.
 - *Sim Delta T* is the sample time of the simulation, one can increase it to hasten it.
   - Since the Software in the Loop simulation runs in real time, this setting does not affect it.
+- Export T is the sample time of the data exports, i.e., the time between exported data points.
 - Launch altitude is the height above sea level of the launchpad.
 - The next entries deal with the initial state of the rocket, useful for second stages or landings (landing aerodynamics are not well modelled, please do not rely exclusively on them.)
   
@@ -170,7 +171,8 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 ### Plotting the results
 ![](/Images/Readme/Screenshot_7.png)
   
-There are five plots in total, one can choose between a variety of variables.
+There are ten plots in total, one can choose between a variety of variables to be plotted in two different figures.
+The Export Plots button creates a *.csv* file with the name of the save file and a subscript in the *Exports* folder.
 
 ### 3D Representation
 ![](/Images/Readme/Screenshot_15.png)
