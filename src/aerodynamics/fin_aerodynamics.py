@@ -500,6 +500,8 @@ class AerodynamicProperties:
                 hac = np.interp(aoa,
                                 [60*DEG2RAD, 90*DEG2RAD],
                                 [0.38, 0.5])
+        if abs(self.ffc.aoa) > np.pi/2:
+            hac = 1 - hac  # Correct for aoa coming from behind.
         return hac
 
 

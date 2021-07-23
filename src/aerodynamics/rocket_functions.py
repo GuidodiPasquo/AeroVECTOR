@@ -214,7 +214,23 @@ class Rocket:
             diam = [self.rocket_dim[index-1][1], self.rocket_dim[index][1]]
             diameter_at_xcg = np.interp(self.xcg, x, diam)
             self.rocket_dim.insert(index, [self.xcg, diameter_at_xcg])
-        return None
+        discretize_rocket_experimental = False
+        if discretize_rocket_experimental is True:
+            x_list = []
+            d_list = []
+            for i in range(len(self.rocket_dim)):
+                x_list.append(self.rocket_dim[i][0])
+                d_list.append(self.rocket_dim[i][1])
+            x = self.rocket_dim[1][0]
+            l = self.rocket_dim[-1][0]
+            n = 30
+            step = (l-x) / n
+            d_interp_list = [self.rocket_dim[0]]
+            for i in range(n+1):
+                d = np.interp(x, x_list, d_list)
+                d_interp_list.append([x, d])
+                x += step
+            self.rocket_dim = copy.deepcopy(d_interp_list)
 
     def __initialize(self, n):
         self.component_cn = [0]*(n-1)
@@ -228,8 +244,6 @@ class Rocket:
         self.component_centroid_pos = [0]*(n-1)
         self.component_length = [0]*(n-1)
         self.component_fineness = [0]*(n-1)
-        self.body_is_stable_flag = False
-        self.body_is_stable = False
         self.fin_cn, self.fin_ca = [0]*2, [0]*2
 
     def _maximum_diameter(self):
@@ -405,20 +419,17 @@ class Rocket:
     def _calculate_aoa_components(self):
         """Using Q and the radius."""
         self.aoa_total = self._calculate_aoa(0)
-        self.new_cp_greater_90_deg = True
-        if self.new_cp_greater_90_deg is True:
-            if self.body_is_stable is False:
-                if abs(self.aoa_total) > np.pi/2:
-                    self._flip_rocket()
-                else:
-                    self.component_centroid_pos = copy.deepcopy(self.component_centroid_pos_0)
         self.component_aoa = [0] * len(self.component_centroid)
         self.component_tan_vel = [0] * len(self.component_centroid)
+        self.point_tan_vel = [0] * (len(self.rocket_dim))
         self.fin_aoa = [0, 0]
         self.fin_tan_vel = [0, 0]
         for i in range(len(self.component_tan_vel)):
             r = self.component_centroid_pos[i] - self.xcg
             self.component_tan_vel[i] = self.Q * r
+        for i in range(len(self.point_tan_vel)):
+            r = self.rocket_dim[i][0] - self.xcg
+            self.point_tan_vel[i] = self.Q * r
         for i in range(len(self.component_aoa)):
             self.component_aoa[i] = self._calculate_aoa(self.component_tan_vel[i])
         for i in range(2):
@@ -451,7 +462,12 @@ class Rocket:
     def _calculate_total_cn(self):
         self.cn = 0
         self.__sign_correction()
-        self._compute_dynamic_pressure_scale()
+        compute_dynamic_pressure_damping_experimental = False
+        if compute_dynamic_pressure_damping_experimental is True:
+            self._compute_dynamic_pressure_scale()
+        else:
+            self.v_sq_over_v_tot_sq_body = [1] * len(self.component_tan_vel)
+            self.v_sq_over_v_tot_sq_fin = [1] * 2
         self._barrowman_cn()
         self._body_cn()
         if self.use_fins is True:
@@ -475,10 +491,13 @@ class Rocket:
     def _compute_dynamic_pressure_scale(self):
         self.v_sq_over_v_tot_sq_body = [0] * len(self.component_tan_vel)
         for i in range(len(self.v_sq_over_v_tot_sq_body)):
-            v_component_sq = (self.v_loc_tot[0]**2 +
-                              (self.v_loc_tot[1] + self.component_tan_vel[i])**2)
-            self.v_sq_over_v_tot_sq_body[i] = (
-                v_component_sq+0.001) / (self.v_modulus_sq+0.001)
+            v_component_sq_1 = (self.v_loc_tot[0]**2
+                                + (self.v_loc_tot[1] + self.point_tan_vel[i])**2)
+            v_component_sq_2 = (self.v_loc_tot[0]**2
+                                + (self.v_loc_tot[1] + self.point_tan_vel[i+1])**2)
+            v_component_sq_avg = (v_component_sq_1 + v_component_sq_2)/2
+            self.v_sq_over_v_tot_sq_body[i] = ((v_component_sq_avg+0.001)
+                                               / (self.v_modulus_sq+0.001))
         self.v_sq_over_v_tot_sq_fin = [0] * 2
         for i in range(len(self.v_sq_over_v_tot_sq_fin)):
             v_fin_sq = (self.v_loc_tot[0]**2 +
@@ -488,7 +507,7 @@ class Rocket:
     def _barrowman_cn(self):
         for i in range(len(self.component_aoa)):
             aoa = abs(self.component_aoa[i])
-            cn = np.sin(aoa) * self._barrowman_const[i]
+            cn = np.sin(aoa) * self._barrowman_const[i] * np.cos(aoa)
             cn *= self._sign_correction[i]
             self.component_cn[i] = cn
 
@@ -512,10 +531,6 @@ class Rocket:
                       plan_area_cn * self.ogive.center_of_area)
             self.component_centroid[0] = moment / total_cn
             self.component_centroid_pos[0] = self.component_centroid[0]
-            if self.new_cp_greater_90_deg is True:
-                if self.body_is_stable is False:
-                    if abs(self.aoa_total) > np.pi/2:
-                        self.component_centroid_pos[0] = self.length - self.component_centroid_pos[0]
 
     def _fin_cn(self):
         # The cp can move beyond the limits show with the slider in
@@ -574,8 +589,6 @@ class Rocket:
         for i in range(len(self.component_cn_alpha)):
             a += self.component_centroid_pos[i] * self.component_cn[i]
             b += self.component_cn[i]
-        if self.new_cp_greater_90_deg is True:
-            self._check_if_body_is_stable(a, b)
         if self.use_fins is True:
             a += fin[0].cp * self.fin_cn[0]
             b += self.fin_cn[0]
@@ -586,15 +599,6 @@ class Rocket:
             b += self.fin_cn[1]
         self.cp = a / b
         return self.cp
-
-    def _check_if_body_is_stable(self, a, b):
-        if self.body_is_stable_flag is False:
-            self.body_is_stable_flag = True
-            cp = a / b
-            if cp > self.xcg:
-                self.body_is_stable = True
-            else:
-                self.body_is_stable = False
 
     def _calculate_cm(self):
         # just to be consistent with the books (M = cm * Sqd)
@@ -614,7 +618,7 @@ class Rocket:
         More detailed explanations of the methods applied here are in the
         Open Rocket's documentation.
         """
-        self._calculate_drag_with_the_total_re = True
+        self._calculate_drag_with_individual_re_experimental = False
         self._calculate_cf()
         self._calculate_base_drag()
         self._calculate_pressure_drag()
@@ -622,7 +626,7 @@ class Rocket:
         self._calculate_ca(aoa)
 
     def _calculate_cf(self):
-        if self._calculate_drag_with_the_total_re is True:
+        if self._calculate_drag_with_individual_re_experimental is False:
             # Cf of the whole rocket.
             if self.reynolds < 10e4:
                 self.Cf = 1.48e-2
@@ -694,7 +698,7 @@ class Rocket:
         self.cd0 += self.cd0_friction + self.total_pressure_drag + self.total_base_drag
 
     def _calculate_cd0_friction(self):
-        if self._calculate_drag_with_the_total_re is True:
+        if self._calculate_drag_with_individual_re_experimental is False:
             # Like OR calculates the skin friction, it never gives the same result tho.
             cd0_body = (1 + 1/(2*self.fineness)) * self.wet_area_body
             self.cd0_friction = self.Cf * cd0_body / self.area_ref
@@ -841,7 +845,7 @@ class Rocket:
         yp = [self.xcg_liftoff, self.xcg_burnout]
         xp = [0, self.t_burnout]
         self.xcg = np.interp(x, xp, yp)
-        return float(self.xcg)
+        return self.xcg
 
     def get_mass_parameters(self, t, t_launch):
         """Get mass, Iy and xcg and updates the internal ones."""

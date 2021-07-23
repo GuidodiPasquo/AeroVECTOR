@@ -1026,9 +1026,6 @@ def run_sim_local():
             timer_run_sim = t
         timer()
         plot_data()
-        if t > burnout_time * 15:
-            print("Nice Coast")
-            break
         if position_global[0] < -0.01:
             if abs(v_glob[0]) < 2:
                 print("Landing!")
@@ -1190,9 +1187,6 @@ def run_sim_python_sitl():
                 timer_gnss = t
         timer()
         plot_data()
-        if t > burnout_time * 15:
-            print("Nice Coast")
-            break
         if position_global[0] < -0.01:
             if abs(v_glob[0]) < 2:
                 print("Landing!")

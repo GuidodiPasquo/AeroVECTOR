@@ -1265,7 +1265,7 @@ class TabWithCanvas(Tab):
         self.aoa_scale = tk.Scale(self.tab, from_=0, to=90,
                                   orient=tk.HORIZONTAL,
                                   command=slider_aoa,
-                                  length=200,
+                                  length=220,
                                   resolution=0.5)
         self.aoa_scale.grid(row=20, column=0)
         tk.Label(self.tab, text="Angle of Attack" + u' [\xb0]'
