@@ -185,3 +185,6 @@ If the 3D Graphics were enabled, once the simulation finishes a new tab in your 
 - To see the plots, one must click the *Finish* button. This disables the animation.
 
 NOTE: If the animation is paused, some of the features might require you to seek forward/backward to update the frame.
+
+### Experimetal Features
+In *src/aerodynamics/rocket_functions.py* are some experimental features turned off by default, you can enable them by searching *experimental =* and setting them to True. They include dynamic pressure scaling for, theoretically, better damping, and drag calculations based on the component or fin Reynolds instead of the rocket's Re.
