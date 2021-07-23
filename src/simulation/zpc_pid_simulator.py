@@ -8,12 +8,13 @@ Created on Fri May  8 15:23:20 2020
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+# from matplotlib.figure import Figure
 import numpy as np
 import random
 import vpython as vp
 import time
 import importlib
+from pathlib import Path
 from scipy.interpolate import interp1d
 from src.gui import gui_setup as gui
 from src.aerodynamics import rocket_functions as rkt
@@ -21,8 +22,8 @@ from src import control
 from src.simulation import servo_lib
 from src import files
 
-
 matplotlib.use('TkAgg')
+textures_path = Path("src/textures")
 
 
 """
@@ -1284,7 +1285,7 @@ def run_3d():
                                      dim_z_floor * (j + 0.5)-30,
                                      dim_x_floor),
                        size=vp.vector(dim_x_floor, dim_z_floor, 1),
-                       texture={'file': '.\\src\\textures\\sky_texture.jpg'})
+                       texture={'file': str(textures_path / 'sky_texture.jpg')})
         n = 7
         # Floor (many panels)
         for i in range(n):
@@ -1293,7 +1294,7 @@ def run_3d():
                                      -0.5,
                                      dim_z_floor/3+1000),
                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
-                       texture={'file': '.\\src\\textures\\grass_texture.jpg'})
+                       texture={'file': str(textures_path / 'grass_texture.jpg')})
 
         # rocket
         n_c = 50  # how many pieces have each non standard component
@@ -1560,7 +1561,7 @@ def run_3d():
                             axis=vp.vector(1,0,0),
                             radius=d/2*1.5,
                             color=vp.color.white,
-                            texture={'file': '.\\src\\textures\\center_of_gravity.jpg'})
+                            texture={'file': str(textures_path / 'center_of_gravity.jpg')})
         cg_ball.rotate(np.pi, axis=vp.vector(0,1,0))
         cg_ball.visilbe = not hide_cg
 

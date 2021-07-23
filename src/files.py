@@ -5,10 +5,16 @@ Created on Mon Jan 18 18:28:36 2021
 @author: Guido di Pasquo
 """
 
-
 import os
 import copy
 from src.gui import gui_functions
+from pathlib import Path
+
+saves_path = Path("./Saves/")
+exports_path = Path("Exports/")
+motors_path = Path("Motors/")
+SITL_path = Path("SITL Modules/")
+
 
 """
 Handles the savefile and motor file.
@@ -24,14 +30,14 @@ Classes:
 
 def get_save_names():
     r"""
-    Return a list with the names of the files in the folder .\\Saves.
+    Return a list with the names of the files in the folder /Saves.
 
     Returns
     -------
     List of strings
         Save files names.
     """
-    filenames = os.listdir(".\\Saves")
+    filenames = os.listdir(saves_path)
     for i, filename in enumerate(filenames):
         # Removes the .txt
         filenames[i] = filename[:-4]
@@ -40,14 +46,14 @@ def get_save_names():
 
 def get_export_names():
     r"""
-    Return a list with the names of the files in the folder .\\Saves.
+    Return a list with the names of the files in the folder /Exports.
 
     Returns
     -------
     List of strings
         Save files names.
     """
-    filenames = os.listdir(".\\Exports")
+    filenames = os.listdir(exports_path)
     for i, filename in enumerate(filenames):
         # Removes the .csv
         filenames[i] = filename[:-4]
@@ -56,26 +62,26 @@ def get_export_names():
 
 def get_motor_names():
     r"""
-    Return a list with the names of the motor files in the folder .\\Motors.
+    Return a list with the names of the motor files in the folder /Motors.
 
     Returns
     -------
     List of strings
         Motor names.
     """
-    return os.listdir(".\\Motors")
+    return os.listdir(motors_path)
 
 
 def get_sitl_modules_names():
     r"""
-    Return a list with the names of the motor files in the folder .\\Motors.
+    Return a list with the names of the motor files in the folder /\Motors.
 
     Returns
     -------
     List of strings
         SITL modules names.
     """
-    filenames = os.listdir(".\\SITL Modules")
+    filenames = os.listdir(SITL_path)
     names = []
     for i, filename in enumerate(filenames):
         if filename[-1] == "y":
@@ -119,7 +125,7 @@ def export_plots(file_name, names, data, T):
                 prev_time = data[0][i]
         to_file += line
     try:
-        with open(".\\Exports\\"+file_name+".csv", "w", encoding="utf-8") as file:
+        with open(exports_path / (file_name+".csv"), "w", encoding="utf-8") as file:
             file.write(to_file)
         print("Data Exported Successfully")
     except EnvironmentError:
@@ -442,7 +448,7 @@ class SaveFile:
                            "0"]
 
         try:
-            with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
+            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -465,7 +471,7 @@ class SaveFile:
         """
         self.update_name(n)
         try:
-            with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
+            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -501,7 +507,7 @@ class SaveFile:
         None.
         """
         try:
-            with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
+            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -538,7 +544,7 @@ class SaveFile:
 
     def open_and_split_file(self):
         try:
-            with open(".\\Saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
+            with open(saves_path / (self.name+".txt"), "r", encoding="utf-8") as file:
                 content = []
                 split_index = []
                 self.raw_data = []
@@ -568,7 +574,7 @@ class SaveFile:
     def check_and_correct_v11_save(self):
         if self.check_file("Wind Gust =", "###"):
             try:
-                with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
+                with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
                     end = "\n"
                     for i, line in enumerate(self.raw_data):
                         file.write(line)
@@ -591,7 +597,7 @@ class SaveFile:
     def check_and_correct_v20_save(self):
         if self.check_file("Mass =", "Iy"):
             try:
-                with open(".\\Saves\\"+self.name+".txt", "w", encoding="utf-8") as file:
+                with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
                     counter = 4
                     end = "\n"
                     for i, line in enumerate(self.raw_data):
@@ -708,7 +714,7 @@ class SaveFile:
         flag = False
         found_param = False
         try:
-            with open(".\\Saves\\"+self.name+".txt", "r", encoding="utf-8") as file:
+            with open(saves_path / (self.name+".txt"), "r", encoding="utf-8") as file:
                 for line in file:
                     try:
                         if found_param is True:
@@ -760,7 +766,7 @@ class SaveFile:
         self.t_mot = [0]
         self.thrust_mot = [0]
         try:
-            with open(".\\Motors\\"+name, "r", encoding="utf-8") as file:
+            with open(motors_path / name, "r", encoding="utf-8") as file:
                 for line in file:
                     try:
                         a = float(line.split(",")[0])

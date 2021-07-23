@@ -39,6 +39,10 @@ All in all, the overall structure of the function "control_theta" and
 ensure that the simulator and flight computer are doing the same thing,
 unless you are using SITL.
 """
+
+import sys
+import os
+os.chdir(os.path.dirname(sys.argv[0]))
 import matplotlib
 import tkinter as tk
 from tkinter import ttk
@@ -47,7 +51,7 @@ matplotlib.use('TkAgg')
 
 # Main
 root = tk.Tk()
-root.title("ZPC Actively Stabilized Model Rocket Tuner / Simulator")
+root.title("Model Rocket Tuner")
 root.geometry("600x600")
 notebook = ttk.Notebook(root)
 gui_setup.create_file_tab(notebook)
