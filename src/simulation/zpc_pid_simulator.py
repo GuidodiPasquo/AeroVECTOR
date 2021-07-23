@@ -936,7 +936,7 @@ def plot_plots():
     plt.grid(True, linestyle='--')
     plt.xlabel('Time', fontsize=16)
     plt.ylabel('', fontsize=16)
-    plt.legend(loc='upper right', shadow=True, fontsize='small')
+    plt.legend(shadow=True, fontsize='small')
     plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
 
     # Second Plot
@@ -966,7 +966,7 @@ def plot_plots():
         plt.grid(True, linestyle='--')
         plt.xlabel('Time', fontsize=16)
         plt.ylabel('', fontsize=16)
-        plt.legend(loc='upper right', shadow=True, fontsize='small')
+        plt.legend(shadow=True, fontsize='small')
         plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
 
 def export_plots(file_name):
