@@ -547,8 +547,10 @@ class Rocket:
     def _obtain_fin_coeff(self):
         self._calculate_reynolds()
         Re, Re_crit = self.reynolds, self.reynolds_crit
+        use_fin_reynolds_experimental = False
+        use_rocket_re = not use_fin_reynolds_experimental
         for i in range(2):
-            self.fac[i] = fin[i].get_aero_coeff(Re, Re_crit, use_rocket_re=True)
+            self.fac[i] = fin[i].get_aero_coeff(Re, Re_crit, use_rocket_re=use_rocket_re)
 
     def _calculate_reynolds(self):
         self.reynolds = (self.rho * self.v_modulus * self.length) / self.mu
