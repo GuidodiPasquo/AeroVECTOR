@@ -10,9 +10,8 @@ RAD2DEG = 1 / DEG2RAD
 
 
 servo = servo_lib.Servo()
-servo.setup(actuator_weight_compensation=2.1, definition=1, servo_s_t=0.02)
-servo.test(u_deg=10)
-
+servo.setup(actuator_weight_compensation=1.45, definition=1, servo_s_t=0.02)
+servo.test(u_deg=20)
 
 
 """ #======================================================================#"""
