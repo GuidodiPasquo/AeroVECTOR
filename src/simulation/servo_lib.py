@@ -8,6 +8,7 @@ Created on Fri Jan 29 15:05:28 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 
 """
@@ -105,6 +106,16 @@ class Servo:
         self._t_prev = -0.0001
         self._sample_time = 0.001
         self._timer_run = 0
+        self.K = interp1d([10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
+                          [3761, 2159*1.1, 691.9, 256.9],  # *1.1 because it gives much better results
+                          kind="linear",
+                          bounds_error=False,
+                          fill_value=(3761, 256.9))
+        self.J = interp1d([10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
+                          [91.31, 59.97, 30.42, 16],
+                          kind="linear",
+                          bounds_error=False,
+                          fill_value=(91.31, 16))
 
     def __reset_variables(self):
         # sets the variables and matrices to zero
@@ -189,18 +200,8 @@ class Servo:
 
     def _update(self):
         self._u_delta = abs(self._u-self._out_s[0,0]) * self._actuator_weight_compensation
-        if self._u_delta <= 10 * DEG2RAD:
-            self._u_delta = 10 * DEG2RAD
-        elif self._u_delta >= 90 * DEG2RAD:
-            self._u_delta = 90 * DEG2RAD
-
-        K = np.interp(self._u_delta,
-                      [10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
-                      [3761, 2159*1.1, 691.9, 256.9])  # *1.1 because it gives much better results
-        J = np.interp(self._u_delta,
-                      [10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
-                      [91.31, 59.97, 30.42, 16])
-
+        K = self.K(self._u_delta)
+        J = self.J(self._u_delta)
         # A Matrix
         asc11 = 0.
         asc12 = 1.
