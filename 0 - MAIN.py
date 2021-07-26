@@ -51,7 +51,7 @@ matplotlib.use('TkAgg')
 
 # Main
 root = tk.Tk()
-root.title("MRT - Model Rocket Simulator & Tuner")
+root.title("AeroVECTOR - Model Rocket Simulator & Tuner")
 root.geometry("600x600")
 notebook = ttk.Notebook(root)
 gui_setup.create_file_tab(notebook)

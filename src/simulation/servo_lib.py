@@ -188,28 +188,31 @@ class Servo:
         self.__reset_variables()
 
     def _update(self):
-        self._u_delta = (self._actuator_weight_compensation
-                         * abs(self._u-self._out_s[0,0]))
+        self._u_delta = abs(self._u-self._out_s[0,0]) * self._actuator_weight_compensation
         if self._u_delta <= 10 * DEG2RAD:
             self._u_delta = 10 * DEG2RAD
         elif self._u_delta >= 90 * DEG2RAD:
             self._u_delta = 90 * DEG2RAD
+
+        K = np.interp(self._u_delta,
+                      [10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
+                      [3761, 2159*1.1, 691.9, 256.9])  # *1.1 because it gives much better results
+        J = np.interp(self._u_delta,
+                      [10*DEG2RAD, 20*DEG2RAD, 45*DEG2RAD, 90*DEG2RAD],
+                      [91.31, 59.97, 30.42, 16])
+
         # A Matrix
         asc11 = 0.
         asc12 = 1.
-        asc21 = -(-2624.5*self._u_delta**3 + 9996.2*self._u_delta**2
-                  - 13195*self._u_delta + 6616.2)
-        asc22 = -(39.382*self._u_delta**2 - 125.81*self._u_delta + 124.56)
-        # Third order polinomial that modifies the model of the sevo based
-        # on its current position and setpoint
+        asc21 = -K
+        asc22 = -J
         self._A_s_c = np.array([
             [asc11, asc12],
             [asc21, asc22]
             ])
         # B Matrix
         bsc11 = 0
-        bsc21 = (-2624.5*self._u_delta**3 + 9996.2*self._u_delta**2
-                 - 13195*self._u_delta + 6616.2)
+        bsc21 = K
         self._B_s_c = np.array([
             [bsc11],
             [bsc21]
@@ -289,13 +292,18 @@ class Servo:
         A plot?
         """
         u_test = u_deg * DEG2RAD
-        x_plot = []
-        list_plot = []
+        x_plot = [0]
+        list_plot = [0]
+        input_plot = [0]
         t_current = 0
         for _ in range(1000):
             list_plot.append(self.simulate(u_test, t_current) * RAD2DEG)
             x_plot.append(t_current)
+            input_plot.append(u_deg)
             t_current += 0.001
-        plt.plot(x_plot, list_plot)
+        plt.plot(x_plot, input_plot, x_plot, list_plot)
         plt.grid(True, linestyle='--')
+        plt.xlabel('Time (seconds)')
+        plt.ylabel(r"θ (degrees)         ")
+        plt.legend(["Input", "Servo Shaft"])
         plt.show()
