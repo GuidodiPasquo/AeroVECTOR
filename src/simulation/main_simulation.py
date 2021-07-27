@@ -6,6 +6,7 @@ Created on Fri May  8 15:23:20 2020
 """
 
 
+import sys
 import matplotlib
 import matplotlib.pyplot as plt
 # from matplotlib.figure import Figure
@@ -150,6 +151,27 @@ class IntegrableVariable:
         self.delta_f = 0.5 * T * (self.f_d_1 + self.f_d)  # Trapezoidal
         self.f += self.delta_f
         return self.f
+
+
+class ProgressBar:
+
+    def __init__(self):
+        self.delta_t = 0.5
+        self.prev_t = 0
+        self.bar_length=20
+
+    def update(self, t, end_val, i=1):
+        if t >= (self.delta_t + self.prev_t)*i:
+            self.re_write_progress_bar(t, end_val)
+            self.prev_t = t
+
+    def re_write_progress_bar(self, t, end_val):
+        percent = float(t) / end_val
+        hashes = '#' * int(round(percent * self.bar_length))
+        spaces = ' ' * (self.bar_length - len(hashes))
+        sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))))
+        sys.stdout.flush()
+
 
 
 theta = 0
@@ -1005,6 +1027,7 @@ def run_sim_local():
     global parameters, conf_3d, conf_controller
     global timer_run_sim, timer_run, setpoint, t_launch,inp_time, u_servos
     global okp, oki, okd, totError
+    progress_bar = ProgressBar()
 
     while t <= sim_duration:
         simulation()
@@ -1025,20 +1048,24 @@ def run_sim_local():
                                                                              theta, Q,
                                                                              thrust, t)
             timer_run_sim = t
-        timer()
+        progress_bar.update(t, sim_duration)
         plot_data()
         if position_global[0] < -0.01:
+            progress_bar.update(t, t, 0)
             if abs(v_glob[0]) < 2:
-                print("Landing!")
+                print("\nLanding!")
             else:
-                print("CRASH")
+                print("\nCRASH")
             break
         if t >= sim_duration:
-            print("Simulation Ended")
+            progress_bar.update(t, t, 0)
+            print("\nSimulation Ended")
             break
         if rocket.is_supersonic:
-            print("Transonic and supersonic flow, abort!")
+            progress_bar.update(t, t, 0)
+            print("\nTransonic and supersonic flow, abort!")
             break
+        timer()
 
 def run_sim_sitl():
     global parameters, conf_3d, conf_controller, setpoint
@@ -1140,6 +1167,7 @@ def run_sim_python_sitl():
     global send_gyro, send_accx, send_accz, send_alt
     global send_gnss_pos, send_gnss_vel
     global parachute, python_sitl
+    progress_bar = ProgressBar()
 
     timer_gyro = 0
     timer_acc = 0
@@ -1186,23 +1214,28 @@ def run_sim_python_sitl():
                 send_gnss_pos = round(position_global[1], 6)
                 send_gnss_vel = round(v_glob[1], 6)
                 timer_gnss = t
-        timer()
+        progress_bar.update(t, sim_duration)
         plot_data()
         if position_global[0] < -0.01:
+            progress_bar.update(t, t, 0)
             if abs(v_glob[0]) < 2:
-                print("Landing!")
+                print("\nLanding!")
             else:
-                print("CRASH")
+                print("\nCRASH")
             break
         if parachute == 1:
-            print("Parachute Deployed")
+            progress_bar.update(t, t, 0)
+            print("\nParachute Deployed")
             break
         if t >= sim_duration:
-            print("Simulation Ended")
+            progress_bar.update(t, t, 0)
+            print("\nSimulation Ended")
             break
         if rocket.is_supersonic:
-            print("Transonic and supersonic flow, abort!")
+            progress_bar.update(t, t, 0)
+            print("\nTransonic and supersonic flow, abort!")
             break
+        timer()
     del python_sitl_program
 
 

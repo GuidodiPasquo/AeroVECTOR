@@ -6,7 +6,7 @@ Created on Fri Jan 29 14:05:35 2021
 """
 
 
-from src.simulation import zpc_pid_simulator as sim
+from src.simulation import main_simulation as sim
 
 
 """

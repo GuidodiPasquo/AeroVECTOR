@@ -56,6 +56,7 @@ class Fin:
         self.pp = fin_physical_properties.PhysicalProperties()
         self.aero_properties = AerodynamicProperties()
         self.ffc = flight_conditions.FinFlightCondition()
+        self.cp = 0
 
     def update(self, li, fin_attached=True, which_fin=0, roughness=60e-6):
         """

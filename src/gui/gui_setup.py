@@ -9,7 +9,7 @@ Created on Mon Jan 18 21:20:41 2021
 import tkinter as tk
 from src import files
 from src.gui import gui_functions as fun
-from src.simulation import zpc_pid_simulator as sim
+from src.simulation import main_simulation as sim
 
 
 """

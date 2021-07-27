@@ -6,7 +6,7 @@ Created on Sat Jun 19 15:14:18 2021
 """
 
 import numpy as np
-from src.simulation import zpc_pid_simulator as sim
+from src.simulation import main_simulation as sim
 
 DEG2RAD = np.pi/180
 RAD2DEG = 1/DEG2RAD
