@@ -169,7 +169,7 @@ class ProgressBar:
         percent = float(t) / end_val
         hashes = '#' * int(round(percent * self.bar_length))
         spaces = ' ' * (self.bar_length - len(hashes))
-        sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))))
+        sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))))
         sys.stdout.flush()
 
 
