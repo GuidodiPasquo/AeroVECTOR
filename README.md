@@ -4,7 +4,7 @@ This is a Model Rocket Simulator oriented towards active stabilization. It integ
 ![](/Images/Readme/GIF-TVC-only.gif)
 
 #### Simulation Procedure
-The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found inside *zpc_pid_simulator.py* and *rocket_functions.py*
+The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found inside *main_simulation.py* and *rocket_functions.py*
 
 ## Dependencies
 ### Mandatory
