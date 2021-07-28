@@ -245,6 +245,8 @@ class Rocket:
         self.component_length = [0]*(n-1)
         self.component_fineness = [0]*(n-1)
         self.fin_cn, self.fin_ca = [0]*2, [0]*2
+        self.v_sq_over_v_tot_sq_body = [1] * (n-1)
+        self.v_sq_over_v_tot_sq_fin = [1] * 2
 
     def _maximum_diameter(self):
         d = 0
@@ -455,19 +457,12 @@ class Rocket:
             aoa = 0.000001
         return aoa
 
-    def _flip_rocket(self):
-        for i in range(len(self.component_centroid_pos_0)):
-            self.component_centroid_pos[i] = self.length - self.component_centroid_pos_0[i]
-
     def _calculate_total_cn(self):
         self.cn = 0
         self.__sign_correction()
         compute_dynamic_pressure_damping_experimental = False
         if compute_dynamic_pressure_damping_experimental is True:
             self._compute_dynamic_pressure_scale()
-        else:
-            self.v_sq_over_v_tot_sq_body = [1] * len(self.component_tan_vel)
-            self.v_sq_over_v_tot_sq_fin = [1] * 2
         self._barrowman_cn()
         self._body_cn()
         if self.use_fins is True:

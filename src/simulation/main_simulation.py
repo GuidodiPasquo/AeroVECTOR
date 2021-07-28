@@ -158,7 +158,7 @@ class ProgressBar:
     def __init__(self):
         self.delta_t = 0.5
         self.prev_t = 0
-        self.bar_length=20
+        self.bar_length = 20
 
     def update(self, t, end_val, i=1):
         if t >= (self.delta_t + self.prev_t)*i:
@@ -963,7 +963,7 @@ def plot_plots():
     plt.axvline(x=burnout_time+t_launch, color="black", linewidth=1)
 
     # Second Plot
-    if s[5] != "Off":
+    if s[5] != "Off" or s[6] != "Off" or s[7] != "Off" or s[8] != "Off" or s[9] != "Off":
         plt.figure(2, figsize=(12, 7), dpi=100)
         s = gui.run_sim_tab.get_configuration_destringed()
         if s[5] != "Off":
