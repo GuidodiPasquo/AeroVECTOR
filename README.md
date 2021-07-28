@@ -1,4 +1,4 @@
-# Model Rocket Simulator & Tuner
+# AeroVECTOR - The Model Rocket Simulator & Tuner
 This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *control.py*, one can use it or run the Flight Computer's software through Software in the Loop.
 
 ![](/Images/Readme/GIF-TVC-only.gif)
