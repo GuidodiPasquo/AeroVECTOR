@@ -1273,7 +1273,6 @@ skip_backwards_flag = False
 skip_steps = 10
 widgets = []
 widgets_text = []
-
 def run_3d():
     global break_flag_button, pause_resume_flag, skip_flag, skip_ahead_flag
     global skip_backwards_flag, skip_steps, hide_cg, widgets
@@ -1293,6 +1292,11 @@ def run_3d():
                 widgets_text[i].text = ""
         except:
             pass
+
+        max_hight = 0
+        for i in range(len(position_3d)):
+            if position_3d[i][0] > max_hight:
+                max_hight = position_3d[i][0]
 
         rocket_dim = rocket.rocket_dim
         L_body = rocket_dim[-1][0]
@@ -1797,7 +1801,7 @@ def run_3d():
             camera_type = camera_options[m.index]
             run_camera_3d(i, j)
 
-        camera_options = ["Follow", "Fixed", "Follow Far"]
+        camera_options = ["Follow", "Fixed", "Follow Far", "Drone"]
         menu_camera = vp.menu(bind=change_camera, choices=camera_options,
                               selected=camera_type)
         widgets.append(menu_camera)
@@ -2092,8 +2096,8 @@ def run_3d():
             if camera_type == "Follow":
                 scene.fov = fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x-L_total*50+camera_shake[1]/50,
-                                              rocket_3d.pos.y+L_total*70-camera_shake[0]/500,
-                                              rocket_3d.pos.z-L_total*33)
+                                             rocket_3d.pos.y+L_total*70-camera_shake[0]/500,
+                                             rocket_3d.pos.z-L_total*33)
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                               rocket_3d.pos.y-scene.camera.pos.y,
                                               rocket_3d.pos.z-scene.camera.pos.z)
@@ -2120,6 +2124,15 @@ def run_3d():
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                               rocket_3d.pos.y-scene.camera.pos.y,
                                               rocket_3d.pos.z-scene.camera.pos.z)
+            elif camera_type == "Drone":
+                scene.fov = fov*DEG2RAD
+                scene.camera.pos = vp.vector(dim_x_floor/2-70*2,
+                                             max_hight*0.75,
+                                             dim_z_floor/2-70*2)
+                scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
+                                              rocket_3d.pos.y-scene.camera.pos.y,
+                                              rocket_3d.pos.z-scene.camera.pos.z)
+
 
             # Labels
             Setpoint_label.text = ("Setpoint = %.0f" % round(setpoint_3d[i]*RAD2DEG, 1)
