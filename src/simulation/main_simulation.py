@@ -2072,7 +2072,6 @@ def run_3d():
                 T_fin_neg.rotate(delta_theta,
                                  axis=vp.vector(0,0,1),
                                  origin=vect_cg)
-
             if hide_forces is True:
                 Nforce_pos.visible = False
                 Nforce_neg.visible = False
@@ -2081,6 +2080,8 @@ def run_3d():
                 if rocket.use_fins_control is True:
                     T_fin_pos.visible = False
                     T_fin_neg.visible = False
+            if i > j:
+                motor.clear_trail()
 
         def run_camera_3d(i,j):
             #Camera
@@ -2160,8 +2161,8 @@ def run_3d():
         """ Simualtion Control #############################################"""
         t_total = t_3d[-3] - t_3d[0]
         t_step = (t_3d[-1]-t_3d[0]) / len(t_3d)
-        super_coarse_step = 2 / t_step
-        coarse_step = 0.5 / t_step
+        super_coarse_step = t_total/5 / t_step
+        coarse_step = 1 / t_step
         fine_step = 0.015 / t_step
         i = 0
         j = 1
@@ -2194,7 +2195,6 @@ def run_3d():
                         j -= 1
                         run_3d_graphics(j, i)
                         run_camera_3d(j, i)
-                    motor.clear_trail()
                     skip_flag = False
                     skip_backwards_flag = False
             if break_flag_button is True:
