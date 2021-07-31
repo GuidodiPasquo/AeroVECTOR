@@ -2080,8 +2080,9 @@ def run_3d():
                 if rocket.use_fins_control is True:
                     T_fin_pos.visible = False
                     T_fin_neg.visible = False
-            if i > j:
+            if i >= j:
                 motor.clear_trail()
+
 
         def run_camera_3d(i,j):
             #Camera
@@ -2148,7 +2149,7 @@ def run_3d():
                       str(round(v_glob_3d[i][0], 2))
                       + " m/s , Left = "
                       + str(round(v_glob_3d[i][1], 2))
-                      + " m/s")
+                      + " m/s; Total => " + str(round(np.sqrt(v_glob_3d[i][1]**2 + v_glob_3d[i][0]**2), 2)))
             aoa_plot.text = "AoA = " + str(round(aoa_3d[i]*RAD2DEG, 2)) + u'\xb0'
             Position_label.text = ("Position => " + "Altitude = "
                                    + str(round(position_3d[i][0], 2))
@@ -2195,6 +2196,7 @@ def run_3d():
                         j -= 1
                         run_3d_graphics(j, i)
                         run_camera_3d(j, i)
+                    motor.clear_trail()
                     skip_flag = False
                     skip_backwards_flag = False
             if break_flag_button is True:
