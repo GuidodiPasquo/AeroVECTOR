@@ -178,7 +178,7 @@ The exports are useful for feeding simulated sensor data from the Python SITL mo
 ### 3D Representation
 ![](/Images/Readme/Screenshot_15.png)
 If the 3D Graphics were enabled, once the simulation finishes a new tab in your default web browser should open.
-- One can seek backward/forward 2, 0.5 or 0.015 seconds using the first row of buttons, the center one pauses and resumes the animation.
+- One can seek backward/forward 1/5 of the simulation time, 1 or 0.015 seconds using the first row of buttons, the center one pauses and resumes the animation.
 - The first slider controls the *Slow Motion* and the second one the *FOV* (zoom).
 - The menu enables the change of camera angle on the fly.
 - One can enable and disable the *Forces* and the *CG & AoA* (relative wind) with the buttons on the right.
