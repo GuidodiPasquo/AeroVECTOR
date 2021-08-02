@@ -186,7 +186,7 @@ flags = [True, True, True, True, True]
 random_mass_parameters = [0.7, 2, 1, 1, 2, 1]
 to_rocket_list = flags + [rocket_points] + [fins] + [fins_control]
 rocket = rocket_functions.Rocket()
-rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=10e-6)  # Aluminum roughness
+rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=[10e-6]*3)  # Aluminum roughness
 ac = flight_conditions.FinFlightCondition()
 ac.mach = 0.01
 ac.Re = 1e5
@@ -216,7 +216,7 @@ for j in range(len(AR_list)):
     fins_control = [[0, 0.1], [0, 0.1], 0.5, 0.001]
     pep = [True, True, True, True, True]
     to_rocket_list = pep + [rocket_points] + [fins] + [fins_control]
-    rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=10e-6)
+    rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=[10e-6]*3)
     AoA = 0
     for i in range(n):
         v = transform_AoA_2_v(AoA)
@@ -265,7 +265,7 @@ for j in range(len(AR_list)):
     fins_control = [[0, 0.1], [0, 0.1], 0.5, 0.001]
     pep = [True, True, True, True, True]
     to_rocket_list = pep + [rocket_points] + [fins] + [fins_control]
-    rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=10e-6)
+    rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=[10e-6]*3)
     AoA = 0
     for i in range(n):
         v = transform_AoA_2_v(AoA)

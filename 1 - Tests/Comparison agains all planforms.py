@@ -48,7 +48,7 @@ flags = [True, True, True, True, True]
 random_mass_parameters = [0.7, 2, 1, 1, 2, 1]
 to_rocket_list = flags + [rocket_points] + [fins] + [fins_control]
 rocket = rocket_functions.Rocket()
-rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=10e-6)
+rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=[10e-6]*3)
 ac = flight_conditions.FinFlightCondition()
 ac.mach = 0.01
 ac.Re = 1e5
@@ -92,7 +92,7 @@ for k in range(4):
         fins = [[0, 0.1], tip_sweep_chord[k], AR_list[j] * cte_to_fit_AR[k], 0.001]
         pep = [True, True, True, True, True]
         to_rocket_list = pep + [rocket_points] + [fins] + [fins_control]
-        rocket.update_rocket(to_rocket_list, [0.7, 2, 1, 1, 2, 1], roughness=10e-6)
+        rocket.update_rocket(to_rocket_list, [0.7, 2, 1, 1, 2, 1], roughness=[10e-6]*3)
         AoA = 0
         for i in range(n):
             v = transform_AoA_2_v(AoA)
@@ -142,7 +142,7 @@ flags = [True, True, True, True, True]
 random_mass_parameters = [0.7, 2, 1, 1, 2, 1]
 to_rocket_list = flags + [rocket_points] + [fins] + [fins_control]
 rocket = rocket_functions.Rocket()
-rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=10e-6)
+rocket.update_rocket(to_rocket_list, random_mass_parameters, roughness=[10e-6]*3)
 ac = flight_conditions.FinFlightCondition()
 ac.mach = 0.01
 ac.Re = 1e5
@@ -186,7 +186,7 @@ for k in range(4):
         fins = [[0, 0.1], tip_sweep_chord[k], AR_list[j] * cte_to_fit_AR[k], 0.00196]
         pep = [True, True, True, True, True]
         to_rocket_list = pep + [rocket_points] + [fins] + [fins_control]
-        rocket.update_rocket(to_rocket_list, [0.7, 2, 1, 1, 2, 1], roughness=10e-6)
+        rocket.update_rocket(to_rocket_list, [0.7, 2, 1, 1, 2, 1], roughness=[10e-6]*3)
         AoA = 0
         for i in range(n):
             v = transform_AoA_2_v(AoA)
