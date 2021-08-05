@@ -1050,7 +1050,7 @@ def run_sim_local():
             timer_run_sim = t
         progress_bar.update(t, sim_duration)
         plot_data()
-        if position_global[0] < -0.01:
+        if position_global[0] < -0.55:
             progress_bar.update(t, t, 0)
             if abs(v_glob[0]) < 2:
                 print("\nLanding!")
@@ -1111,7 +1111,7 @@ def run_sim_sitl():
                 print("Time is ", round(t, 0), " seconds")
             if t > burnout_time * 10:
                 break
-            if position_global[0] < -0.01:
+            if position_global[0] < -0.55:
                 if abs(v_glob[0]) < 2:
                     print("Landing!")
                 else:
@@ -1216,7 +1216,7 @@ def run_sim_python_sitl():
                 timer_gnss = t
         progress_bar.update(t, sim_duration)
         plot_data()
-        if position_global[0] < -0.01:
+        if position_global[0] < -0.55:
             progress_bar.update(t, t, 0)
             if abs(v_glob[0]) < 2:
                 print("\nLanding!")
@@ -1311,25 +1311,28 @@ def run_3d():
         i = 0
 
         # floor
-        dim_x_floor = 3000
-        dim_z_floor = 4000
+        dim_x_sky = 3000*0.5
+        dim_z_sky = 3000*0.5
+        dim_x_floor = 3000/10
+        dim_z_floor = 4000/10
 
         n = 21
         # Sky (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_floor * (i - n/2 + 1) - 100,
-                                     dim_z_floor * (j + 0.5)-30,
-                                     dim_x_floor),
-                       size=vp.vector(dim_x_floor, dim_z_floor, 1),
+                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 1) - dim_x_sky/2+100,
+                                     dim_z_sky * (j + 0.5)-30,
+                                     dim_x_sky-2500*0.25),
+                       size=vp.vector(dim_x_sky, dim_z_sky, 1),
                        texture={'file': str(textures_path / 'sky_texture.jpg')})
-        n = 7
+        n = 7*2
+        p = 7
         # Floor (many panels)
         for i in range(n):
-            for j in range(n):
-                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2),
+            for j in range(p):
+                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2)+20,
                                      -0.5,
-                                     dim_z_floor/3+1000),
+                                     dim_z_floor/3 * (j + 0.5)-30),
                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
                        texture={'file': str(textures_path / 'grass_texture.jpg')})
 
