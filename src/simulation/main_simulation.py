@@ -1310,33 +1310,34 @@ def run_3d():
         vp.distant_light(direction=vp.vector(1, 1, -1), color=vp.color.gray(0.9))
         i = 0
 
-        # floor
-        dim_x_sky = 3000*0.5
-        dim_z_sky = 3000*0.5
-        dim_x_floor = 3000/10
-        dim_z_floor = 4000/10
+        """Background ######################################################"""
+        dim_x_sky = 1500
+        dim_z_sky = 1500
+        dim_x_floor = 3810
+        dim_z_floor = 2145
 
-        n = 21
+        n = 9
         # Sky (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 1) - dim_x_sky/2+100,
-                                     dim_z_sky * (j + 0.5)-30,
-                                     dim_x_sky-2500*0.25),
+                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 2) + 500,
+                                     dim_z_sky * (j + 0.5) - 30,
+                                     dim_x_sky + 600),
                        size=vp.vector(dim_x_sky, dim_z_sky, 1),
                        texture={'file': str(textures_path / 'sky_texture.jpg')})
-        n = 7*2
-        p = 7
+        n = 9
+        p = 2
         # Floor (many panels)
         for i in range(n):
             for j in range(p):
-                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2)+20,
-                                     -0.5,
-                                     dim_z_floor/3 * (j + 0.5)-30),
-                       size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
-                       texture={'file': str(textures_path / 'grass_texture.jpg')})
+                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2) + 750,
+                                      -0.5,
+                                      dim_z_floor/3 * (j + 0.5) + 825),
+                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
+                        texture={'file': str(textures_path / 'grass_texture.jpg')})
 
-        # rocket
+
+        """Rocket #########################################################"""
         n_c = 50  # how many pieces have each non standard component
         R_ogive = rocket_dim[1][1] / 2
         L_ogive = rocket_dim[1][0]
@@ -1401,7 +1402,7 @@ def run_3d():
                                       length=l_partial)
                     compound_list.append(rod)
 
-        """ Fins """
+        """Fins ###########################################################"""
         throwaway_box = vp.box(pos=vp.vector(dim_x_floor/2,
                                              0.1,
                                              dim_z_floor/2),
@@ -2083,8 +2084,6 @@ def run_3d():
                 if rocket.use_fins_control is True:
                     T_fin_pos.visible = False
                     T_fin_neg.visible = False
-            if i >= j:
-                motor.clear_trail()
 
 
         def run_camera_3d(i,j):
@@ -2199,7 +2198,7 @@ def run_3d():
                         j -= 1
                         run_3d_graphics(j, i)
                         run_camera_3d(j, i)
-                    motor.clear_trail()
+                        motor.clear_trail()
                     skip_flag = False
                     skip_backwards_flag = False
             if break_flag_button is True:
