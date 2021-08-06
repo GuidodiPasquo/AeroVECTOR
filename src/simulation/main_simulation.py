@@ -1313,16 +1313,16 @@ def run_3d():
         """Background ######################################################"""
         dim_x_sky = 1500
         dim_z_sky = 1500
-        dim_x_floor = 3810
-        dim_z_floor = 2145
+        dim_x_floor = 7620
+        dim_z_floor = 4290
 
         n = 9
         # Sky (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 2) + 500,
+                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 1),
                                      dim_z_sky * (j + 0.5) - 30,
-                                     dim_x_sky + 600),
+                                     dim_x_sky + 1800),
                        size=vp.vector(dim_x_sky, dim_z_sky, 1),
                        texture={'file': str(textures_path / 'sky_texture.jpg')})
         n = 9
@@ -1330,9 +1330,9 @@ def run_3d():
         # Floor (many panels)
         for i in range(n):
             for j in range(p):
-                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2) + 750,
+                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2) + 1440,
                                       -0.5,
-                                      dim_z_floor/3 * (j + 0.5) + 825),
+                                      dim_z_floor/3 * (j + 0.5) + 1745),
                         size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
                         texture={'file': str(textures_path / 'grass_texture.jpg')})
 
