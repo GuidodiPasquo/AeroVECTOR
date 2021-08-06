@@ -1316,17 +1316,17 @@ def run_3d():
         dim_x_floor = 7620
         dim_z_floor = 4290
 
-        n = 9
+        n = 15
         # Sky (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 1),
+                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 4),
                                      dim_z_sky * (j + 0.5) - 30,
-                                     dim_x_sky + 1800),
+                                     dim_x_sky + 1600),
                        size=vp.vector(dim_x_sky, dim_z_sky, 1),
                        texture={'file': str(textures_path / 'sky_texture.jpg')})
         n = 9
-        p = 2
+        p = 1
         # Floor (many panels)
         for i in range(n):
             for j in range(p):
