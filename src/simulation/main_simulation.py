@@ -1311,30 +1311,49 @@ def run_3d():
         i = 0
 
         """Background ######################################################"""
-        dim_x_sky = 1500
-        dim_z_sky = 1500
-        dim_x_floor = 7620
-        dim_z_floor = 4290
+        dim_x_sky = 3000
+        dim_z_sky = 3000
+        dim_x_floor = 1500
+        dim_z_floor = 800
 
-        n = 15
+        n = 7
         # Sky (many panels)
         for i in range(n):
             for j in range(n):
-                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 4),
+                vp.box(pos=vp.vector(dim_x_sky * (i - n/2 + 1) - 1000,
                                      dim_z_sky * (j + 0.5) - 30,
-                                     dim_x_sky + 1600),
+                                     dim_x_sky*0 + 1600*0+dim_x_floor*0.7),
                        size=vp.vector(dim_x_sky, dim_z_sky, 1),
+                       color=vp.color.white,
                        texture={'file': str(textures_path / 'sky_texture.jpg')})
-        n = 9
-        p = 1
-        # Floor (many panels)
-        for i in range(n):
-            for j in range(p):
-                vp.box(pos=vp.vector(dim_x_floor/3 * (i - n/2 + 2) + 1440,
+
+        floor1 = vp.box(pos=vp.vector(dim_x_floor*0.8,
                                       -0.5,
-                                      dim_z_floor/3 * (j + 0.5) + 1745),
-                        size=vp.vector(dim_x_floor/3, 1, dim_z_floor/3),
-                        texture={'file': str(textures_path / 'grass_texture.jpg')})
+                                      dim_z_floor/2+dim_x_floor/4*0.7),
+                        size=vp.vector(dim_x_floor, 1, dim_z_floor),
+                        texture={'file': str(textures_path / '1500x800.jpg')})
+        floor1.rotate(180*DEG2RAD, axis=vp.vector(0,1,0))
+
+        floor2 = vp.box(pos=vp.vector(dim_x_floor + dim_x_floor*0.8,
+                                      -0.5,
+                                      dim_z_floor/2+dim_x_floor/4*0.7),
+                        size=vp.vector(dim_x_floor, 1, dim_z_floor),
+                        texture={'file': str(textures_path / '1500x800.jpg')})
+        floor2.rotate(180*DEG2RAD, axis=vp.vector(0,1,0))
+
+        floor3 = vp.box(pos=vp.vector(dim_x_floor*0.8 - dim_x_floor,
+                                      -0.5,
+                                      dim_z_floor/2+dim_x_floor/4*0.7),
+                        size=vp.vector(dim_x_floor, 1, dim_z_floor),
+                        texture={'file': str(textures_path / '1500x800.jpg')})
+        floor3.rotate(180*DEG2RAD, axis=vp.vector(0,1,0))
+
+        floor4 = vp.box(pos=vp.vector(dim_x_floor*0.8 - 2*dim_x_floor,
+                                      -0.5,
+                                      dim_z_floor/2+dim_x_floor/4*0.7),
+                        size=vp.vector(dim_x_floor, 1, dim_z_floor),
+                        texture={'file': str(textures_path / '1500x800.jpg')})
+        floor4.rotate(180*DEG2RAD, axis=vp.vector(0,1,0))
 
 
         """Rocket #########################################################"""
