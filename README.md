@@ -3,7 +3,7 @@
 
 
 # AeroVECTOR - The Model Rocket Simulator & Tuner
-This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *control.py*, one can use it or run the Flight Computer's software through Software in the Loop.
+This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *src/control.py*, one can use it or run the Flight Computer's software through Software in the Loop.
 
 
 
@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/65097298/128649259-8a93ab7a-ccb8-4f38-
 
 
 #### Simulation Procedure
-The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses. The fins use modified wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found inside *main_simulation.py* and *rocket_functions.py*
+The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses (plus some improvements). The fins use interpolated wind tunnel data to better model their behavior. The program also allows for fins separated from the body. More information can be found in the technical documentation or inside *src/simulation/main_simulation.py* and *src/aerodynamics/rocket_functions.py*
 
 ## Dependencies
 ### Mandatory
@@ -195,4 +195,4 @@ If the 3D Graphics were enabled, once the simulation finishes a new tab in your 
 NOTE: If the animation is paused, some of the features might require you to seek forward/backward to update the frame.
 
 ### Experimetal Features
-In *src/aerodynamics/rocket_functions.py* are some experimental features turned off by default, you can enable them by searching *experimental =* and setting them to True. They include dynamic pressure scaling for, theoretically, better damping, and drag calculations based on the component or fin Reynolds instead of the rocket's Re.
+In *src/aerodynamics/rocket_functions.py* are some experimental features turned off by default, you can enable them by searching **experimental =** and setting them to True. They include dynamic pressure scaling for, theoretically, better damping, and drag calculations based on the component or fin Reynolds instead of the rocket's Re.
