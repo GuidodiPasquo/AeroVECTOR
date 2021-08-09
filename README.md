@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/65097298/128649259-8a93ab7a-ccb8-4f38-
 
 
 #### Simulation Procedure
-The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses (plus some improvements). The fins use interpolated wind tunnel data to better model their behavior. The program also allows for fins separated from the body. More information can be found in the technical documentation or inside *src/simulation/main_simulation.py* and *src/aerodynamics/rocket_functions.py*
+The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses (plus some improvements). The fins use interpolated wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found in the technical documentation or inside *src/simulation/main_simulation.py* and *src/aerodynamics/rocket_functions.py*
 
 ## Dependencies
 ### Mandatory
@@ -54,7 +54,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The effective launch rod length is the length at which the rocket can pitch somewhat freely.
 - Angle of the launch rod.
 - The *Motor Misalignment* sets the motor at an angle (mainly for active fin control).  
-- The roughness applies to all the components of the body and fins, therefore, a little tuning might be required to get the performances right.
+- The roughness applies to all the components of the body and fins; therefore, a little tuning might be required to get the performances right.
 
 
 **Please do not leave blank entries**
@@ -66,7 +66,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 
 #### Body
 To draw the rocket, one must insert the point as **coordinate from the nose cone tip, diameter in that point**.
-With the *Add Point* button, one adds the point written in the entry. The *Delete Point* button deletes the point currently selected in the combobox. To modify a point, one has to select the desired point in the combobox, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
+With the *Add Point* button, one adds the point written in the entry. The *Delete Point* button deletes the point currently selected in the combo box. To modify a point, one has to select the desired point in the combo box, click the *Select Point* button, write the new coordinates in the entry, and at last, click the *Modify Point* button.  
 
 #### Fins
 To draw the fins, one must insert the position and chord of the root and tip, separated by comma. The wingspan is measured from the root to the tip.
@@ -108,14 +108,14 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 ![](/Images/Readme/Screenshot_5.png)
 
 #### Python SITL
-In case of using the Python SITL module, refer to the example. One can create functions, classes, modules, etc., or modify the code at will. The objective was to make it as similar as possible to an Arduino, but there are some differences, specially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
+In case of using the Python SITL module, refer to the example. One can create functions, classes, modules, etc., or modify the code at will. The objective was to make it as similar as possible to an Arduino, but there are some differences, especially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
   
 #### On what boards can I use this software?
 It was only tested on an Arduino Nano clone, so compatibility is not ensured.  
 Even on the Arduino, the program did not work properly with program runtimes times smaller than 5 milliseconds.
 
 #### How to set up the serial communication in Python.
-To use the Software in the Loop function, one has to set the *Port* to the one in which the board is connected, and the *Baudrate* to the one set in the Arduino program.  
+To use the Software in the Loop function, one must set the *Port* to the one in which the board is connected, and the *Baudrate* to the one set in the Arduino program.  
 One can simulate sensor noise by filling the entries with the Noise Standard Deviation of the specified sensor.
   
 #### How to set up the simulation in your Arduino.
@@ -180,7 +180,7 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
 ![](/Images/Readme/Screenshot_7.png)
   
 There are ten plots in total, one can choose between a variety of variables to be plotted in two different figures.
-The Export Plots button creates a *.csv* file containing all the plotted variables. The name of the *.csv* is the savefile's name with a subscript and is created in the *Exports* folder.
+The Export Plots button creates a *.csv* file containing all the plotted variables. The name of the *.csv* is the save file's name with a subscript and is created in the *Exports* folder.
 The exports are useful for feeding simulated sensor data from the Python SITL modules to a real flight computer and debug the latter by comparing the outputs. In consequence, there will be faster code prototyping and more complex controllers with less failures.
 
 ### 3D Representation
@@ -194,5 +194,5 @@ If the 3D Graphics were enabled, once the simulation finishes a new tab in your 
 
 NOTE: If the animation is paused, some of the features might require you to seek forward/backward to update the frame.
 
-### Experimetal Features
+### Experimental Features
 In *src/aerodynamics/rocket_functions.py* are some experimental features turned off by default, you can enable them by searching **experimental =** and setting them to True. They include dynamic pressure scaling for, theoretically, better damping, and drag calculations based on the component or fin Reynolds instead of the rocket's Re.
