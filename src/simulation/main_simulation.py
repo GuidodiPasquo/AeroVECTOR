@@ -2172,7 +2172,7 @@ def run_3d():
                                               rocket_3d.pos.z-scene.camera.pos.z)
 
             elif camera_type == "Bottom View":
-                scene.fov = fov*DEG2RAD*5
+                scene.fov = fov*DEG2RAD*13.5
                 vector = loc2glob(0, -L_total/2-5, -theta_3d[j])
                 scene.camera.pos = vp.vector(rocket_3d.pos.x + vector[0],
                                              rocket_3d.pos.y + vector[1],
