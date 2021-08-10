@@ -1824,7 +1824,12 @@ def run_3d():
             camera_type = camera_options[m.index]
             run_camera_3d(i, j)
 
-        camera_options = ["Follow", "Fixed", "Follow Far", "Drone"]
+        camera_options = ["Follow",
+                          "Fixed",
+                          "Side View",
+                          "Drone",
+                          "Top View",
+                          "Bottom View"]
         menu_camera = vp.menu(bind=change_camera, choices=camera_options,
                               selected=camera_type)
         widgets.append(menu_camera)
@@ -2139,7 +2144,7 @@ def run_3d():
                                               rocket_3d.pos.z-scene.camera.pos.z)
 
             # Lateral camera, like if it was 2D
-            elif camera_type == "Follow Far":
+            elif camera_type == "Side View":
                 scene.fov = fov*DEG2RAD
                 scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
                                              rocket_3d.pos.y+0.0-camera_shake[0]/200,
@@ -2152,6 +2157,34 @@ def run_3d():
                 scene.camera.pos = vp.vector(dim_x_floor/2-70*2,
                                              max_hight*0.75,
                                              dim_z_floor/2-70*2)
+                scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
+                                              rocket_3d.pos.y-scene.camera.pos.y,
+                                              rocket_3d.pos.z-scene.camera.pos.z)
+
+            elif camera_type == "Top View":
+                scene.fov = fov*DEG2RAD
+                vector = loc2glob(0, L_total*70, -theta_3d[j])
+                scene.camera.pos = vp.vector(rocket_3d.pos.x + vector[0],
+                                             rocket_3d.pos.y + vector[1],
+                                             rocket_3d.pos.z)
+                scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
+                                              rocket_3d.pos.y-scene.camera.pos.y,
+                                              rocket_3d.pos.z-scene.camera.pos.z)
+
+            elif camera_type == "Bottom View":
+                scene.fov = fov*DEG2RAD*5
+                vector = loc2glob(0, -L_total/2-5, -theta_3d[j])
+                scene.camera.pos = vp.vector(rocket_3d.pos.x + vector[0],
+                                             rocket_3d.pos.y + vector[1],
+                                             rocket_3d.pos.z)
+                scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
+                                              rocket_3d.pos.y-scene.camera.pos.y,
+                                              rocket_3d.pos.z-scene.camera.pos.z)
+            else:
+                scene.fov = fov*DEG2RAD
+                scene.camera.pos = vp.vector(rocket_3d.pos.x+camera_shake[1]/50,
+                                             rocket_3d.pos.y+0.0-camera_shake[0]/200,
+                                             rocket_3d.pos.z-70*2)
                 scene.camera.axis = vp.vector(rocket_3d.pos.x-scene.camera.pos.x,
                                               rocket_3d.pos.y-scene.camera.pos.y,
                                               rocket_3d.pos.z-scene.camera.pos.z)
