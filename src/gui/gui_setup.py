@@ -426,9 +426,9 @@ def create_conf_3d_tab(notebook):
     checkboxes = ["Activate 3D Graphics", "Camera Shake",
                   "Hide Forces", "Variable Fov", "Hide CG & AoA"]
     conf_3d_tab.create_checkboxes(checkboxes, 0, 0, "W", True)
-    combobox_options = [["Follow",
-                         "Fixed",
+    combobox_options = [["Fixed",
                          "Side View",
+                         "Follow",
                          "Drone",
                          "Top View",
                          "Bottom View"]]

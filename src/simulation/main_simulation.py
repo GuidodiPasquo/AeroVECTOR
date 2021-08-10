@@ -1824,9 +1824,9 @@ def run_3d():
             camera_type = camera_options[m.index]
             run_camera_3d(i, j)
 
-        camera_options = ["Follow",
-                          "Fixed",
+        camera_options = ["Fixed",
                           "Side View",
+                          "Follow",
                           "Drone",
                           "Top View",
                           "Bottom View"]
