@@ -1833,7 +1833,7 @@ def run_3d():
         menu_camera = vp.menu(bind=change_camera, choices=camera_options,
                               selected=camera_type)
         widgets.append(menu_camera)
-        widgets_text.append(vp.wtext(text="                          "))
+        widgets_text.append(vp.wtext(text="                       "))
 
         def hide_cg_3d(b):
             global hide_cg
