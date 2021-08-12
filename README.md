@@ -3,7 +3,7 @@
 
 
 # AeroVECTOR - The Model Rocket Simulator & Tuner
-This is a Model Rocket Simulator oriented towards active stabilization. It integrates the 3DOF Equations of Motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *src/control.py*, one can use it or run the Flight Computer's software through Software in the Loop.
+This is a Model Rocket Simulator oriented towards active stabilization. It integrates the three degree of freedom equations of motion, allowing to tune controllers used in Model Rockets. There is pre-coded controller in the file *src/control.py*, one can use it or run the Flight Computer's software through Software in the Loop.
 
 
 
@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/65097298/128649259-8a93ab7a-ccb8-4f38-
 
 
 #### Simulation Procedure
-The program computes the 3DOF Equations of Motion of the Rocket and integrates their result. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses (plus some improvements). The fins use interpolated wind tunnel data to better model their behaviour. The program also allows for fins separated from the body. More information can be found in the technical documentation or inside *src/simulation/main_simulation.py* and *src/aerodynamics/rocket_functions.py*
+The program computes the 3DoF Equations of Motion of the Rocket and integrates their result with the trapezoidal rule. The Aerodynamic Coefficients are calculated using the same Extended Barrowman Equations that Open Rocket uses (plus some modifications). The fins' forces are computed with interpolated wind tunnel data and Diederich's Semi-Empirical Method to accurately model the behaviour for every aspect ratio and angle of attack. The program also allows for fins separated from the body. More information can be found in the technical documentation or inside *src/simulation/main_simulation.py*, *src/aerodynamics/rocket_functions.py* or *src/aerodynamics/fin_aerodynamics.py*
 
 ## Dependencies
 ### Mandatory
