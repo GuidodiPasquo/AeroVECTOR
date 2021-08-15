@@ -45,7 +45,7 @@ class Servo:
         self._actuator_weight_compensation = 2.1
         self._sample_time = 0.001
         self._servo_sample_time = 0.02
-        self._definition = 1
+        self._resolution = 1
         self._u = 0.
         # Matrices left in uppercase because it's how they apear in the books
         self._A_s = np.array([
@@ -179,14 +179,14 @@ class Servo:
         self._sample_time = 0.001
         self._timer_run = 0
 
-    def setup(self, actuator_weight_compensation, definition, servo_s_t):
+    def setup(self, actuator_weight_compensation, resolution, servo_s_t):
         """
-        Sets the servo speed compensation, definition [º], and sample time
+        Sets the servo speed compensation, resolution [º], and sample time
 
         Parameters
         ----------
         actuator_weight_compensation : float -- Speed compensation.
-        definition : float -- servo definition [deg].
+        resolution : float -- servo resolution [deg].
         servo_s_t : float -- servo sample time [seg].
 
         Returns
@@ -194,7 +194,7 @@ class Servo:
         None.
         """
         self._actuator_weight_compensation = actuator_weight_compensation
-        self._definition = definition
+        self._resolution = resolution
         self._servo_sample_time = servo_s_t
         self.__reset_variables()
 
@@ -270,9 +270,9 @@ class Servo:
 
     def _round_input(self, u_inp):
         u_inp *= RAD2DEG
-        u_inp /= self._definition
+        u_inp /= self._resolution
         u_inp = round(u_inp, 0)
-        u_inp *= self._definition
+        u_inp *= self._resolution
         u_inp *= DEG2RAD
         return u_inp
 

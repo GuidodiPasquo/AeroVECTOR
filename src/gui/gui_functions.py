@@ -917,9 +917,9 @@ class TabWithCanvas(Tab):
                 x_ogive_1 = 0
                 # y = np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)+radius_nc-rho_radius
                 # Draws an ogive with 20 points
-                definition = 20
-                for j in range(definition):
-                    x_ogive_2 = x_ogive_1 + len_nc/definition
+                resolution = 20
+                for j in range(resolution):
+                    x_ogive_2 = x_ogive_1 + len_nc/resolution
                     y_ogive_1 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_1)**2)
                                  + radius_nc - rho_radius)
                     y_ogive_2 = (np.sqrt(rho_radius**2 - (len_nc-x_ogive_2)**2)
@@ -932,7 +932,7 @@ class TabWithCanvas(Tab):
                     x2_mirror = (-y_ogive_2*self.scale_y + self.canvas_width / 2)
                     self.canvas.create_line(x1, y1, x2, y2)
                     self.canvas.create_line(x1_mirror, y1, x2_mirror, y2)
-                    x_ogive_1 += len_nc/definition
+                    x_ogive_1 += len_nc/resolution
                     if j == 0:
                         self.rocket_origin_canvas = y1
                 self.canvas.create_line(x2_mirror, y2, x2, y2)
@@ -1002,14 +1002,14 @@ class TabWithCanvas(Tab):
         servo_def = data[8]
         reduction = data[10]
         if reduction != 0:
-            definition = servo_def/reduction
+            resolution = servo_def/reduction
         else:
-            definition = 1
+            resolution = 1
         if max_actuator_angle == "":
             max_actuator_angle = 10
         self.scale_act_angle.config(from_=-max_actuator_angle,
                                     to=max_actuator_angle,
-                                    resolution=definition)
+                                    resolution=resolution)
         self.scale_time.config(to=self.rocket.t_burnout)
 
     def update_full_rocket(self):

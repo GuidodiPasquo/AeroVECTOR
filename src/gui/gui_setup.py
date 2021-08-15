@@ -192,7 +192,7 @@ def create_parameters_tab(notebook):
                    "Xcg Liftoff [m] = ",
                    "Xcg Burnout [m] = ",
                    "Xt [m] = ",
-                   "Servo Definition [º] = ",
+                   "Servo Resolution [º] = ",
                    "Max Actuator Angle [º] = ",
                    "Actuator Reduction = ",
                    "Initial Misalignment [º] = ",

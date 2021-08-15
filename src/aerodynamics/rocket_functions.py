@@ -188,13 +188,12 @@ class Rocket:
             self.component_volume[i] = volume
             centroid = (l * (2*r2 + r1)) / (3 * (r1+r2))
             self.component_centroid[i] = centroid
-            self.component_centroid_pos_0[i] = centroid + self.rocket_dim[i][0]
+            self.component_centroid_pos[i] = centroid + self.rocket_dim[i][0]
             if self.ogive_flag is True and i == 0:
                 plan_area, centroid = self._integrate_ogive()
                 self.component_centroid[0] = centroid
-                self.component_centroid_pos_0[0] = centroid
+                self.component_centroid_pos[0] = centroid
                 self.component_plan_area[0] = plan_area
-        self.component_centroid_pos = copy.deepcopy(self.component_centroid_pos_0)
         self._compute_total_rocket_plan_area()
         self._calculate_wet_area_body()
         self._calculate_barrowman_constants()
@@ -240,7 +239,6 @@ class Rocket:
         self.component_plan_area = [0]*(n-1)
         self.component_volume = [0]*(n-1)
         self.component_centroid = [0]*(n-1)
-        self.component_centroid_pos_0 = [0]*(n-1)
         self.component_centroid_pos = [0]*(n-1)
         self.component_length = [0]*(n-1)
         self.component_fineness = [0]*(n-1)
@@ -515,7 +513,7 @@ class Rocket:
         self._calculate_ogive_cp(self.ogive_flag, cn[0])
         for i in range(len(self.component_cn)):
             self.component_cn[i] += cn[i]
-            self.component_cn[i] *=  self.v_sq_over_v_tot_sq_body[i]
+            self.component_cn[i] *= self.v_sq_over_v_tot_sq_body[i]
 
     def _calculate_ogive_cp(self, ogive_flag, cn):
         if ogive_flag is True:

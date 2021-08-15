@@ -299,7 +299,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     xcg_liftoff = parameters[5]
     xcg_burnout = parameters[6]
     xt = parameters[7]
-    servo_definition = parameters[8]
+    servo_resolution = parameters[8]
     Actuator_max = parameters[9] * DEG2RAD
     Actuator_reduction = parameters[10]
     u_initial_offset = parameters[11] * DEG2RAD
@@ -406,7 +406,7 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     data_plot = gui.run_sim_tab.get_configuration_destringed()
 
     # Servo Class
-    servo.setup(Actuator_weight_compensation, servo_definition, Ts)
+    servo.setup(Actuator_weight_compensation, servo_resolution, Ts)
 
 
 def reset_variables():

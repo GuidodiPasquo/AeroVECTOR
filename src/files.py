@@ -158,7 +158,7 @@ class SaveFile:
                                 "Xcg Liftoff = ",
                                 "Xcg Burnout = ",
                                 "Xt = ",
-                                "Servo definition = ",
+                                "Servo Resolution = ",
                                 "Max Actuator Angle = ",
                                 "Actuator Reduction = ",
                                 "Initial Misalignment = ",
