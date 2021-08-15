@@ -45,7 +45,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - *Xcg Liftoff/Burnout* are the position of the wet and dry Center of Gravity.
 - *Xt* is the position of the TVC mount. If one is using fins, the program automatically calculates the force application point.
   - All distances are measured from the tip of the nose cone.
-- The *Servo Definition* is the minimum angle it can rotate.
+- The *Servo Resolution* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
 - The *Initial Misalignment* only modifies the initial angle of the TVC mount or Active Fin.
