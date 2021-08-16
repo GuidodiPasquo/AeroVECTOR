@@ -41,7 +41,7 @@ ac.mach = 0.01
 ac.Re = 1e5
 
 AR_list = [4, 2, 1]
-legend_list = ["NAR", "LAR", "ULAR"]
+legend_list = ["MAR", "LAR", "ULAR"]
 colors = ["C0", "C1", "C2", "C3"]
 label_font_size = 17
 legend_font_size = 15
