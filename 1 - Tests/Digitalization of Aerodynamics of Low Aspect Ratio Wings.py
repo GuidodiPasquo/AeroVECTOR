@@ -6,8 +6,12 @@ Created on Mon Jul 19 17:16:35 2021
 """
 import importlib
 import matplotlib.pyplot as plt
+import os
+import sys
+sys.path.append("..")
+os.chdir(os.path.dirname(sys.argv[0]))
 
-wind_tunnel_data = importlib.import_module("Wind Tunnel Data.wind_tunnel_data_complete")
+wind_tunnel_data = importlib.import_module("1 - Tests.Wind Tunnel Data.wind_tunnel_data_complete")
 wtd_planform = [0]*4
 planform_list = ["Rectangular", "Zimmerman", "Inverse Zimmerman", "Elliptical"]
 for i in range(4):
@@ -18,7 +22,7 @@ legend_list = [""]*7
 for i in range(7):
     legend_list[i] = "AR=" + AR_list[i]
 marker = ["v", "s", "v", "^", "o", "D", "h"]
-plt.figure()
+
 for j in range(4):
     plt.figure()
     plt.grid(True)

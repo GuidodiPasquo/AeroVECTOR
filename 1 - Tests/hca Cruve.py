@@ -7,6 +7,8 @@ Created on Tue Jul 20 12:04:47 2021
 
 import sys
 sys.path.append('..')
+import os
+os.chdir(os.path.dirname(sys.argv[0]))
 import numpy as np
 import matplotlib.pyplot as plt
 from src.aerodynamics import rocket_functions
