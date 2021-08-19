@@ -7,6 +7,9 @@ Created on Mon Jan 18 21:20:41 2021
 
 
 import tkinter as tk
+from tkinter import filedialog
+import sys
+import os
 from src import files
 from src.gui import gui_functions as fun
 from src.simulation import main_simulation as sim
@@ -31,7 +34,6 @@ RAD2DEG = 1 / DEG2RAD
 
 
 # Global Variables
-active_file_name = ""
 savefile = files.SaveFile()
 # File
 file_tab = fun.Tab()
@@ -79,100 +81,100 @@ def configure_root(root, notebook):
 # CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
 def create_file_tab(notebook):
     file_tab.create_tab(notebook, "File")
-    combobox_options = [files.get_save_names()]
-    names_combobox = [""]
-    file_tab.create_combobox(combobox_options, names_combobox, 1, 0, s="EW")
-    names_entry = ["", ""]
-    file_tab.create_entry(names_entry, 0, 0, s="EW", w=30)
-    x = 45
-    for i in range(len(file_tab.entry)):
-        file_tab.entry[i].grid(padx=x, pady=20)
-    for i in range(len(file_tab.combobox)):
-        file_tab.combobox[i].grid(padx=x, pady=5)
-
     def create_new_file_b():
-        global active_file_name
-        name = file_tab.entry[0].get()
-        if savefile.check_if_file_exists2overwrite(name) is True:
-            savefile.create_file(name)
-            file_tab.combobox[0]["values"] = files.get_save_names()
-            file_tab.combobox[0].set(savefile.name)
-            fun.Tab.update_active_file_label(savefile.name)
-            param_file_tab.depopulate()
-            param_file_tab.populate(savefile.get_parameters())
-            draw_rocket_tab.depopulate()
-            draw_rocket_tab.populate(savefile.get_rocket_dim())
-            conf_3d_tab.depopulate()
-            conf_3d_tab.change_state()
-            sim_setup_tab.depopulate()
-            read_file()
+        if savefile.filepath == "":
+            initial_path = os.path.dirname(sys.argv[0])
         else:
-            print("File was not created")
-
-    new_file_button = tk.Button(file_tab.tab, text="Create New File",
+            initial_path = savefile.filepath
+        filepath = filedialog.asksaveasfilename(initialdir=initial_path,
+                                                defaultextension=".txt",
+                                                title="New File",
+                                                filetypes=[("Save File", ".txt"),
+                                                           ("All Files", ".*")])
+        if filepath == "":
+            return
+        savefile.create_file(filepath)
+        fun.Tab.update_active_file_label(savefile.name)
+        param_file_tab.depopulate()
+        param_file_tab.populate(savefile.get_parameters())
+        draw_rocket_tab.depopulate()
+        draw_rocket_tab.populate(savefile.get_rocket_dim())
+        conf_3d_tab.depopulate()
+        conf_3d_tab.change_state()
+        sim_setup_tab.depopulate()
+        read_file(filepath)
+    new_file_button = tk.Button(file_tab.tab, text="New File",
                                 command=create_new_file_b, width=30)
-    new_file_button.grid(row=0, column=2, padx=10)
+    new_file_button.place(relx=0.5-(220/600/2), y=100)
 
-    def read_file():
-        global active_file_name
-        if file_tab.combobox[0].get() != "":
-            savefile.update_name(file_tab.combobox[0].get())
-            savefile.read_file()
-            param_file_tab.depopulate()
-            param_file_tab.populate(savefile.get_parameters())
-            draw_rocket_tab.depopulate()
-            draw_rocket_tab.populate(savefile.get_rocket_dim())
-            conf_3d_tab.depopulate()
-            conf_3d_tab.populate(savefile.get_conf_3d())
-            conf_3d_tab.change_state()
-            conf_sitl_tab.depopulate()
-            conf_sitl_tab.populate(savefile.get_conf_sitl())
-            conf_sitl_tab.checkbox[0].invoke()
-            conf_sitl_tab.checkbox[0].invoke()
-            sim_setup_tab.depopulate()
-            sim_setup_tab.populate(savefile.get_conf_controller())
-            run_sim_tab.depopulate()
-            run_sim_tab.populate(savefile.get_conf_plots())
-            savefile.read_motor_data(param_file_tab.combobox[0].get())
-            fun.Tab.update_active_file_label(savefile.name)
+    def read_file(filepath):
+        savefile.update_path(filepath)
+        savefile.read_file()
+        param_file_tab.depopulate()
+        param_file_tab.populate(savefile.get_parameters())
+        draw_rocket_tab.depopulate()
+        draw_rocket_tab.populate(savefile.get_rocket_dim())
+        conf_3d_tab.depopulate()
+        conf_3d_tab.populate(savefile.get_conf_3d())
+        conf_3d_tab.change_state()
+        conf_sitl_tab.depopulate()
+        conf_sitl_tab.populate(savefile.get_conf_sitl())
+        conf_sitl_tab.checkbox[0].invoke()
+        conf_sitl_tab.checkbox[0].invoke()
+        sim_setup_tab.depopulate()
+        sim_setup_tab.populate(savefile.get_conf_controller())
+        run_sim_tab.depopulate()
+        run_sim_tab.populate(savefile.get_conf_plots())
+        savefile.read_motor_data(param_file_tab.combobox[0].get())
+        fun.Tab.update_active_file_label(savefile.name)
+
+    def open_file():
+        if savefile.filepath == "":
+            initial_path = os.path.dirname(sys.argv[0])
         else:
-            print("Select valid file")
-
-    open_file_button = tk.Button(file_tab.tab, text="Open Selected File",
-                                 command=read_file, width=30)
-    open_file_button.grid(row=1, column=2, pady=50)
+            initial_path = savefile.filepath
+        filepath = filedialog.askopenfilename(initialdir=initial_path,
+                                              defaultextension=".txt",
+                                              filetypes=(("Save Files", "*.txt"),
+                                                         ("All Files", "*.*")))
+        if filepath == "":
+            return
+        read_file(filepath)
+    open_file_button = tk.Button(file_tab.tab, text="Open File",
+                                 command=open_file, width=30)
+    open_file_button.place(relx=0.5-(220/600/2), y=200)
 
     def save_as():
-        global active_file_name
-        if file_tab.entry[1].get() != "":
-            name = file_tab.entry[1].get()
-            if savefile.check_if_file_exists2overwrite(name) is True:
-                savefile.create_file_as(name)
-                d = param_file_tab.get_configuration()
-                savefile.set_parameters(d)
-                d = draw_rocket_tab.get_configuration()
-                savefile.set_rocket_dim(d)
-                d = conf_3d_tab.get_configuration()
-                savefile.set_conf_3d(d)
-                d = conf_sitl_tab.get_configuration()
-                savefile.set_conf_sitl(d)
-                d = sim_setup_tab.get_configuration()
-                savefile.set_conf_controller(d)
-                d = run_sim_tab.get_configuration()
-                savefile.set_conf_plots(d)
-                file_tab.combobox[0]["values"] = files.get_save_names()
-                file_tab.combobox[0].set(savefile.name)
-                fun.Tab.update_active_file_label(savefile.name)
-                savefile.save_all_configurations()
-            else:
-                print("File was not created")
+        if savefile.filepath == "":
+            initial_path = os.path.dirname(sys.argv[0])
         else:
-            print("Select file")
-
+            initial_path = savefile.filepath
+        filepath = filedialog.asksaveasfilename(initialdir=initial_path,
+                                                defaultextension=".txt",
+                                                title="Save As",
+                                                filetypes=[("Save File", ".txt"),
+                                                           ("All Files", ".*")])
+        if filepath == "":
+            return
+        savefile.update_path(filepath)
+        savefile.create_file_as(savefile.name)
+        d = param_file_tab.get_configuration()
+        savefile.set_parameters(d)
+        d = draw_rocket_tab.get_configuration()
+        savefile.set_rocket_dim(d)
+        d = conf_3d_tab.get_configuration()
+        savefile.set_conf_3d(d)
+        d = conf_sitl_tab.get_configuration()
+        savefile.set_conf_sitl(d)
+        d = sim_setup_tab.get_configuration()
+        savefile.set_conf_controller(d)
+        d = run_sim_tab.get_configuration()
+        savefile.set_conf_plots(d)
+        fun.Tab.update_active_file_label(savefile.name)
+        savefile.save_all_configurations()
     save_as_button = tk.Button(file_tab.tab, text="Save As",
                                command=save_as, width=30)
-    save_as_button.grid(row=2, column=2)
-    fun.move_tk_object(file_tab.entry[1], 2, 1)
+    save_as_button.place(relx=0.5-(220/600/2), y=300)
     file_tab.create_active_file_label()
     file_tab.configure()
 

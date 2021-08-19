@@ -30,9 +30,7 @@ class SITLProgram:
     """!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"""
 
     def everything_that_is_outside_functions(self):
-        module = "pid_module"
-        self.pid_module = importlib.import_module("SITL Modules.Complemetary Modules."
-                                                      +module)
+        self.pid_module = importlib.import_module("SITL Modules.Complemetary Modules.pid_module")
 
         self.DEG2RAD = np.pi / 180
         self.RAD2DEG = 1 / self.DEG2RAD

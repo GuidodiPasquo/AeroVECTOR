@@ -10,8 +10,8 @@ import copy
 from src.gui import gui_functions
 from pathlib import Path
 import re
+from tkinter import filedialog
 
-saves_path = Path("Saves/")
 exports_path = Path("Exports/")
 motors_path = Path("Motors/")
 SITL_path = Path("SITL Modules/")
@@ -32,22 +32,6 @@ def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
-
-
-def get_save_names():
-    r"""
-    Return a list with the names of the files in the folder /Saves.
-
-    Returns
-    -------
-    List of strings
-        Save files names.
-    """
-    filenames = natural_sort(os.listdir(saves_path))
-    for i, filename in enumerate(filenames):
-        # Removes the .txt
-        filenames[i] = filename[:-4]
-    return copy.deepcopy(filenames)
 
 
 def get_export_names():
@@ -108,7 +92,14 @@ def export_plots(file_name, names, data, T):
                 file_name = file_name[:-1] + str(counter)
                 continue
         number_found = True
-
+    filepath = filedialog.asksaveasfilename(initialdir=exports_path,
+                                            initialfile=file_name,
+                                            defaultextension=".csv",
+                                            title="Export Data",
+                                            filetypes=[("Export File", ".csv"),
+                                                       ("All Files", ".*")])
+    if filepath == "":
+        filepath = exports_path / (file_name+".csv")
     to_file = ""
     prev_time = 0
     for i in range(len(data[0])):
@@ -131,7 +122,7 @@ def export_plots(file_name, names, data, T):
                 prev_time = data[0][i]
         to_file += line
     try:
-        with open(exports_path / (file_name+".csv"), "w", encoding="utf-8") as file:
+        with open(filepath, "w", encoding="utf-8") as file:
             file.write(to_file)
         print("Data Exported Successfully")
     except EnvironmentError:
@@ -145,7 +136,7 @@ class SaveFile:
 
     Methods
     -------
-        update_name -- Update the name of the savefile instance.
+        update_path -- Update the path of the savefile instance.
         check_if_file_exists2overwrite -- Check if the file "n" exists.
         create_file -- Creates a file with default configurations.
         create_file_as -- Creates a file with the GUI's configurations
@@ -240,6 +231,7 @@ class SaveFile:
                                 "Tenth Plot = "]
         self.rocket_dim_names = ["###=#"]
         self.name = ""
+        self.filepath = ""
         self.parameters = []
         self.conf_3d = []
         self.conf_controller = []
@@ -251,9 +243,10 @@ class SaveFile:
         self.thrust_mot = []
         self.overwrite_flag = False
 
-    def update_name(self, n):
-        """Update the name of the savefile instance (not the actual file) to n."""
-        self.name = n
+    def update_path(self, n):
+        """Update the path of the savefile instance (not the actual file) to n."""
+        self.filepath = n
+        self.name = n.split("/")[-1][:-4]
 
     def _save_all(self, tofile):
         tofile = self._save_parameters(tofile)
@@ -307,42 +300,6 @@ class SaveFile:
             tofile += self.rocket_dim[i] + "\n"
         return tofile
 
-    def check_if_file_exists2overwrite(self, n):
-        """
-        Check if the file "n" exists and decide if it will be overwritten
-        or not.
-
-        Parameters
-        ----------
-        n : string
-            File name.
-
-        Returns
-        -------
-        Bool
-            Flag to overwrite the file or not.
-        """
-        self.overwrite_flag = False
-        names = get_save_names()
-        flag_found_name = False
-        for name in names:
-            if name == n:
-                x = ""
-                flag_found_name = True
-                while x != "y" or x != "n":
-                    x = str(input("File already exists, overwrite? [y/n]"))
-                    if x == "y":
-                        self.overwrite_flag = True
-                        return self.overwrite_flag
-                    if x == "n":
-                        self.overwrite_flag = False
-                        return self.overwrite_flag
-                    print("Insert valid option")
-        if flag_found_name is False:
-            self.overwrite_flag = True
-            return self.overwrite_flag
-        return None
-
     def create_file(self, n):
         """
         Create a file named "n" with default parameters.
@@ -356,7 +313,7 @@ class SaveFile:
         -------
         None.
         """
-        self.update_name(n)
+        self.update_path(n)
         self.parameters = ["Estes_D12.csv",
                            "0.451",
                            "0.351",
@@ -455,7 +412,7 @@ class SaveFile:
                            "0"]
 
         try:
-            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
+            with open(self.filepath, "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -476,9 +433,8 @@ class SaveFile:
         -------
         None.
         """
-        self.update_name(n)
         try:
-            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
+            with open(self.filepath, "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -514,7 +470,7 @@ class SaveFile:
         None.
         """
         try:
-            with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
+            with open(self.filepath, "w", encoding="utf-8") as file:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
@@ -551,7 +507,7 @@ class SaveFile:
 
     def open_and_split_file(self):
         try:
-            with open(saves_path / (self.name+".txt"), "r", encoding="utf-8") as file:
+            with open(self.filepath, "r", encoding="utf-8") as file:
                 content = []
                 split_index = []
                 self.raw_data = []
@@ -581,7 +537,7 @@ class SaveFile:
     def check_and_correct_v11_save(self):
         if self.check_file("Wind Gust =", "###"):
             try:
-                with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
+                with open(self.filepath, "w", encoding="utf-8") as file:
                     end = "\n"
                     for i, line in enumerate(self.raw_data):
                         file.write(line)
@@ -604,7 +560,7 @@ class SaveFile:
     def check_and_correct_v20_save(self):
         if self.check_file("Mass =", "Iy"):
             try:
-                with open(saves_path / (self.name+".txt"), "w", encoding="utf-8") as file:
+                with open(self.filepath, "w", encoding="utf-8") as file:
                     counter = 4
                     end = "\n"
                     for i, line in enumerate(self.raw_data):
@@ -721,7 +677,7 @@ class SaveFile:
         flag = False
         found_param = False
         try:
-            with open(saves_path / (self.name+".txt"), "r", encoding="utf-8") as file:
+            with open(self.filepath, "r", encoding="utf-8") as file:
                 for line in file:
                     try:
                         if found_param is True:

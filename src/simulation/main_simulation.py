@@ -9,13 +9,13 @@ Created on Fri May  8 15:23:20 2020
 import sys
 import matplotlib
 import matplotlib.pyplot as plt
-# from matplotlib.figure import Figure
 import numpy as np
 import random
 import vpython as vp
 import time
 import importlib
 from pathlib import Path
+from types import ModuleType
 from scipy.interpolate import interp1d
 from src.gui import gui_setup as gui
 from src.aerodynamics import rocket_functions as rkt
@@ -24,7 +24,6 @@ from src.simulation import servo_lib
 from src import files
 
 matplotlib.use('TkAgg')
-textures_path = Path("src/textures")
 
 
 """
@@ -1160,7 +1159,7 @@ def run_sim_sitl():
                     u_servos = float(read_split[0])*DEG2RAD
                     parachute = int(read_split[1])
 
-
+python_sitl = 0
 def run_sim_python_sitl():
     global parameters, conf_3d, conf_controller, setpoint
     global timer_run_sim, timer_run, setpoint, parachute, t_launch, u_servos
@@ -1175,6 +1174,7 @@ def run_sim_python_sitl():
     timer_gnss = 0
     parachute = 0
     python_sitl = importlib.import_module("SITL Modules."+module, package="SITL Modules")
+    python_sitl = importlib.reload(python_sitl)  # in case you modify the module
     python_sitl_program = python_sitl.SITLProgram()
     python_sitl_program.everything_that_is_outside_functions()
     python_sitl_program.void_setup()
@@ -1315,6 +1315,7 @@ def run_3d():
         dim_z_sky = 3000
         dim_x_floor = 1500
         dim_z_floor = 800
+        textures_path = Path("src/textures")
 
         n = 7
         # Sky (many panels)
@@ -1406,7 +1407,6 @@ def run_3d():
                 d0 = rocket_dim[i][1]
                 d1 = rocket_dim[i+1][1]
                 x0 = rocket_dim[i][0]
-                x1 = rocket_dim[i+1][0]
                 # Truncated cone goes brrrrr
                 for i in range(n_c):
                     d = d0 + i*((d1-d0)/n_c)
