@@ -9,6 +9,7 @@ import os
 import copy
 from src.gui import gui_functions
 from pathlib import Path
+import re
 
 saves_path = Path("Saves/")
 exports_path = Path("Exports/")
@@ -27,6 +28,11 @@ Classes:
     SaveFile -- Handles all the rocket's data.
 """
 
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
+
 
 def get_save_names():
     r"""
@@ -37,7 +43,7 @@ def get_save_names():
     List of strings
         Save files names.
     """
-    filenames = os.listdir(saves_path)
+    filenames = natural_sort(os.listdir(saves_path))
     for i, filename in enumerate(filenames):
         # Removes the .txt
         filenames[i] = filename[:-4]
@@ -53,7 +59,7 @@ def get_export_names():
     List of strings
         Save files names.
     """
-    filenames = os.listdir(exports_path)
+    filenames = natural_sort(os.listdir(exports_path))
     for i, filename in enumerate(filenames):
         # Removes the .csv
         filenames[i] = filename[:-4]
@@ -69,7 +75,7 @@ def get_motor_names():
     List of strings
         Motor names.
     """
-    return os.listdir(motors_path)
+    return natural_sort(os.listdir(motors_path))
 
 
 def get_sitl_modules_names():
@@ -81,7 +87,7 @@ def get_sitl_modules_names():
     List of strings
         SITL modules names.
     """
-    filenames = os.listdir(SITL_path)
+    filenames = natural_sort(os.listdir(SITL_path))
     names = []
     for i, filename in enumerate(filenames):
         if filename[-1] == "y":
