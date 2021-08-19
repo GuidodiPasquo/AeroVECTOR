@@ -33,12 +33,12 @@ The setup of the rocket is fairly simple. However, the program is not meant for 
 ### Creating and Opening files
 To run the program, run *AeroVECTOR.py*.
 The program will open in *the file tab*.
-![](/3 - README Images/Readme/Screenshot_1.png)
+![](/0_Images/Readme/Screenshot_1.png)
 
 One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save As* button.
 
 ### Setting up the Rocket
-![](/3 - README Images/Readme/Screenshot_2.png)
+![](/0_Images/Readme/Screenshot_2.png)
 
 One must fill the required parameters of the rocket. New motors can be added in the *motors* folder. 
 - *Iy Liftoff/Burnout* are the wet and dry pitching moment of inertia.
@@ -62,7 +62,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 **THE SAVE BUTTON SAVES ONLY THE CURRENT TAB, BE SURE TO CLICK IT ON ALL OF THEM**
 
 ### Setting up the Rocket 2 - The Empire Strikes Back
-![](/3 - README Images/Readme/Screenshot_3.png)
+![](/0_Images/Readme/Screenshot_3.png)
 
 #### Body
 To draw the rocket, one must insert the point as **coordinate from the nose cone tip, diameter in that point**.
@@ -72,7 +72,7 @@ With the *Add Point* button, one adds the point written in the entry. The *Delet
 To draw the fins, one must insert the position and chord of the root and tip, separated by comma. The wingspan is measured from the root to the tip.
 **All dimensions are in meters.**  
 The order is the following:  
-![](/3 - README Images/Readme/Screenshot_8.png)
+![](/0_Images/Readme/Screenshot_8.png)
 
 **Only trapezoidal fins are modelled.**
 
@@ -81,14 +81,14 @@ After the points are written in the entries, one can either update the stabiliza
 **WARNING: THE USE OF CONTROL FINS DISABLES THE TVC STABILIZATION.**  
 
 **Examples of detached fins:**
-![](/3 - README Images/Readme/Screenshot_9.png)
+![](/0_Images/Readme/Screenshot_9.png)
 *Sprint - BPS.space, and our own Roll Control System Testbed*  
   
 The space between the body and the fin must be considerable, if one is unsure about a fin being attached or detached, the most conservative option is the right option.  
 The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
   
 ### 3D Graphics
-![](/3 - README Images/Readme/Screenshot_4.png)  
+![](/0_Images/Readme/Screenshot_4.png)  
   
 One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON**  
 
@@ -105,7 +105,7 @@ One can activate the 3D Graphics by clicking the checkbox. **IT REQUIRES VPYTHON
 - *Fov* is the field of view of the camera.
   
 ### Software in the Loop
-![](/3 - README Images/Readme/Screenshot_5.png)
+![](/0_Images/Readme/Screenshot_5.png)
 
 #### Python SITL
 In case of using the Python SITL module, refer to the example. One can create functions, classes, modules, etc., or modify the code at will. The objective was to make it as similar as possible to an Arduino, but there are some differences, especially with the global variables having the prefix self. Only the Python SITL module is compatible with GNSS and sample times.
@@ -121,15 +121,15 @@ One can simulate sensor noise by filling the entries with the Noise Standard Dev
 #### How to set up the simulation in your Arduino.
 Download and include the library and create the instance with the name you want.  
 
-![](/3 - README Images/Readme/Screenshot_10.png)  
+![](/0_Images/Readme/Screenshot_10.png)  
   
 At the end of void setup, start the simulation.  
 
-![](/3 - README Images/Readme/Screenshot_11.png)
+![](/0_Images/Readme/Screenshot_11.png)
 
 
 Replace your sensor readings with *Sim.getSimData()* and the name of your variables.   
-![](/3 - README Images/Readme/Screenshot_13.png)
+![](/0_Images/Readme/Screenshot_13.png)
 
 
 - **The Gyroscope data is in º/s.**  
@@ -141,18 +141,18 @@ Replace your sensor readings with *Sim.getSimData()* and the name of your variab
 **Positive values are positive in the direction of the axes!**    
 **(Refer to the Technical Documentation)**  
 
-![](/3 - README Images/Readme/Screenshot_14.png)    
+![](/0_Images/Readme/Screenshot_14.png)    
   
    
 Replace your *servo.write()* for:    
-![](/3 - README Images/Readme/Screenshot_12.png)  
+![](/0_Images/Readme/Screenshot_12.png)  
 Replace *servo_command* for your servo variable (in º).    
 The parachute variable is an int, it's normally 0 and one must make it 1 when the parachute would deploy. 
 
 **REMEMBER THAT THE DATA IS IN DEGREES, G'S AND M, AND YOU HAVE TO SEND THE SERVO COMMAND IN DEGREES AND THE PARACHUTE DEPLOYMENT SIGNAL AS 0 OR 1.**  
 
 ### Tuning the Internal Controller   
-![](/3 - README Images/Readme/Screenshot_6.png)
+![](/0_Images/Readme/Screenshot_6.png)
 
 **IF ONE IS USING SOFTWARE IN THE LOOP, THE CONTROLLER SETTINGS DO NOTHING**  
 
@@ -177,14 +177,14 @@ The parachute variable is an int, it's normally 0 and one must make it 1 when th
   
   
 ### Plotting the results
-![](/3 - README Images/Readme/Screenshot_7.png)
+![](/0_Images/Readme/Screenshot_7.png)
   
 There are ten plots in total, one can choose between a variety of variables to be plotted in two different figures.
 The Export Plots button creates a *.csv* file containing all the plotted variables. The name of the *.csv* is the save file's name with a subscript and is created in the *Exports* folder.
 The exports are useful for feeding simulated sensor data from the Python SITL modules to a real flight computer and debug the latter by comparing the outputs. In consequence, there will be faster code prototyping and more complex controllers with less failures.
 
 ### 3D Representation
-![](/3 - README Images/Readme/Screenshot_15.png)
+![](/0_Images/Readme/Screenshot_15.png)
 If the 3D Graphics were enabled, once the simulation finishes a new tab in your default web browser should open.
 - One can seek backward/forward 1/5 of the simulation time, 1 or 0.015 seconds using the first row of buttons, the center one pauses and resumes the animation.
 - The first slider controls the *Slow Motion* and the second one the *FOV* (zoom).
