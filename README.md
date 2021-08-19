@@ -31,8 +31,11 @@ If someone can make an .exe that works with VPython, please let me know.
 ## How To
 The setup of the rocket is fairly simple. However, the program is not meant for designing the rocket. Open Rocket is a more comfortable option.
 ### Creating and Opening files
+
 To run the program, run *AeroVECTOR.py*.
 The program will open in *the file tab*.
+
+
 ![](/0_Images/Readme/Screenshot_1.png)
 
 One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save As* button.
