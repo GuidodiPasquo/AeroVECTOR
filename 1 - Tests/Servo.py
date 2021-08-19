@@ -1,9 +1,9 @@
-import sys
-import os
-sys.path.append("..")
-os.chdir(os.path.dirname(sys.argv[0]))
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import sys
+os.chdir(os.path.dirname(sys.argv[0]))
+sys.path.append("..")
 from src.simulation import servo_lib
 
 

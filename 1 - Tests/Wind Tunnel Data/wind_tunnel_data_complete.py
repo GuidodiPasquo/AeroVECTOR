@@ -6,7 +6,7 @@ Created on Thu Jul 15 17:49:12 2021
 """
 
 from numpy import pi
-
+from pathlib import Path
 DEG2RAD = pi/180
 
 
@@ -29,7 +29,7 @@ class FinWindTunnelData:
 
     def _fill_alpha_and_cl(self):
         for i in range(7):
-            with open(".\\Wind Tunnel Data\\" + self.planform + ".csv", "r") as file:
+            with open(Path("Wind Tunnel Data/" + self.planform + ".csv"), "r") as file:
                 for line in file:
                     try:
                         a = float(line.split(",")[0 + i*2])

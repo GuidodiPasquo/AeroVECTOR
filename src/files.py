@@ -10,7 +10,7 @@ import copy
 from src.gui import gui_functions
 from pathlib import Path
 
-saves_path = Path("./Saves/")
+saves_path = Path("Saves/")
 exports_path = Path("Exports/")
 motors_path = Path("Motors/")
 SITL_path = Path("SITL Modules/")

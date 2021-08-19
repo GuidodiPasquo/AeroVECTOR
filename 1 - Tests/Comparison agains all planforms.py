@@ -6,11 +6,11 @@ Created on Mon Jul 19 23:40:58 2021
 """
 import importlib
 import sys
-sys.path.append("..")
 import os
-os.chdir(os.path.dirname(sys.argv[0]))
 import numpy as np
 import matplotlib.pyplot as plt
+os.chdir(os.path.dirname(sys.argv[0]))
+sys.path.append("..")
 from src.aerodynamics import rocket_functions
 from src.aerodynamics import flight_conditions
 

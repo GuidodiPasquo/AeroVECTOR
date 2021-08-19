@@ -8,8 +8,8 @@ import importlib
 import matplotlib.pyplot as plt
 import os
 import sys
-sys.path.append("..")
 os.chdir(os.path.dirname(sys.argv[0]))
+sys.path.append("..")
 
 wind_tunnel_data = importlib.import_module("1 - Tests.Wind Tunnel Data.wind_tunnel_data_complete")
 wtd_planform = [0]*4
