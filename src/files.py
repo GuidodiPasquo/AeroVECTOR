@@ -74,7 +74,7 @@ def get_sitl_modules_names():
     filenames = natural_sort(os.listdir(SITL_path))
     names = []
     for i, filename in enumerate(filenames):
-        if filename[-1] == "y":
+        if filename[-3:] == ".py":
             names.append(filename[:-3])
     return copy.deepcopy(names)
 
