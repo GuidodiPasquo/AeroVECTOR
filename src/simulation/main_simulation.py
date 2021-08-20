@@ -15,7 +15,6 @@ import vpython as vp
 import time
 import importlib
 from pathlib import Path
-from types import ModuleType
 from scipy.interpolate import interp1d
 from src.gui import gui_setup as gui
 from src.aerodynamics import rocket_functions as rkt
@@ -1159,7 +1158,7 @@ def run_sim_sitl():
                     u_servos = float(read_split[0])*DEG2RAD
                     parachute = int(read_split[1])
 
-python_sitl = 0
+
 def run_sim_python_sitl():
     global parameters, conf_3d, conf_controller, setpoint
     global timer_run_sim, timer_run, setpoint, parachute, t_launch, u_servos
