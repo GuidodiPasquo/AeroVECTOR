@@ -461,7 +461,7 @@ class SaveFile:
     def set_rocket_dim(self, data):
         self.rocket_dim = copy.deepcopy(data)
 
-    def save_all_configurations(self):
+    def save_all_configurations(self, saved_thing):
         """
         Save the configuration in the GUI to the active file.
 
@@ -474,7 +474,7 @@ class SaveFile:
                 self.tofile = ""
                 self.tofile = self._save_all(self.tofile)
                 file.write(self.tofile)
-                print("Configuration Saved Successfully")
+                print(saved_thing + " Saved Successfully")
         except EnvironmentError:
             print("Error")
 

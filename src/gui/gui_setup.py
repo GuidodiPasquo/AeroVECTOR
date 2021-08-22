@@ -171,7 +171,7 @@ def create_file_tab(notebook):
         d = run_sim_tab.get_configuration()
         savefile.set_conf_plots(d)
         fun.Tab.update_active_file_label(savefile.name)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="All Configurations")
     save_as_button = tk.Button(file_tab.tab, text="Save As",
                                command=save_as, width=30)
     save_as_button.place(relx=0.5-(220/600/2), y=300)
@@ -212,7 +212,7 @@ def create_parameters_tab(notebook):
     def button_save_parameters():
         d = param_file_tab.get_configuration()
         savefile.set_parameters(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="Parameters")
         savefile.read_motor_data(param_file_tab.combobox[0].get())
 
     save_file_button = tk.Button(param_file_tab.tab, text="Save",
@@ -337,7 +337,7 @@ def create_draw_rocket_tab(notebook):
     def button_save():
         d = draw_rocket_tab.get_configuration()
         savefile.set_rocket_dim(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="Rocket Body")
 
     save_file_button = tk.Button(draw_rocket_tab.tab, text="Save",
                                  command=button_save, width=20)
@@ -442,7 +442,7 @@ def create_conf_3d_tab(notebook):
     def button_save():
         d = conf_3d_tab.get_configuration()
         savefile.set_conf_3d(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="3D Configuration")
 
     save_conf_3d_button = tk.Button(conf_3d_tab.tab, text="Save",
                                     command=button_save, width=20)
@@ -551,7 +551,7 @@ def create_sitl_tab(notebook):
     def button_save_conf_sitl():
         d = conf_sitl_tab.get_configuration()
         savefile.set_conf_sitl(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="SITL Configuration")
 
     save_conf_sitl_button = tk.Button(conf_sitl_tab.tab, text="Save",
                                       command=button_save_conf_sitl, width=20)
@@ -589,7 +589,7 @@ def create_simulation_setup_tab(notebook):
     def button_save():
         d = sim_setup_tab.get_configuration()
         savefile.set_conf_controller(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="Simulation & Controller Configurations")
 
     save_conf_controller_button = tk.Button(sim_setup_tab.tab, text="Save",
                                             command=button_save, width=20)
@@ -696,7 +696,7 @@ def create_run_sim_tab(notebook):
     def button_save():
         d = run_sim_tab.get_configuration()
         savefile.set_conf_plots(d)
-        savefile.save_all_configurations()
+        savefile.save_all_configurations(saved_thing="Plot Configuration")
 
     save_file_button = tk.Button(run_sim_tab.tab, text="Save",
                                  command=button_save, width=20)
