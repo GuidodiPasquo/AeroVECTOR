@@ -80,6 +80,7 @@ def get_sitl_modules_names():
 
 
 def export_plots(file_name, names, data, T):
+    global exports_path
     file_name += "_0"
     export_names = get_export_names()
 
@@ -89,17 +90,26 @@ def export_plots(file_name, names, data, T):
         for name in export_names:
             if name == file_name:
                 counter += 1
-                file_name = file_name[:-1] + str(counter)
+                if counter <= 10:
+                    n = 1
+                else:
+                    n = 2
+                file_name = file_name[:-n] + str(counter)
                 continue
         number_found = True
-    filepath = filedialog.asksaveasfilename(initialdir=exports_path,
+    exports_path_total = filedialog.asksaveasfilename(initialdir=exports_path,
                                             initialfile=file_name,
                                             defaultextension=".csv",
                                             title="Export Data",
                                             filetypes=[("Export File", ".csv"),
                                                        ("All Files", ".*")])
-    if filepath == "":
-        filepath = exports_path / (file_name+".csv")
+
+    if exports_path_total == "":
+        return
+    path_without_name = [e+"/" for e in exports_path_total.split("/") if e != ""][:-1]
+    exports_path = "".join(path_without_name)
+    if exports_path_total == "":
+        return
     to_file = ""
     prev_time = 0
     for i in range(len(data[0])):
@@ -122,7 +132,7 @@ def export_plots(file_name, names, data, T):
                 prev_time = data[0][i]
         to_file += line
     try:
-        with open(filepath, "w", encoding="utf-8") as file:
+        with open(exports_path_total, "w", encoding="utf-8") as file:
             file.write(to_file)
         print("Data Exported Successfully")
     except EnvironmentError:
