@@ -40,6 +40,8 @@ The program will open in *the file tab*.
 
 One can create a new file or open an existing one. Once a file is open, a copy can be created with the *Save As* button.
 
+In case of using the Python SITL module, it is recommended to save each file in a different folder since the modules can only be loaded from the *SITL Modules* folder located in the directory of the *.txt* save file, as in the examples. The *SITL Modules* and *SITL Modules/Complementary Modules* folders are created automatically when creating a new file and, in case of using the *Save as* command, the contents of the original modules are also copied to the new location.
+
 ### Setting up the Rocket
 ![](/0_Images/Readme/Screenshot_2.png)
 
