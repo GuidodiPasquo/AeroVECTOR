@@ -476,7 +476,8 @@ class SaveFile:
     def _copy_sitl_files(self):
         src = self.old_filepath_without_name + "SITL Modules"
         dst = self.filepath_without_name + "SITL Modules"
-        shutil.copytree(src, dst, dirs_exist_ok=True)
+        if src != dst:
+            shutil.copytree(src, dst, dirs_exist_ok=True)
 
     def save_all_configurations(self, saved_thing):
         """
