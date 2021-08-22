@@ -81,6 +81,8 @@ def configure_root(root, notebook):
 # CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB - CREATE FILE TAB
 def create_file_tab(notebook):
     file_tab.create_tab(notebook, "File")
+
+
     def create_new_file_b():
         if savefile.filepath == "":
             initial_path = os.path.dirname(sys.argv[0])
@@ -107,26 +109,7 @@ def create_file_tab(notebook):
                                 command=create_new_file_b, width=30)
     new_file_button.place(relx=0.5-(220/600/2), y=100)
 
-    def read_file(filepath):
-        savefile.update_path(filepath)
-        savefile.read_file()
-        param_file_tab.depopulate()
-        param_file_tab.populate(savefile.get_parameters())
-        draw_rocket_tab.depopulate()
-        draw_rocket_tab.populate(savefile.get_rocket_dim())
-        conf_3d_tab.depopulate()
-        conf_3d_tab.populate(savefile.get_conf_3d())
-        conf_3d_tab.change_state()
-        conf_sitl_tab.depopulate()
-        conf_sitl_tab.populate(savefile.get_conf_sitl())
-        conf_sitl_tab.checkbox[0].invoke()
-        conf_sitl_tab.checkbox[0].invoke()
-        sim_setup_tab.depopulate()
-        sim_setup_tab.populate(savefile.get_conf_controller())
-        run_sim_tab.depopulate()
-        run_sim_tab.populate(savefile.get_conf_plots())
-        savefile.read_motor_data(param_file_tab.combobox[0].get())
-        fun.Tab.update_active_file_label(savefile.name)
+
 
     def open_file():
         if savefile.filepath == "":
@@ -144,6 +127,34 @@ def create_file_tab(notebook):
                                  command=open_file, width=30)
     open_file_button.place(relx=0.5-(220/600/2), y=200)
 
+
+
+
+    def read_file(filepath):
+        savefile.update_path(filepath)
+        savefile.read_file()
+        param_file_tab.depopulate()
+        param_file_tab.populate(savefile.get_parameters())
+        draw_rocket_tab.depopulate()
+        draw_rocket_tab.populate(savefile.get_rocket_dim())
+        conf_3d_tab.depopulate()
+        conf_3d_tab.populate(savefile.get_conf_3d())
+        conf_3d_tab.change_state()
+        conf_sitl_tab.depopulate()
+        conf_sitl_tab.populate(savefile.get_conf_sitl())
+        conf_sitl_tab.combobox[0]['values'] = [files.get_sitl_modules_names(savefile.filepath)]
+        conf_sitl_tab.checkbox[0].invoke()
+        conf_sitl_tab.checkbox[0].invoke()
+        sim_setup_tab.depopulate()
+        sim_setup_tab.populate(savefile.get_conf_controller())
+        run_sim_tab.depopulate()
+        run_sim_tab.populate(savefile.get_conf_plots())
+        savefile.read_motor_data(param_file_tab.combobox[0].get())
+        fun.Tab.update_active_file_label(savefile.name)
+
+
+
+
     def save_as():
         if savefile.filepath == "":
             initial_path = os.path.dirname(sys.argv[0])
@@ -156,8 +167,7 @@ def create_file_tab(notebook):
                                                            ("All Files", ".*")])
         if filepath == "":
             return
-        savefile.update_path(filepath)
-        savefile.create_file_as(savefile.name)
+        savefile.create_file_as(filepath)
         d = param_file_tab.get_configuration()
         savefile.set_parameters(d)
         d = draw_rocket_tab.get_configuration()
@@ -175,6 +185,9 @@ def create_file_tab(notebook):
     save_as_button = tk.Button(file_tab.tab, text="Save As",
                                command=save_as, width=30)
     save_as_button.place(relx=0.5-(220/600/2), y=300)
+
+
+
     file_tab.create_active_file_label()
     file_tab.configure()
 
@@ -475,7 +488,7 @@ def create_sitl_tab(notebook):
             fun.move_tk_object(conf_sitl_tab.entry[i+7], 7+i, 1)
 
     conf_sitl_tab.create_tab(notebook, "SITL")
-    combobox_options = [files.get_sitl_modules_names()]
+    combobox_options = [files.get_sitl_modules_names(savefile.filepath)]
     names_combobox = [""]
     conf_sitl_tab.create_combobox(combobox_options, names_combobox, 5, 0, s="EW")
     checkboxes = ["Activate Software in the Loop",

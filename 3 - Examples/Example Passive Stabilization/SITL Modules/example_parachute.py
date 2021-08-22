@@ -7,6 +7,18 @@ Created on Sat Jun 19 15:17:35 2021
 from src import python_sitl_functions as Sim
 import numpy as np
 import importlib
+import pathlib
+
+
+def import_module(module):
+    current_path = pathlib.Path(__file__).parent.resolve()
+    module_temp = pathlib.Path(current_path / "Complementary Modules" / module)
+    spec = importlib.util.spec_from_file_location(module, module_temp)
+    module_temp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module_temp)
+    return module_temp
+
+
 class SITLProgram:
     def __init__(self):
         pass

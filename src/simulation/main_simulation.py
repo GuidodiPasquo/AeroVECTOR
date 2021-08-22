@@ -382,7 +382,8 @@ def update_all_parameters(parameters,conf_3d,conf_controller,conf_sitl, rocket_d
     Activate_SITL = conf_sitl[0]
     use_noise = conf_sitl[1]
     enable_python_sitl = conf_sitl[2]
-    module = conf_sitl[3]
+    module = conf_sitl[3] + ".py"
+    # !!!
     port = conf_sitl[4]
     baudrate = conf_sitl[5]
     gyro_sd = conf_sitl[6]
@@ -1018,7 +1019,8 @@ def export_plots(file_name):
     if tenth_plot[0] != None:
         plots_to_csv.append(tenth_plot)
     export_T = gui.sim_setup_tab.get_configuration_destringed()[16]
-    files.export_plots(file_name, names_to_csv, plots_to_csv, export_T)
+    filepath = gui.savefile.filepath_without_name
+    files.export_plots(file_name, filepath, names_to_csv, plots_to_csv, export_T)
 
 
 def run_sim_local():
@@ -1172,8 +1174,10 @@ def run_sim_python_sitl():
     timer_alt = 0
     timer_gnss = 0
     parachute = 0
-    python_sitl = importlib.import_module("SITL Modules."+module, package="SITL Modules")
-    python_sitl = importlib.reload(python_sitl)  # in case you modify the module
+    sitl_module_path = Path(gui.savefile.filepath_without_name + "/SITL Modules/" + module)
+    spec = importlib.util.spec_from_file_location(module, sitl_module_path)
+    python_sitl = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(python_sitl)
     python_sitl_program = python_sitl.SITLProgram()
     python_sitl_program.everything_that_is_outside_functions()
     python_sitl_program.void_setup()

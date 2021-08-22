@@ -11,8 +11,9 @@ from src.gui import gui_functions
 from pathlib import Path
 import re
 from tkinter import filedialog
+import shutil
 
-exports_path = Path("Exports/")
+exports_path = ""
 motors_path = Path("Motors/")
 SITL_path = Path("SITL Modules/")
 
@@ -43,6 +44,8 @@ def get_export_names():
     List of strings
         Save files names.
     """
+    if exports_path == "":
+        return []
     filenames = natural_sort(os.listdir(exports_path))
     for i, filename in enumerate(filenames):
         # Removes the .csv
@@ -62,7 +65,7 @@ def get_motor_names():
     return natural_sort(os.listdir(motors_path))
 
 
-def get_sitl_modules_names():
+def get_sitl_modules_names(filepath):
     r"""
     Return a list with the names of the motor files in the folder /\Motors.
 
@@ -71,7 +74,12 @@ def get_sitl_modules_names():
     List of strings
         SITL modules names.
     """
-    filenames = natural_sort(os.listdir(SITL_path))
+    path_without_name = [e+"/" for e in filepath.split("/") if e != ""][:-1]
+    path_without_name = "".join(path_without_name)
+    if path_without_name == "":
+        return [""]
+    path_without_name = Path(path_without_name + "/SITL Modules")
+    filenames = natural_sort(os.listdir(path_without_name))
     names = []
     for i, filename in enumerate(filenames):
         if filename[-3:] == ".py":
@@ -79,7 +87,7 @@ def get_sitl_modules_names():
     return copy.deepcopy(names)
 
 
-def export_plots(file_name, names, data, T):
+def export_plots(file_name, filepath, names, data, T):
     global exports_path
     file_name += "_0"
     export_names = get_export_names()
@@ -97,12 +105,15 @@ def export_plots(file_name, names, data, T):
                 file_name = file_name[:-n] + str(counter)
                 continue
         number_found = True
+
+    if exports_path == "":
+        exports_path = filepath
     exports_path_total = filedialog.asksaveasfilename(initialdir=exports_path,
-                                            initialfile=file_name,
-                                            defaultextension=".csv",
-                                            title="Export Data",
-                                            filetypes=[("Export File", ".csv"),
-                                                       ("All Files", ".*")])
+                                                      initialfile=file_name,
+                                                      defaultextension=".csv",
+                                                      title="Export Data",
+                                                      filetypes=[("Export File", ".csv"),
+                                                                 ("All Files", ".*")])
 
     if exports_path_total == "":
         return
@@ -252,11 +263,6 @@ class SaveFile:
         self.t_mot = []
         self.thrust_mot = []
         self.overwrite_flag = False
-
-    def update_path(self, n):
-        """Update the path of the savefile instance (not the actual file) to n."""
-        self.filepath = n
-        self.name = n.split("/")[-1][:-4]
 
     def _save_all(self, tofile):
         tofile = self._save_parameters(tofile)
@@ -429,6 +435,18 @@ class SaveFile:
             print("File Created Successfully")
         except EnvironmentError:
             print("Error Creating File")
+        self._create_sitl_directories()
+
+    def update_path(self, n):
+        """Update the path of the savefile instance (not the actual file) to n."""
+        self.filepath = n
+        path_without_name = [e+"/" for e in n.split("/") if e != ""][:-1]
+        self.filepath_without_name = "".join(path_without_name)
+        self.name = n.split("/")[-1][:-4]
+
+    def _create_sitl_directories(self):
+        os.makedirs(self.filepath_without_name + 'SITL Modules/Complementary Modules',
+                    exist_ok=True)
 
     def create_file_as(self, n):
         """
@@ -443,6 +461,8 @@ class SaveFile:
         -------
         None.
         """
+        self.old_filepath_without_name = self.filepath_without_name
+        self.update_path(n)
         try:
             with open(self.filepath, "w", encoding="utf-8") as file:
                 self.tofile = ""
@@ -450,26 +470,13 @@ class SaveFile:
                 file.write(self.tofile)
             print("File Created Successfully")
         except EnvironmentError:
-            print("Error")
-    # Parameters are set (from the GUI_Setup file) before saving the whole file
+            print("Error Creating File")
+        self._copy_sitl_files()
 
-    def set_parameters(self, data):
-        self.parameters = copy.deepcopy(data)
-
-    def set_conf_3d(self, data):
-        self.conf_3d = copy.deepcopy(data)
-
-    def set_conf_controller(self, data):
-        self.conf_controller = copy.deepcopy(data)
-
-    def set_conf_sitl(self, data):
-        self.conf_sitl = copy.deepcopy(data)
-
-    def set_conf_plots(self, data):
-        self.conf_plots = copy.deepcopy(data)
-
-    def set_rocket_dim(self, data):
-        self.rocket_dim = copy.deepcopy(data)
+    def _copy_sitl_files(self):
+        src = self.old_filepath_without_name + "SITL Modules"
+        dst = self.filepath_without_name + "SITL Modules"
+        shutil.copytree(src, dst, dirs_exist_ok=True)
 
     def save_all_configurations(self, saved_thing):
         """
@@ -486,7 +493,7 @@ class SaveFile:
                 file.write(self.tofile)
                 print(saved_thing + " Saved Successfully")
         except EnvironmentError:
-            print("Error")
+            print("Error Saving File (EnvironmentError)")
 
     def _split_list(self, content, split_index):
         # splits the list in the selected indexes
@@ -507,10 +514,12 @@ class SaveFile:
         -------
         None.
         """
-        self.open_and_split_file()
-        self.check_and_correct_v11_save()
-        self.open_and_split_file()
-        self.check_and_correct_v20_save()
+        update_old_files_experimental = False
+        if update_old_files_experimental is True:
+            self.open_and_split_file()
+            self.check_and_correct_v11_save()
+            self.open_and_split_file()
+            self.check_and_correct_v20_save()
         self.open_and_split_file()
         if self.error_opening_file_flag is False:
             print("File Opened Successfully")
@@ -703,6 +712,25 @@ class SaveFile:
         except EnvironmentError:
             print("EnvironmentError Opening File")
         return flag
+
+    # Parameters are set (from the GUI_Setup file) before saving the whole file
+    def set_parameters(self, data):
+        self.parameters = copy.deepcopy(data)
+
+    def set_conf_3d(self, data):
+        self.conf_3d = copy.deepcopy(data)
+
+    def set_conf_controller(self, data):
+        self.conf_controller = copy.deepcopy(data)
+
+    def set_conf_sitl(self, data):
+        self.conf_sitl = copy.deepcopy(data)
+
+    def set_conf_plots(self, data):
+        self.conf_plots = copy.deepcopy(data)
+
+    def set_rocket_dim(self, data):
+        self.rocket_dim = copy.deepcopy(data)
 
     def get_parameters(self):
         return copy.deepcopy(self.parameters)
