@@ -74,12 +74,17 @@ def get_sitl_modules_names(filepath):
     List of strings
         SITL modules names.
     """
+    filenames = []
     path_without_name = [e+"/" for e in filepath.split("/") if e != ""][:-1]
     path_without_name = "".join(path_without_name)
     if path_without_name == "":
         return [""]
     path_without_name = Path(path_without_name + "/SITL Modules")
-    filenames = natural_sort(os.listdir(path_without_name))
+    try:
+        filenames = os.listdir(path_without_name)
+    except FileNotFoundError:
+        print("WARNING: Could not find the folders 'SITL Modules' and 'SITL Modules/Complementary Modules'.")
+    filenames = natural_sort(filenames)
     names = []
     for i, filename in enumerate(filenames):
         if filename[-3:] == ".py":
@@ -386,7 +391,7 @@ class SaveFile:
         self.conf_sitl = ["False",
                           "False",
                           "False",
-                          "example_python_sitl",
+                          "",
                           "COM3",
                           "115200",
                           "0",
