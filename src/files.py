@@ -13,9 +13,9 @@ import re
 from tkinter import filedialog
 import shutil
 
+
 exports_path = ""
 motors_path = Path("Motors/")
-SITL_path = Path("SITL Modules/")
 
 
 """
