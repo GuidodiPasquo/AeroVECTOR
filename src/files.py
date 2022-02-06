@@ -35,7 +35,7 @@ def natural_sort(l):
     return sorted(l, key=alphanum_key)
 
 
-def get_export_names():
+def get_export_names(filepath, exports_path):
     r"""
     Return a list with the names of the files in the folder /Exports.
 
@@ -45,7 +45,7 @@ def get_export_names():
         Save files names.
     """
     if exports_path == "":
-        return []
+        exports_path = filepath
     filenames = natural_sort(os.listdir(exports_path))
     for i, filename in enumerate(filenames):
         # Removes the .csv
@@ -95,7 +95,7 @@ def get_sitl_modules_names(filepath):
 def export_plots(file_name, filepath, names, data, T):
     global exports_path
     file_name += "_0"
-    export_names = get_export_names()
+    export_names = get_export_names(filepath, exports_path)
 
     number_found = False
     counter = 0

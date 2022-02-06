@@ -998,6 +998,9 @@ def export_plots(file_name):
         if name != "Off":
             names_to_csv.append(name)
     plots_to_csv = [t_plot]
+    if first_plot == []:
+        print("There is nothing to export, please run a simulation.")
+        return None
     if first_plot[0] != None:
         plots_to_csv.append(first_plot)
     if second_plot[0] != None:
