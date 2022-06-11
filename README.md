@@ -53,6 +53,7 @@ One must fill the required parameters of the rocket. New motors can be added in 
 - The *Servo Resolution* is the minimum angle it can rotate.
 - The *Max Actuator Angle* is the maximum angle the actuator can move (either the TVC mount or the fin).
 - The *Actuator Reduction* is the gear ratio between the servo and the actuator.
+  -  The code multiplies the output of the controller times the *Actuator Reduction*, and then sends that output to the SERVO (not the mount). Remember that you have to multiply the output of the controller times the *Actuator Reduction* in you flight computer!
 - The *Initial Misalignment* only modifies the initial angle of the TVC mount or Active Fin.
 - The *Servo Velocity Compensation* slows down the servo according  to the load, its value is 1.45 for an SG90 without load, and 2.1 with a TVC mount. The *servo* class found in *servo_lib.py* has a test method to modify this value to fit one's servo.
 - The wind is positive from right to left, and the gusts follow a Gaussian distribution.
