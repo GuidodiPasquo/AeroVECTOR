@@ -92,6 +92,13 @@ After the points are written in the entries, one can either update the stabiliza
   
 The space between the body and the fin must be considerable, if one is unsure about a fin being attached or detached, the most conservative option is the right option.  
 The Angle of Attack slider allows to change the AoA at which the CP (red point) is calculated. The blue point represents the CG of the rocket. One can enable and disable the fins to quickly redraw the rocket and ensure that the CG is in the correct position.
+
+#### Sliders
+The Set Rocket Body tab has four sliders to simulate the forces on the rocket and test changes in the configuration before simulating. For example, if you see in the simulation that your rocket looses control at 10º angle of attack, with an actuator deflection of 20º, at 3 seconds from liftoff, you can put those parameters in the sliders in the Set Rocket Body tab and make changes to make sure you have the net moment that you need (i.e. increase the control fin size to get a restaurative moment).
+
+- Actuator deflection: The current deflection of the actuator
+- Force app point: The reduction point of all the forces in the rocket, it changes color to green if the force is applied in the opposite direction.
+- Time: Takes the thrust of the motor from the thrust vs time curve for the time indicated in the slider.
   
 ### 3D Graphics
 ![](/0_Images/Readme/Screenshot_4.png)  
